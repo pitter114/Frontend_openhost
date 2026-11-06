@@ -1,0 +1,162 @@
+<div class="pms-page pms-page--wide">
+  <div class="pms-page-header pms-page-header--flex">
+    <div>
+      <h1>Pagos y Caja</h1>
+      <p>Control financiero diario · {{ data.hotelNombre }}</p>
+    </div>
+    <div class="header-actions">
+      <button type="button" class="pms-btn pms-btn--primary" (click)="abrirNuevoMovimiento()">
+        <app-icon name="plus" [size]="15" /> Registrar Movimiento
+      </button>
+    </div>
+  </div>
+
+  <div class="pms-grid kpi-row">
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__top">
+        <div class="kpi-card__icon" style="background:#e9f9ef;color:#17a34a"><app-icon name="chart" [size]="17" /></div>
+        <span class="kpi-card__change">Cobrado</span>
+      </div>
+      <div class="kpi-card__value">S/ {{ ingresosDia.toLocaleString('es-ES') }}</div>
+      <div class="kpi-card__label">Ingresos Registrados</div>
+    </div>
+
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__icon" style="background:#fdecec;color:#e0342c"><app-icon name="chart" [size]="17" /></div>
+      <div class="kpi-card__value">S/ {{ egresosDia.toLocaleString('es-ES') }}</div>
+      <div class="kpi-card__label">Gastos / Egresos de Caja</div>
+    </div>
+
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__icon" style="background:#e9efff;color:#3b6bf6"><app-icon name="wallet" [size]="17" /></div>
+      <div class="kpi-card__value">S/ {{ cajaActual.toLocaleString('es-ES') }}</div>
+      <div class="kpi-card__label">Caja Neta Actual</div>
+    </div>
+
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__icon" style="background:#fdf3e0;color:#f2a30f"><app-icon name="calendar" [size]="17" /></div>
+      <div class="kpi-card__value">S/ {{ pagosPendientes.toLocaleString('es-ES') }}</div>
+      <div class="kpi-card__label">Saldos por Cobrar</div>
+    </div>
+  </div>
+
+  <div class="alert-banner" *ngIf="pagosPendientes > 0">
+    <app-icon name="alert" [size]="16" />
+    <span>S/ {{ pagosPendientes.toLocaleString('es-ES') }} en pagos parciales pendientes de cobro — {{ reservasConDeuda }} reservas con saldo por liquidar.</span>
+  </div>
+
+  <div class="pms-card">
+    <div class="table-head">
+      <h3>Historial de Movimientos de Caja</h3>
+      <span>{{ data.movimientosCaja.length }} movimientos registrados</span>
+    </div>
+    <table class="pms-table">
+      <thead>
+        <tr>
+          <th>Tipo</th>
+          <th>Concepto</th>
+          <th>Método de Pago</th>
+          <th>Monto</th>
+          <th>Hora</th>
+          <th>Registrado Por</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let m of data.movimientosCaja">
+          <td>
+            <span class="tipo-cell" [class.tipo-cell--in]="m.tipo === 'Ingreso'" [class.tipo-cell--out]="m.tipo === 'Salida'">
+              <app-icon [name]="m.tipo === 'Ingreso' ? 'plus' : 'x'" [size]="12" />
+              {{ m.tipo }}
+            </span>
+          </td>
+          <td><b>{{ m.concepto }}</b></td>
+          <td><span class="pms-badge pms-badge--gray">{{ m.metodo }}</span></td>
+          <td [class.monto-in]="m.monto > 0" [class.monto-out]="m.monto < 0">
+            {{ m.monto > 0 ? '+ S/ ' : '- S/ ' }}{{ Math.abs(m.monto).toLocaleString('es-ES') }}
+          </td>
+          <td>{{ m.hora }}</td>
+          <td>{{ m.usuario }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal Registrar Movimiento -->
+  <div class="modal-overlay" *ngIf="mostrarModalMovimiento()" (click)="cerrarModalMovimiento()">
+    <div class="modal-panel" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2><app-icon name="wallet" [size]="18" /> Registrar Movimiento de Caja</h2>
+        <button type="button" class="modal-close" (click)="cerrarModalMovimiento()">
+          <app-icon name="x" [size]="16" />
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="field">
+          <label>Tipo de Movimiento</label>
+          <div class="tipo-selector">
+            <button
+              type="button"
+              class="tipo-btn"
+              [class.tipo-btn--in]="tipoMovimiento === 'Ingreso'"
+              (click)="tipoMovimiento = 'Ingreso'"
+            >
+              + Ingreso / Cobro
+            </button>
+            <button
+              type="button"
+              class="tipo-btn"
+              [class.tipo-btn--out]="tipoMovimiento === 'Salida'"
+              (click)="tipoMovimiento = 'Salida'"
+            >
+              − Egreso / Gasto Menor
+            </button>
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Concepto o Motivo *</label>
+          <input
+            type="text"
+            [(ngModel)]="concepto"
+            placeholder="Ej: Cobro habitación 102, compra de agua recepción..."
+            class="pms-input"
+          />
+        </div>
+
+        <div class="field-row">
+          <div class="field">
+            <label>Método de Pago</label>
+            <select [(ngModel)]="metodo">
+              <option value="Efectivo">Efectivo</option>
+              <option value="Tarjeta">Tarjeta Débito/Crédito</option>
+              <option value="Yape / Plin">Yape / Plin</option>
+              <option value="Transferencia">Transferencia Bancaria</option>
+            </select>
+          </div>
+
+          <div class="field">
+            <label>Monto en Soles (S/) *</label>
+            <input
+              type="number"
+              min="0"
+              step="0.5"
+              [(ngModel)]="monto"
+              placeholder="0.00"
+              class="pms-input"
+            />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="pms-btn pms-btn--outline" (click)="cerrarModalMovimiento()">
+          Cancelar
+        </button>
+        <button type="button" class="pms-btn pms-btn--primary" (click)="guardarMovimiento()">
+          Registrar en Caja
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,259 @@
+<div class="rp-shell">
+  <!-- Topbar / Brand header -->
+  <header class="rp-header">
+    <div class="rp-header__content">
+      <div class="rp-brand">
+        <div class="rp-brand__logo">
+          <app-icon name="building" [size]="20" color="#fff" />
+        </div>
+        <div>
+          <div class="rp-brand__name">{{ hotelNombre || 'HotelPMS' }}</div>
+          <div class="rp-brand__sub">Reserva Directa Oficial</div>
+        </div>
+      </div>
+      <div class="rp-trust-badge">
+        <app-icon name="lock" [size]="14" />
+        <span>Reserva Segura</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="rp-main">
+    <div class="rp-container">
+
+      <!-- Link Inválido -->
+      <div class="rp-card rp-card--error" *ngIf="!unidad">
+        <div class="rp-empty-icon">
+          <app-icon name="alert" [size]="32" color="var(--pms-red)" />
+        </div>
+        <h2>Enlace no disponible</h2>
+        <p>No se encontraron los datos del alojamiento o la fecha seleccionada. Por favor contacta directamente a recepción del hotel.</p>
+      </div>
+
+      <!-- Pantalla de Éxito -->
+      <div class="rp-card rp-card--success" *ngIf="unidad && enviado()">
+        <div class="rp-success-badge">
+          <app-icon name="sparkles" [size]="36" color="var(--pms-green)" />
+        </div>
+        <h2>¡Tu reserva está confirmada!</h2>
+        <p class="rp-success-sub">
+          Hemos registrado tu reserva en <strong>{{ hotelNombre }}</strong> para la unidad <strong>{{ unidad }}</strong>.
+        </p>
+
+        <div class="rp-ticket">
+          <div class="rp-ticket__row">
+            <span>Alojamiento</span>
+            <b>{{ tipo }} — {{ unidad }}</b>
+          </div>
+          <div class="rp-ticket__row">
+            <span>Fechas</span>
+            <b>{{ checkin || 'Inmediato' }} al {{ checkout || 'Por definir' }} ({{ noches() }} noche{{ noches() === 1 ? '' : 's' }})</b>
+          </div>
+          <div class="rp-ticket__row">
+            <span>Huésped</span>
+            <b>{{ form.get('nombreCompleto')?.value }} (DNI: {{ form.get('dni')?.value }})</b>
+          </div>
+          <div class="rp-ticket__total">
+            <span>Monto Total</span>
+            <span class="rp-price">S/ {{ total() }}</span>
+          </div>
+        </div>
+
+        <div class="rp-mp-action" *ngIf="metodoPago() === 'mercadopago' && mercadoPagoData()">
+          <button type="button" class="pms-btn pms-btn--primary mp-pay-btn" (click)="irAMercadoPago()">
+            <app-icon name="card" [size]="18" />
+            <span>Pagar S/ {{ total() }} en Mercado Pago Checkout ⚡</span>
+          </button>
+          <small class="mp-sub">Se abrirá la pasarela segura de Mercado Pago para procesar tu pago.</small>
+        </div>
+
+        <div class="rp-note">
+          <app-icon name="bell" [size]="15" />
+          <span>El equipo de recepción se comunicará a tu celular <strong>{{ form.get('celular')?.value }}</strong> para coordinar tu llegada y check-in.</span>
+        </div>
+      </div>
+
+      <!-- Formulario y Resumen de Reserva -->
+      <div class="rp-grid" *ngIf="unidad && !enviado()">
+
+        <!-- Columna Izquierda: Resumen de Alojamiento -->
+        <div class="rp-card rp-card--summary">
+          <div class="rp-section-tag">
+            <app-icon name="bed" [size]="14" />
+            <span>Detalle de tu estadía</span>
+          </div>
+
+          <div class="rp-room-preview">
+            <div class="rp-room-img" *ngIf="imagen">
+              <img [src]="imagen" [alt]="unidad" />
+            </div>
+            <div class="rp-room-img rp-room-img--placeholder" *ngIf="!imagen">
+              <app-icon name="building" [size]="48" />
+            </div>
+            <div class="rp-room-meta">
+              <span class="rp-badge">{{ tipo || 'Habitación' }}</span>
+              <h3>{{ unidad }}</h3>
+              <p class="rp-hotel-location">
+                <app-icon name="door" [size]="14" />
+                <span>{{ hotelNombre }}</span>
+              </p>
+            </div>
+          </div>
+
+          <!-- Fechas Box -->
+          <div class="rp-dates-grid">
+            <div class="rp-date-card">
+              <span class="rp-date-card__label">CHECK-IN</span>
+              <strong class="rp-date-card__val">{{ checkin || 'Por definir' }}</strong>
+              <small class="rp-date-card__time">A partir de las 14:00</small>
+            </div>
+            <div class="rp-date-divider">
+              <app-icon name="chevronRight" [size]="16" />
+            </div>
+            <div class="rp-date-card">
+              <span class="rp-date-card__label">CHECK-OUT</span>
+              <strong class="rp-date-card__val">{{ checkout || 'Por definir' }}</strong>
+              <small class="rp-date-card__time">Hasta las 12:00</small>
+            </div>
+          </div>
+
+          <!-- Desglose de Precios -->
+          <div class="rp-breakdown">
+            <div class="rp-breakdown__row">
+              <span>Duración</span>
+              <b>{{ noches() }} noche{{ noches() === 1 ? '' : 's' }}</b>
+            </div>
+            <div class="rp-breakdown__row">
+              <span>Huéspedes</span>
+              <b>{{ numHuespedes }} persona{{ numHuespedes === 1 ? '' : 's' }}</b>
+            </div>
+            <div class="rp-breakdown__row">
+              <span>Tarifa por noche</span>
+              <span>S/ {{ precioBase }}</span>
+            </div>
+            <div class="rp-breakdown__row" *ngIf="extraHuespedesCount() > 0">
+              <span>Huéspedes extras ({{ extraHuespedesCount() }})</span>
+              <span>+ S/ {{ costoExtraTotal() }}</span>
+            </div>
+            <div class="rp-breakdown__row rp-breakdown__row--discount" *ngIf="descuento > 0">
+              <span>Descuento aplicado ({{ descuento }}%)</span>
+              <span>− S/ {{ subtotal() - total() }}</span>
+            </div>
+
+            <div class="rp-breakdown__total">
+              <div>
+                <span class="rp-total-label">Total a pagar</span>
+                <small>Impuestos incluidos · Pago en hotel o por coordinar</small>
+              </div>
+              <div class="rp-total-amount">S/ {{ total() }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Formulario de Huésped -->
+        <div class="rp-card rp-card--form">
+          <div class="rp-form-header">
+            <h2>Completa tus datos</h2>
+            <p>Ingresa la información del titular de la reserva para confirmar la habitación de inmediato.</p>
+          </div>
+
+          <div class="auth-error" *ngIf="errorGuardar()">
+            <app-icon name="alert" [size]="16" />
+            <span>{{ errorGuardar() }}</span>
+          </div>
+
+          <form [formGroup]="form" (ngSubmit)="submit()" novalidate class="rp-form">
+            <div class="rp-field">
+              <label>
+                <span>Nombre y Apellidos completos *</span>
+                <div class="rp-input-wrap">
+                  <app-icon name="users" [size]="16" />
+                  <input type="text" formControlName="nombreCompleto" placeholder="Ej. Juan Pérez García" />
+                </div>
+              </label>
+              <small class="rp-field-error" *ngIf="form.get('nombreCompleto')?.touched && form.get('nombreCompleto')?.invalid">
+                Por favor ingresa tu nombre completo.
+              </small>
+            </div>
+
+            <div class="rp-field">
+              <label>
+                <span>Documento de Identidad (DNI / Pasaporte) *</span>
+                <div class="rp-input-wrap">
+                  <app-icon name="card" [size]="16" />
+                  <input type="text" formControlName="dni" placeholder="Ej. 72345678" />
+                </div>
+              </label>
+              <small class="rp-field-error" *ngIf="form.get('dni')?.touched && form.get('dni')?.invalid">
+                El documento es obligatorio.
+              </small>
+            </div>
+
+            <div class="rp-field">
+              <label>
+                <span>Teléfono celular / WhatsApp *</span>
+                <div class="rp-input-wrap">
+                  <app-icon name="login" [size]="16" />
+                  <input type="tel" formControlName="celular" placeholder="Ej. 984751487" />
+                </div>
+              </label>
+              <small class="rp-field-error" *ngIf="form.get('celular')?.touched && form.get('celular')?.invalid">
+                Ingresa un número telefónico válido (solo números).
+              </small>
+            </div>
+
+            <!-- Selector de Método de Pago -->
+            <div class="rp-payment-selector">
+              <label class="rp-payment-label">Selecciona cómo deseas pagar:</label>
+              <div class="rp-payment-options">
+                <label class="rp-payment-opt" [class.selected]="metodoPago() === 'mercadopago'">
+                  <input type="radio" name="metodoPago" [checked]="metodoPago() === 'mercadopago'" (change)="metodoPago.set('mercadopago')" />
+                  <div class="opt-content">
+                    <div class="opt-title">
+                      <span class="mp-badge">⚡ Mercado Pago</span>
+                      <span class="opt-tag">Recomendado</span>
+                    </div>
+                    <small>Tarjetas de crédito/débito, Yape, Plin o PagoEfectivo.</small>
+                  </div>
+                </label>
+
+                <label class="rp-payment-opt" [class.selected]="metodoPago() === 'hotel'">
+                  <input type="radio" name="metodoPago" [checked]="metodoPago() === 'hotel'" (change)="metodoPago.set('hotel')" />
+                  <div class="opt-content">
+                    <div class="opt-title">
+                      <span>🏨 Pago en el Hotel</span>
+                    </div>
+                    <small>Abona en efectivo o tarjeta física al llegar a recepción.</small>
+                  </div>
+                </label>
+              </div>
+            </div>
+
+            <!-- Resumen de Garantías -->
+            <div class="rp-guarantees">
+              <div class="rp-guarantee-item">
+                <app-icon name="shield" [size]="16" color="var(--pms-blue)" />
+                <span>Confirmación directa e inmediata en el sistema del hotel.</span>
+              </div>
+              <div class="rp-guarantee-item">
+                <app-icon name="sparkles" [size]="16" color="var(--pms-green)" />
+                <span>Sin costos ocultos ni comisiones de intermediarios.</span>
+              </div>
+            </div>
+
+            <!-- Botón de Envío -->
+            <button type="submit" class="pms-btn pms-btn--primary rp-submit-btn" [disabled]="guardando()">
+              <app-icon name="sparkles" class="pms-spin" [size]="18" *ngIf="guardando()" />
+              <app-icon name="shield" [size]="18" *ngIf="!guardando()" />
+              <span>
+                {{ guardando() ? 'Procesando con Mercado Pago…' : (metodoPago() === 'mercadopago' ? 'Pagar con Mercado Pago (S/ ' + total() + ')' : 'Confirmar Reserva en Recepción') }}
+              </span>
+            </button>
+          </form>
+        </div>
+
+      </div>
+
+    </div>
+  </main>
+</div>

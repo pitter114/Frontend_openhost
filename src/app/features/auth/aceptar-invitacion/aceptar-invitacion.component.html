@@ -1,0 +1,74 @@
+<div class="auth-shell">
+  <div class="auth-brand">
+    <div class="auth-brand__logo"><app-icon name="building" [size]="20" color="#fff" /></div>
+    <div class="auth-brand__name">HotelPMS</div>
+    <p class="auth-brand__tagline">Te invitaron a formar parte de un equipo en HotelPMS. Crea tu contraseña para activar tu cuenta.</p>
+  </div>
+
+  <div class="auth-panel">
+    <div class="auth-card" *ngIf="!exito(); else pantallaExito">
+      <h1>Activa tu cuenta</h1>
+      <p class="auth-card__sub">Crea una contraseña para empezar a usar HotelPMS</p>
+
+      <div class="auth-error" *ngIf="!token">
+        <app-icon name="alert" [size]="16" />
+        <span>Este enlace no tiene un token válido. Revisa que copiaste la URL completa del correo.</span>
+      </div>
+
+      <div class="auth-error" *ngIf="error()">
+        <app-icon name="alert" [size]="16" />
+        <span>{{ error() }}</span>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate *ngIf="token">
+        <label class="field">
+          <span>Nueva contraseña</span>
+          <div class="field__password">
+            <input
+              [type]="verPassword() ? 'text' : 'password'"
+              formControlName="contrasena"
+              placeholder="••••••••••"
+              autocomplete="new-password"
+            />
+            <button type="button" class="field__eye" (click)="verPassword.set(!verPassword())" tabindex="-1">
+              <app-icon name="eye" [size]="17" />
+            </button>
+          </div>
+          <small class="field__error" *ngIf="form.get('contrasena')?.touched && form.get('contrasena')?.invalid">
+            Mín. 10 caracteres, mayúscula, minúscula, número y símbolo
+          </small>
+        </label>
+
+        <label class="field">
+          <span>Confirmar contraseña</span>
+          <input
+            [type]="verPassword() ? 'text' : 'password'"
+            formControlName="contrasena_confirmation"
+            placeholder="••••••••••"
+            autocomplete="new-password"
+          />
+          <small class="field__error" *ngIf="form.get('contrasena_confirmation')?.touched && form.hasError('noCoinciden')">
+            Las contraseñas no coinciden
+          </small>
+        </label>
+
+        <button type="submit" class="pms-btn pms-btn--primary auth-submit" [disabled]="cargando()">
+          <span *ngIf="!cargando()">Activar cuenta</span>
+          <span *ngIf="cargando()">Activando…</span>
+        </button>
+      </form>
+
+      <p class="auth-card__footer">
+        ¿Ya tienes contraseña? <a routerLink="/login">Iniciar sesión</a>
+      </p>
+    </div>
+
+    <ng-template #pantallaExito>
+      <div class="auth-card auth-success">
+        <div class="auth-success__icon"><app-icon name="shield" [size]="26" color="var(--pms-green)" /></div>
+        <h1>Cuenta activada</h1>
+        <p class="auth-card__sub">Ya puedes iniciar sesión con tu correo y la contraseña que creaste. Te redirigiremos en un momento…</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

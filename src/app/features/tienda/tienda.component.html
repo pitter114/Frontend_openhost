@@ -1,0 +1,446 @@
+<div class="pms-page pms-page--wide">
+  <app-loading-modal
+    *ngIf="cargando()"
+    titulo="Cargando Tienda & POS…"
+    subtitulo="Sincronizando catálogo de productos y habitaciones activas"
+  />
+
+  <!-- Header -->
+  <div class="pms-page-header pms-page-header--flex">
+    <div>
+      <h1>🛒 Tienda & POS Frigobar</h1>
+      <p>Ventas en recepción, consumos de frigobar y cargos directos a la habitación</p>
+    </div>
+
+    <div class="header-actions">
+      <!-- Botón Configuración de Horarios & Check-Out -->
+      <button type="button" class="pms-btn pms-btn--outline" (click)="abrirModalHorarios()">
+        <app-icon name="calendar" [size]="15" />
+        <span>⏰ Horarios & Check-Out Auto</span>
+      </button>
+
+      <!-- Botón Nuevo Producto -->
+      <button type="button" class="pms-btn pms-btn--primary" (click)="abrirModalProducto()">
+        <app-icon name="plus" [size]="15" />
+        <span>+ Producto Tienda</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Vista Switcher: Punto de Venta vs Historial de Tickets -->
+  <div class="pos-top-bar">
+    <div class="view-tabs">
+      <button
+        type="button"
+        class="tab-btn"
+        [class.tab-btn--active]="vistaActiva() === 'pos'"
+        (click)="vistaActiva.set('pos')"
+      >
+        <app-icon name="card" [size]="16" />
+        <span>Punto de Venta (Caja)</span>
+      </button>
+      <button
+        type="button"
+        class="tab-btn"
+        [class.tab-btn--active]="vistaActiva() === 'ventas'"
+        (click)="vistaActiva.set('ventas')"
+      >
+        <app-icon name="book" [size]="16" />
+        <span>Historial de Ventas ({{ ventas().length }})</span>
+      </button>
+    </div>
+
+    <!-- Mini KPIs en vivo -->
+    <div class="kpi-mini-group">
+      <div class="kpi-mini">
+        <span class="kpi-mini__label">Vendido Hoy</span>
+        <strong class="kpi-mini__val">S/ {{ resumenVentas().total_ventas_hoy | number:'1.2-2' }}</strong>
+      </div>
+      <div class="kpi-mini kpi-mini--amber">
+        <span class="kpi-mini__label">Cargos en Habitaciones</span>
+        <strong class="kpi-mini__val">S/ {{ resumenVentas().cargos_pendientes_checkout | number:'1.2-2' }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- VISTA 1: PUNTO DE VENTA (CATÁLOGO + CARRITO)-->
+  <!-- ========================================== -->
+  <div class="pos-layout" *ngIf="vistaActiva() === 'pos'">
+    <!-- Columna Izquierda: Catálogo de Productos -->
+    <div class="pos-catalog">
+      <!-- Filtros por Categoría y Buscador -->
+      <div class="catalog-filters">
+        <div class="categories-scroll">
+          <button
+            *ngFor="let cat of categorias"
+            type="button"
+            class="cat-chip"
+            [class.cat-chip--active]="categoriaSeleccionada() === cat"
+            (click)="categoriaSeleccionada.set(cat)"
+          >
+            {{ cat }}
+          </button>
+        </div>
+
+        <div class="pms-search">
+          <app-icon name="search" [size]="15" />
+          <input type="text" placeholder="Buscar agua, snack, gaseosa..." [(ngModel)]="busqueda" />
+        </div>
+      </div>
+
+      <!-- Grid de Productos -->
+      <div class="products-grid">
+        <div
+          *ngFor="let p of productosFiltrados()"
+          class="product-card"
+          [class.product-card--out-of-stock]="p.stock_actual <= 0 && p.categoria !== 'Servicios'"
+          (click)="agregarAlCarrito(p)"
+        >
+          <div class="product-card__top">
+            <span class="product-badge">{{ p.categoria }}</span>
+            <span
+              class="stock-pill"
+              [class.stock-pill--low]="p.stock_actual <= 5"
+              *ngIf="p.categoria !== 'Servicios'"
+            >
+              Stock: {{ p.stock_actual }}
+            </span>
+          </div>
+
+          <div class="product-card__icon">
+            <app-icon [name]="p.icono || 'box'" [size]="24" />
+          </div>
+
+          <div class="product-card__name" [title]="p.nombre">{{ p.nombre }}</div>
+
+          <div class="product-card__footer">
+            <strong class="product-card__price">S/ {{ p.precio_venta | number:'1.2-2' }}</strong>
+            <button type="button" class="btn-add-mini" title="Agregar al carrito">
+              <app-icon name="plus" [size]="14" />
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="productosFiltrados().length === 0" class="no-prods">
+          No se encontraron productos en esta categoría o búsqueda.
+        </div>
+      </div>
+    </div>
+
+    <!-- Columna Derecha: Carrito de Compras / Facturación de Mostrador -->
+    <div class="pos-cart-panel pms-card">
+      <div class="cart-header">
+        <div class="cart-title">
+          <app-icon name="box" [size]="18" color="var(--pms-blue)" />
+          <strong>Ticket de Venta</strong>
+        </div>
+        <button
+          type="button"
+          class="btn-clear-cart"
+          *ngIf="carrito().length > 0"
+          (click)="limpiarCarrito()"
+          title="Vaciar ticket"
+        >
+          Vaciar
+        </button>
+      </div>
+
+      <!-- Lista de Items en Carrito -->
+      <div class="cart-items" *ngIf="carrito().length > 0">
+        <div class="cart-item" *ngFor="let it of carrito()">
+          <div class="cart-item__info">
+            <div class="cart-item__name">{{ it.producto.nombre }}</div>
+            <div class="cart-item__price">S/ {{ it.producto.precio_venta | number:'1.2-2' }} c/u</div>
+          </div>
+
+          <div class="cart-item__controls">
+            <button type="button" class="qty-btn" (click)="decrementarItem(it.producto.producto_id)">-</button>
+            <span class="qty-val">{{ it.cantidad }}</span>
+            <button type="button" class="qty-btn" (click)="agregarAlCarrito(it.producto)">+</button>
+          </div>
+
+          <div class="cart-item__subtotal">
+            S/ {{ (it.producto.precio_venta * it.cantidad) | number:'1.2-2' }}
+          </div>
+
+          <button type="button" class="btn-remove-item" (click)="eliminarItem(it.producto.producto_id)">&times;</button>
+        </div>
+      </div>
+
+      <div class="cart-empty" *ngIf="carrito().length === 0">
+        <div class="cart-empty__icon">🛒</div>
+        <p>Selecciona productos del catálogo para agregarlos al ticket</p>
+      </div>
+
+      <!-- Resumen y Forma de Pago -->
+      <div class="cart-checkout" *ngIf="carrito().length > 0">
+        <div class="total-row">
+          <span>Total a Cobrar</span>
+          <strong>S/ {{ totalCarrito() | number:'1.2-2' }}</strong>
+        </div>
+
+        <!-- Selector Método de Pago -->
+        <div class="payment-method-selector">
+          <label>Destino del Cobro</label>
+          <div class="payment-options">
+            <button
+              type="button"
+              class="pay-btn"
+              [class.pay-btn--active]="metodoPago() === 'Efectivo'"
+              (click)="metodoPago.set('Efectivo')"
+            >
+              💵 Efectivo
+            </button>
+            <button
+              type="button"
+              class="pay-btn"
+              [class.pay-btn--active]="metodoPago() === 'Yape'"
+              (click)="metodoPago.set('Yape')"
+            >
+              📱 Yape / Plin
+            </button>
+            <button
+              type="button"
+              class="pay-btn"
+              [class.pay-btn--active]="metodoPago() === 'Tarjeta'"
+              (click)="metodoPago.set('Tarjeta')"
+            >
+              💳 Tarjeta
+            </button>
+            <button
+              type="button"
+              class="pay-btn pay-btn--room"
+              [class.pay-btn--active]="metodoPago() === 'Cargo a Habitación'"
+              (click)="metodoPago.set('Cargo a Habitación')"
+            >
+              🏨 Cargar a Habitación
+            </button>
+          </div>
+        </div>
+
+        <!-- Selector de Habitación (Si elige Cargo a Habitación) -->
+        <div class="room-selector-box" *ngIf="metodoPago() === 'Cargo a Habitación'">
+          <label>Seleccionar Habitación del Huésped *</label>
+          <select class="pms-input" [(ngModel)]="habitacionElegida">
+            <option [ngValue]="null">-- Elegir habitación ocupada --</option>
+            <option *ngFor="let h of habitaciones()" [ngValue]="h">
+              Habitación {{ h.etiqueta }} — {{ h.huesped }} (DNI: {{ h.dni }})
+            </option>
+          </select>
+          <small class="text-muted" *ngIf="habitaciones().length === 0">
+            No hay habitaciones con check-in activo en este momento.
+          </small>
+        </div>
+
+        <!-- Botón Acción Final -->
+        <button
+          type="button"
+          class="pms-btn pms-btn--primary btn-cobrar-grand"
+          (click)="confirmarVenta()"
+          [disabled]="procesandoVenta()"
+        >
+          <span>
+            {{ procesandoVenta() ? 'Procesando...' : (metodoPago() === 'Cargo a Habitación' ? 'Confirmar Cargo a Habitación' : 'Completar Venta S/ ' + (totalCarrito() | number:'1.2-2')) }}
+          </span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- VISTA 2: HISTORIAL DE VENTAS Y CARGOS      -->
+  <!-- ========================================== -->
+  <div class="pms-card" *ngIf="vistaActiva() === 'ventas'">
+    <table class="pms-table" *ngIf="ventas().length > 0">
+      <thead>
+        <tr>
+          <th>Ticket</th>
+          <th>Huésped / Cliente</th>
+          <th>Habitación</th>
+          <th>Método de Pago</th>
+          <th>Productos Vendidos</th>
+          <th>Total</th>
+          <th>Estado</th>
+          <th>Fecha / Hora</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let v of ventas()">
+          <td><span class="ticket-code">{{ v.codigo_ticket }}</span></td>
+          <td><strong>{{ v.huesped_nombre }}</strong></td>
+          <td>
+            <span class="badge-room" *ngIf="v.habitacion_etiqueta">Hab. {{ v.habitacion_etiqueta }}</span>
+            <span class="text-muted" *ngIf="!v.habitacion_etiqueta">—</span>
+          </td>
+          <td>{{ v.metodo_pago }}</td>
+          <td>
+            <div class="items-summary" *ngIf="v.items?.length > 0">
+              <span *ngFor="let it of v.items">{{ it.cantidad }}x {{ it.nombre_producto }}</span>
+            </div>
+            <span *ngIf="!v.items || v.items.length === 0" class="text-muted">Consumo de tienda</span>
+          </td>
+          <td><strong class="total-amount">S/ {{ v.total | number:'1.2-2' }}</strong></td>
+          <td>
+            <span
+              class="pms-badge"
+              [class.pms-badge--green]="v.estado === 'Pagado'"
+              [class.pms-badge--amber]="v.estado === 'Pendiente Check-out'"
+            >
+              {{ v.estado }}
+            </span>
+          </td>
+          <td>{{ v.fecha_venta }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="ventas().length === 0" class="no-prods">
+      Aún no se han registrado ventas en la tienda de este hotel.
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: CONFIGURAR HORARIOS & CHECK-OUT AUTO -->
+  <!-- ========================================== -->
+  <div class="modal-backdrop" *ngIf="mostrarModalHorarios()" (click)="cerrarModalHorarios()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>⏰ Horarios de Check-In & Check-Out</h3>
+          <p class="modal-sub">Configura la política de horarios y la liberación automática de cuartos</p>
+        </div>
+        <button type="button" class="modal-close" (click)="cerrarModalHorarios()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Hora Estándar de Check-In *</label>
+            <input type="time" class="pms-input" [(ngModel)]="horariosForm.hora_check_in" />
+            <small class="text-muted">Hora desde la cual el huésped puede ingresar (ej. 14:00 PM).</small>
+          </div>
+
+          <div class="form-group">
+            <label>Hora Límite de Check-Out *</label>
+            <input type="time" class="pms-input" [(ngModel)]="horariosForm.hora_check_out" />
+            <small class="text-muted">Hora en que el huésped debe desocupar el cuarto (ej. 12:00 PM).</small>
+          </div>
+
+          <div class="form-group form-group--full">
+            <div class="toggle-card">
+              <div>
+                <strong>Check-Out Automático Inteligente</strong>
+                <p>Al pasar la hora de salida, el sistema finaliza la reserva y pasa la habitación a <strong>"Sucia / Requiere Limpieza"</strong> automáticamente.</p>
+              </div>
+              <label class="switch-toggle">
+                <input type="checkbox" [(ngModel)]="horariosForm.checkout_automatico" />
+                <span class="slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="form-group form-group--full" *ngIf="horariosForm.checkout_automatico">
+            <label>Minutos de Tolerancia / Cortesía</label>
+            <select class="pms-input" [(ngModel)]="horariosForm.checkout_tolerancia_minutos">
+              <option [value]="0">Sin tolerancia (Inmediatamente al cumplirse la hora)</option>
+              <option [value]="15">15 minutos de cortesía</option>
+              <option [value]="30">30 minutos de cortesía (Recomendado)</option>
+              <option [value]="60">60 minutos (1 hora de cortesía)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="manual-checkout-box" *ngIf="horariosForm.checkout_automatico">
+          <div>
+            <strong>¿Quieres liberar habitaciones ahora mismo?</strong>
+            <p>Ejecuta la revisión manual para procesar cualquier reserva vencida de hoy.</p>
+          </div>
+          <button
+            type="button"
+            class="pms-btn pms-btn--outline pms-btn--sm"
+            (click)="ejecutarCheckoutManual()"
+            [disabled]="ejecutandoCheckout()"
+          >
+            <span>{{ ejecutandoCheckout() ? 'Revisando...' : '⚡ Ejecutar Check-Out Ahora' }}</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="pms-btn pms-btn--outline" (click)="cerrarModalHorarios()">Cancelar</button>
+        <button
+          type="button"
+          class="pms-btn pms-btn--primary"
+          (click)="guardarHorarios()"
+          [disabled]="guardandoHorarios()"
+        >
+          <span>{{ guardandoHorarios() ? 'Guardando...' : 'Guardar Horarios' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: AGREGAR NUEVO PRODUCTO A LA TIENDA -->
+  <!-- ========================================== -->
+  <div class="modal-backdrop" *ngIf="mostrarModalProducto()" (click)="cerrarModalProducto()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>Nuevo Producto en Tienda / Frigobar</h3>
+          <p class="modal-sub">Agrégalo al catálogo de venta de este hotel</p>
+        </div>
+        <button type="button" class="modal-close" (click)="cerrarModalProducto()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group form-group--full">
+            <label>Nombre del Producto o Servicio *</label>
+            <input type="text" class="pms-input" [(ngModel)]="nuevoProd.nombre" placeholder="Ej. Agua Mineral Con Gas 500ml" />
+          </div>
+
+          <div class="form-group">
+            <label>Categoría</label>
+            <select class="pms-input" [(ngModel)]="nuevoProd.categoria">
+              <option value="Bebidas">Bebidas</option>
+              <option value="Snacks">Snacks</option>
+              <option value="Higiene">Higiene</option>
+              <option value="Servicios">Servicios (Lavandería, etc.)</option>
+              <option value="Souvenirs">Souvenirs</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Precio de Venta (S/ Soles) *</label>
+            <input type="number" class="pms-input" [(ngModel)]="nuevoProd.precio_venta" min="0" step="0.5" />
+          </div>
+
+          <div class="form-group">
+            <label>Stock Inicial (Unidades)</label>
+            <input type="number" class="pms-input" [(ngModel)]="nuevoProd.stock_actual" min="0" />
+          </div>
+
+          <div class="form-group">
+            <label>Ícono Visual</label>
+            <select class="pms-input" [(ngModel)]="nuevoProd.icono">
+              <option value="coffee">Bebida / Café</option>
+              <option value="box">Snack / Caja</option>
+              <option value="sparkles">Aseo / Higiene</option>
+              <option value="sun">Verano / Bloqueador</option>
+              <option value="trophy">Souvenir / Artesanía</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="pms-btn pms-btn--outline" (click)="cerrarModalProducto()">Cancelar</button>
+        <button type="button" class="pms-btn pms-btn--primary" (click)="crearProducto()">
+          <span>Guardar Producto</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

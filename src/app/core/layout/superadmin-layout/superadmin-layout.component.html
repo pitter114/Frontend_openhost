@@ -1,0 +1,77 @@
+<div class="shell">
+  <div class="sidebar-backdrop" *ngIf="menuAbierto()" (click)="cerrarMenu()"></div>
+
+  <aside class="sidebar" [class.sidebar--open]="menuAbierto()">
+    <div class="sidebar__brand">
+      <div class="sidebar__logo"><app-icon name="shield" [size]="18" color="#fff" /></div>
+      <div>
+        <div class="sidebar__brand-name">Superadministrador</div>
+        <div class="sidebar__brand-sub">PLATAFORMA PMS</div>
+      </div>
+      <button type="button" class="sidebar__close" (click)="cerrarMenu()">
+        <app-icon name="x" [size]="18" />
+      </button>
+    </div>
+
+    <div class="sidebar__section">Administración</div>
+    <nav class="sidebar__nav">
+      <a
+        *ngFor="let item of navItems"
+        [routerLink]="item.route"
+        routerLinkActive="is-active"
+        class="sidebar__link"
+        (click)="cerrarMenu()"
+      >
+        <app-icon [name]="item.icon" [size]="17" />
+        <span>{{ item.label }}</span>
+        <span class="sidebar__badge" *ngIf="item.badge">{{ item.badge }}</span>
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <button class="sidebar__link sidebar__link--ghost" (click)="theme.alternar()">
+        <app-icon [name]="theme.oscuro() ? 'sun' : 'moon'" [size]="17" />
+        <span>{{ theme.oscuro() ? 'Modo Claro' : 'Modo Oscuro' }}</span>
+      </button>
+      <a routerLink="/admin/panel" class="sidebar__link sidebar__link--back">
+        <app-icon name="arrowLeft" [size]="17" />
+        <span>Volver a Hotel Admin</span>
+      </a>
+      <a routerLink="/cuenta/seguridad" class="sidebar__link sidebar__link--ghost">
+        <app-icon name="lock" [size]="17" />
+        <span>Seguridad</span>
+      </a>
+      <button type="button" class="sidebar__link sidebar__link--ghost" (click)="cerrarSesion()">
+        <app-icon name="logout" [size]="17" />
+        <span>Cerrar sesión</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__left">
+        <button type="button" class="topbar__menu-btn" (click)="menuAbierto.set(true)">
+          <app-icon name="menu" [size]="20" />
+        </button>
+        <div class="topbar__crumbs">
+          <app-icon name="shield" [size]="15" color="var(--pms-orange)" />
+          <span class="topbar__crumb-root">Superadministrador</span>
+          <span class="topbar__sep">/</span>
+          <span>{{ breadcrumb[currentSegment()] }}</span>
+        </div>
+      </div>
+      <div class="topbar__right">
+        <span class="topbar__status">
+          <span class="dot dot--orange"></span>Plataforma Online · {{ hotelesActivos }} Hoteles
+        </span>
+      </div>
+    </header>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <app-toast-container />
+</div>

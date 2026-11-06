@@ -1,0 +1,153 @@
+<div class="pms-page">
+  <div class="pms-page-header pms-page-header--flex">
+    <div>
+      <h1>Inventario</h1>
+      <p>Control de existencias y suministros</p>
+    </div>
+    <button type="button" class="pms-btn pms-btn--primary" (click)="abrirModalCrear()">
+      <app-icon name="plus" [size]="15" /> Nuevo Artículo
+    </button>
+  </div>
+
+  <div class="auth-error" *ngIf="error()">
+    <app-icon name="alert" [size]="16" />
+    <span>{{ error() }}</span>
+  </div>
+
+  <div class="pms-grid stat-row" *ngIf="stats() as s">
+    <div class="pms-card stat-card stat-card--blue">
+      <div class="stat-card__value">{{ s.articulos.total }}</div>
+      <div class="stat-card__label">Artículos Totales</div>
+      <app-icon name="box" [size]="22" class="stat-card__icon" />
+    </div>
+    <div class="pms-card stat-card stat-card--amber">
+      <div class="stat-card__value">{{ s.articulos.stock_medio }}</div>
+      <div class="stat-card__label">Stock Medio</div>
+      <app-icon name="box" [size]="22" class="stat-card__icon" />
+    </div>
+    <div class="pms-card stat-card stat-card--red">
+      <div class="stat-card__value">{{ s.articulos.stock_critico }}</div>
+      <div class="stat-card__label">Crítico de existencias</div>
+      <app-icon name="box" [size]="22" class="stat-card__icon" />
+    </div>
+  </div>
+
+  <div class="alert-banner" *ngIf="stats() && stats()!.articulos.stock_critico > 0">
+    <app-icon name="alert" [size]="16" />
+    <span><strong>{{ stats()!.articulos.stock_critico }} artículos con stock crítico</strong> — Se recomienda reponer inmediatamente.</span>
+  </div>
+
+  <div class="filters-bar">
+    <div class="pms-search">
+      <app-icon name="search" [size]="15" />
+      <input type="text" placeholder="Buscar artículo..." [(ngModel)]="search" (ngModelChange)="onBuscar()" />
+    </div>
+    <div class="chip-group">
+      <button type="button" class="chip" [class.chip--active]="categoriaSeleccionada === null" (click)="setCategoria(null)">
+        Todas
+      </button>
+      <button
+        type="button"
+        class="chip"
+        *ngFor="let c of categorias()"
+        [class.chip--active]="categoriaSeleccionada === c.categoria_articulo_id"
+        (click)="setCategoria(c.categoria_articulo_id)"
+      >{{ c.nombre }}</button>
+    </div>
+  </div>
+
+  <app-loading-modal
+    *ngIf="cargando()"
+    titulo="Cargando inventario…"
+    subtitulo="Obteniendo artículos y niveles de stock"
+  />
+
+  <div class="pms-grid articulo-grid" *ngIf="!cargando()">
+    <div class="pms-card articulo-card" *ngFor="let a of articulos()">
+      <div class="articulo-card__top">
+        <div>
+          <div class="articulo-card__name">{{ a.nombre }}</div>
+          <div class="articulo-card__cat">{{ a.categoria.nombre }}</div>
+        </div>
+        <span class="pms-badge" [ngClass]="'pms-badge--' + badgeMod(a)">{{ estadoLabel(a) }}</span>
+      </div>
+      <div class="articulo-card__units" [style.color]="colorHex(a)">
+        {{ a.cantidad_total }} <span>{{ a.unidad_medida }}</span>
+      </div>
+      <div class="articulo-card__track">
+        <div class="articulo-card__fill" [style.width.%]="a.porcentaje_barra" [style.background]="colorHex(a)"></div>
+      </div>
+      <div class="articulo-card__foot">
+        <span>Mínimo: {{ a.stock_minimo }} {{ a.unidad_medida }}</span>
+        <span *ngIf="a.ultima_actualizacion">Actualizado: {{ a.ultima_actualizacion | date: 'd MMM' }}</span>
+      </div>
+      <div class="articulo-card__actions">
+        <button type="button" class="pms-btn pms-btn--outline pms-btn--sm" (click)="abrirEditarArticulo(a)">
+          ✏️ Editar
+        </button>
+        <button type="button" class="pms-btn pms-btn--outline pms-btn--sm" (click)="abrirAjustarStock(a)">
+          📦 Ajustar stock
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="!cargando() && articulos().length === 0" class="tabla-estado">
+    No hay artículos que coincidan con la búsqueda.
+  </div>
+
+  <div class="paginacion" *ngIf="!cargando() && totalPaginas() > 1">
+    <button type="button" class="pms-btn pms-btn--outline pms-btn--sm" [disabled]="pagina() === 1" (click)="irAPagina(pagina() - 1)">
+      Anterior
+    </button>
+    <span>Página {{ pagina() }} de {{ totalPaginas() }}</span>
+    <button type="button" class="pms-btn pms-btn--outline pms-btn--sm" [disabled]="pagina() === totalPaginas()" (click)="irAPagina(pagina() + 1)">
+      Siguiente
+    </button>
+  </div>
+
+  <!-- Modal Crear/Editar Artículo -->
+  <app-articulo-form
+    *ngIf="mostrarFormArticulo()"
+    [categorias]="categorias()"
+    [articulo]="articuloAEditar()"
+    (creado)="onArticuloCreado()"
+    (cerrar)="mostrarFormArticulo.set(false)"
+  />
+
+  <!-- Modal Ajustar Stock -->
+  <div class="stock-backdrop" *ngIf="mostrarModalStock()" (click)="cerrarModalStock()">
+    <div class="stock-modal" (click)="$event.stopPropagation()">
+      <div class="stock-modal__head">
+        <div>
+          <h2>Ajustar Stock</h2>
+          <p>{{ articuloAjustarStock()?.nombre }} ({{ articuloAjustarStock()?.unidad_medida }})</p>
+        </div>
+        <button type="button" class="rf-close" (click)="cerrarModalStock()">
+          <app-icon name="x" [size]="18" />
+        </button>
+      </div>
+
+      <div class="stock-modal__body">
+        <label class="stock-field">
+          <span>Nueva cantidad actual en almacén:</span>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            [(ngModel)]="nuevaCantidadStock"
+            placeholder="0"
+          />
+        </label>
+      </div>
+
+      <div class="stock-modal__foot">
+        <button type="button" class="pms-btn pms-btn--outline" (click)="cerrarModalStock()">Cancelar</button>
+        <button type="button" class="pms-btn pms-btn--primary" [disabled]="guardandoStock()" (click)="guardarAjusteStock()">
+          <span *ngIf="!guardandoStock()">Guardar Stock</span>
+          <span *ngIf="guardandoStock()">Guardando…</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

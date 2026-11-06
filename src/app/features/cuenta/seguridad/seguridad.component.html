@@ -1,0 +1,135 @@
+<div class="pms-page pms-page--narrow">
+  <div class="pms-page-header">
+    <button type="button" class="auth-back" (click)="cancelar()" *ngIf="paso() !== 'estado'">
+      <app-icon name="arrowLeft" [size]="16" /> Volver
+    </button>
+    <h1>Seguridad de la cuenta</h1>
+    <p *ngIf="cuenta()?.correo as correo">Verificación en dos pasos para {{ correo }}</p>
+  </div>
+
+  <div class="auth-error" *ngIf="error()">
+    <app-icon name="alert" [size]="16" />
+    <span>{{ error() }}</span>
+  </div>
+
+  <div class="auth-exito" *ngIf="exito() && paso() === 'estado'">
+    <app-icon name="shield" [size]="16" />
+    <span>{{ exito() }}</span>
+  </div>
+
+  <!-- Estado actual -->
+  <ng-container *ngIf="paso() === 'estado'">
+    <div class="pms-card seg-card" *ngIf="!dosFaActiva()">
+      <div class="seg-card__icon"><app-icon name="lock" [size]="20" color="var(--pms-blue)" /></div>
+      <div class="seg-card__body">
+        <div class="seg-card__title">Verificación en dos pasos desactivada</div>
+        <p class="seg-card__desc">Agrega una capa extra de seguridad a tu cuenta. Elige un método:</p>
+
+        <div class="seg-opciones">
+          <button type="button" class="pms-card seg-opcion" [disabled]="cargando()" (click)="activarPorCorreo()">
+            <app-icon name="alert" [size]="18" color="var(--pms-blue)" />
+            <div>
+              <div class="seg-opcion__title">Código por correo</div>
+              <div class="seg-opcion__desc">Recibe un código de 6 dígitos en tu correo al iniciar sesión</div>
+            </div>
+          </button>
+
+          <button type="button" class="pms-card seg-opcion" [disabled]="cargando()" (click)="activarPorTotp()">
+            <app-icon name="scan" [size]="18" color="var(--pms-blue)" />
+            <div>
+              <div class="seg-opcion__title">App autenticadora (TOTP)</div>
+              <div class="seg-opcion__desc">Google Authenticator, Authy u otra app compatible</div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="pms-card seg-card" *ngIf="dosFaActiva()">
+      <div class="seg-card__icon seg-card__icon--green"><app-icon name="shield" [size]="20" color="var(--pms-green)" /></div>
+      <div class="seg-card__body">
+        <div class="seg-card__title">
+          Verificación en dos pasos activa
+          <span class="pms-badge pms-badge--green">{{ dosFaMetodo() === 'correo' ? 'Por correo' : 'App autenticadora' }}</span>
+        </div>
+        <p class="seg-card__desc">
+          {{ dosFaMetodo() === 'correo'
+            ? 'Te enviamos un código a tu correo cada vez que inicias sesión.'
+            : 'Usas tu app autenticadora para generar el código al iniciar sesión.' }}
+        </p>
+        <button type="button" class="pms-btn pms-btn--outline pms-btn--danger" (click)="irADesactivar()">
+          Desactivar verificación en dos pasos
+        </button>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Paso TOTP: escanear QR y confirmar -->
+  <div class="pms-card seg-card seg-card--form" *ngIf="paso() === 'totp-qr'">
+    <h2>Escanea el código QR</h2>
+    <p class="seg-card__desc">Ábrelo con Google Authenticator, Authy u otra app TOTP, luego ingresa el código de 6 dígitos que genera.</p>
+
+    <div class="seg-qr" [innerHTML]="qrSvg()"></div>
+
+    <details class="seg-secreto" *ngIf="secretoTotp()">
+      <summary>¿No puedes escanear el código? Ingresa la clave manualmente</summary>
+      <code>{{ secretoTotp() }}</code>
+    </details>
+
+    <form [formGroup]="formConfirmar" (ngSubmit)="confirmarTotp()" novalidate>
+      <label class="field">
+        <span>Código de la app</span>
+        <input type="text" inputmode="numeric" formControlName="codigo" placeholder="000000" class="field__code" maxlength="6" />
+      </label>
+      <button type="submit" class="pms-btn pms-btn--primary auth-submit" [disabled]="cargando()">
+        <span *ngIf="!cargando()">Confirmar y activar</span>
+        <span *ngIf="cargando()">Verificando…</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- Códigos de recuperación -->
+  <div class="pms-card seg-card seg-card--form" *ngIf="paso() === 'totp-codigos'">
+    <div class="seg-card__icon seg-card__icon--green"><app-icon name="shield" [size]="20" color="var(--pms-green)" /></div>
+    <h2>Guarda tus códigos de recuperación</h2>
+    <p class="seg-card__desc">
+      Úsalos si pierdes acceso a tu app autenticadora. Cada uno funciona una sola vez — guárdalos en un lugar seguro,
+      no volverás a verlos.
+    </p>
+
+    <div class="seg-codigos">
+      <div class="seg-codigo" *ngFor="let c of codigosRecuperacion()">{{ c }}</div>
+    </div>
+
+    <button type="button" class="pms-btn pms-btn--primary auth-submit" (click)="terminarConfiguracionTotp()">
+      Ya los guardé
+    </button>
+  </div>
+
+  <!-- Desactivar -->
+  <div class="pms-card seg-card seg-card--form" *ngIf="paso() === 'desactivar'">
+    <h2>Desactivar verificación en dos pasos</h2>
+    <p class="seg-card__desc">Confirma tu contraseña y un código válido para desactivarla.</p>
+
+    <div class="seg-reenvio" *ngIf="dosFaMetodo() === 'correo'">
+      <button type="button" class="pms-btn pms-btn--outline pms-btn--sm" [disabled]="cargandoCodigo() || codigoEnviado()" (click)="solicitarCodigo()">
+        {{ codigoEnviado() ? 'Código enviado ✓' : (cargandoCodigo() ? 'Enviando…' : 'Enviar código a mi correo') }}
+      </button>
+    </div>
+
+    <form [formGroup]="formDesactivar" (ngSubmit)="desactivar()" novalidate>
+      <label class="field">
+        <span>Contraseña</span>
+        <input type="password" formControlName="contrasena" placeholder="••••••••••" autocomplete="current-password" />
+      </label>
+      <label class="field">
+        <span>{{ dosFaMetodo() === 'correo' ? 'Código enviado a tu correo' : 'Código de tu app autenticadora' }}</span>
+        <input type="text" inputmode="numeric" formControlName="codigo" placeholder="000000" class="field__code" maxlength="8" />
+      </label>
+      <button type="submit" class="pms-btn pms-btn--danger auth-submit" [disabled]="cargando()">
+        <span *ngIf="!cargando()">Desactivar</span>
+        <span *ngIf="cargando()">Desactivando…</span>
+      </button>
+    </form>
+  </div>
+</div>

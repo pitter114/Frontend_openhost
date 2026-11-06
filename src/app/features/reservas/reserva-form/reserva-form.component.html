@@ -1,0 +1,157 @@
+<div class="rf-backdrop" (click)="cerrarModal()">
+  <div class="rf-modal" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="rf-modal__head">
+      <div>
+        <h2>Nueva reserva / Confirmación</h2>
+        <p class="rf-sub">
+          <span class="rf-badge-room">{{ habitacion.etiqueta_unidad }}</span>
+          <span class="rf-badge-type">{{ habitacion.tipo_alojamiento }}</span>
+        </p>
+      </div>
+      <button type="button" class="rf-close" (click)="cerrarModal()" title="Cerrar modal">
+        <app-icon name="x" [size]="18" />
+      </button>
+    </div>
+
+    <!-- Banner con foto si existe -->
+    <div class="rf-banner" *ngIf="habitacion.imagen_principal">
+      <img [src]="habitacion.imagen_principal" [alt]="habitacion.etiqueta_unidad" />
+      <div class="rf-banner__tag">
+        <span>S/ {{ habitacion.precio_base }}</span> / noche
+      </div>
+    </div>
+
+    <form [formGroup]="form" class="rf-form">
+      <div class="auth-error" *ngIf="errorGuardar()">
+        <app-icon name="alert" [size]="16" />
+        <span>{{ errorGuardar() }}</span>
+      </div>
+
+      <div class="auth-success-alert" *ngIf="guardadoExitoso()">
+        <app-icon name="shield" [size]="16" color="var(--pms-green)" />
+        <span>¡Reserva registrada con éxito en la base de datos!</span>
+      </div>
+
+      <div class="rf-section-header">
+        <app-icon name="user" [size]="14" />
+        <span>Datos del Huésped</span>
+      </div>
+
+      <div class="field-row">
+        <label class="field">
+          <span>Nombre completo *</span>
+          <input type="text" formControlName="nombreCompleto" placeholder="Ej. Juan Pérez" />
+          <small class="field__error" *ngIf="form.get('nombreCompleto')?.touched && form.get('nombreCompleto')?.invalid">Obligatorio</small>
+        </label>
+        <label class="field">
+          <span>DNI / Pasaporte *</span>
+          <input type="text" formControlName="dni" (blur)="consultarReputacion()" (input)="consultarReputacion()" placeholder="Ej. 12345678" />
+          <small class="field__error" *ngIf="form.get('dni')?.touched && form.get('dni')?.invalid">Obligatorio</small>
+        </label>
+      </div>
+
+      <!-- Alerta Preventiva de Reputación de Huésped (Lista Negra) -->
+      <div class="rep-warning-card" *ngIf="alertaReputacion()">
+        <div class="rep-warning-header">
+          <app-icon name="alert" [size]="18"></app-icon>
+          <strong>{{ alertaReputacion().mensaje_sugerido }}</strong>
+        </div>
+        <div class="rep-warning-body">
+          <p><strong>Detalle:</strong> {{ alertaReputacion().descripcion }}</p>
+          <div class="rep-warning-meta">
+            <span>Fecha del reporte: {{ alertaReputacion().fecha_reporte }}</span>
+            <span *ngIf="alertaReputacion().monto_deuda > 0">Deuda: S/ {{ alertaReputacion().monto_deuda }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="field-row">
+        <label class="field">
+          <span>Celular (solo números) *</span>
+          <input type="tel" formControlName="celular" placeholder="Ej. 984751487" />
+          <small class="field__error" *ngIf="form.get('celular')?.touched && form.get('celular')?.invalid">Número no válido</small>
+        </label>
+        <label class="field">
+          <span>Cant. Huéspedes *</span>
+          <input type="number" formControlName="numHuespedes" min="1" [max]="(habitacion.max_huespedes_base || 1) + (habitacion.max_huespedes_extra || 0)" />
+          <small class="field__hint" *ngIf="habitacion.max_huespedes_base">
+            Base: {{ habitacion.max_huespedes_base }} pers.
+            <span *ngIf="habitacion.costo_huesped_extra && (habitacion.max_huespedes_extra || 0) > 0"> (+S/ {{ habitacion.costo_huesped_extra }}/n. extra)</span>
+          </small>
+        </label>
+      </div>
+
+      <div class="rf-section-header">
+        <app-icon name="calendar" [size]="14" />
+        <span>Fechas de Reserva</span>
+      </div>
+
+      <div class="field-row">
+        <label class="field">
+          <span>Check-in *</span>
+          <input type="date" formControlName="fechaIngreso" />
+        </label>
+        <label class="field">
+          <span>Check-out *</span>
+          <input type="date" formControlName="fechaSalida" />
+          <small class="field__error" *ngIf="form.get('fechaSalida')?.touched && noches() === 0">
+            Debe ser posterior al ingreso
+          </small>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Descuento (%)</span>
+        <input type="number" formControlName="descuento" min="0" max="100" placeholder="0" />
+      </label>
+
+      <!-- Resumen Desglosado -->
+      <div class="rf-resumen">
+        <div class="rf-resumen__title">Resumen de liquidación</div>
+        <div class="rf-resumen__row">
+          <span>{{ noches() }} noche{{ noches() === 1 ? '' : 's' }} × S/ {{ habitacion.precio_base }}</span>
+          <span>S/ {{ noches() * habitacion.precio_base }}</span>
+        </div>
+        <div class="rf-resumen__row rf-resumen__row--extra" *ngIf="extraHuespedesCount() > 0">
+          <span>
+            +{{ extraHuespedesCount() }} huésped{{ extraHuespedesCount() === 1 ? '' : 'es' }} extra
+            <small>(S/ {{ costoHuespedExtra() }}/n. × {{ noches() }} n.)</small>
+          </span>
+          <span>+S/ {{ costoExtraTotal() }}</span>
+        </div>
+        <div class="rf-resumen__row rf-resumen__row--discount" *ngIf="form.get('descuento')?.value">
+          <span>Descuento ({{ form.get('descuento')?.value }}%)</span>
+          <span>−S/ {{ subtotal() - totalConDescuento() }}</span>
+        </div>
+        <div class="rf-resumen__total">
+          <span>Total Final</span>
+          <span class="rf-total-val">S/ {{ totalConDescuento() }}</span>
+        </div>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="rf-actions">
+        <button type="button" class="pms-btn pms-btn--primary rf-btn-main" [disabled]="guardando()" (click)="guardarReserva()">
+          <app-icon name="check" [size]="16" />
+          {{ guardando() ? 'Guardando reserva…' : 'Confirmar y Guardar Reserva' }}
+        </button>
+
+        <div class="rf-actions-row">
+          <button type="button" class="pms-btn pms-btn--outline btn-wa" (click)="enviarBoletaWhatsapp()">
+            <app-icon name="message-square" [size]="15" />
+            Enviar por WhatsApp
+          </button>
+          <button type="button" class="pms-btn pms-btn--outline btn-link" (click)="generarLinkCliente()">
+            <app-icon name="file" [size]="15" />
+            {{ linkCopiado() ? '¡Link Copiado!' : 'Copiar Link' }}
+          </button>
+        </div>
+      </div>
+
+      <p class="rf-hint">
+        Al confirmar, la reserva se sincroniza en vivo con la tabla de reservas, el calendario y la vista de Check-in.
+      </p>
+    </form>
+  </div>
+</div>

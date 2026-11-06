@@ -1,0 +1,60 @@
+<div class="rf-backdrop" (click)="cerrarModal()">
+  <div class="rf-modal" (click)="$event.stopPropagation()">
+    <div class="rf-modal__head">
+      <div>
+        <h2>Registra tu propiedad</h2>
+        <p>Antes de crear habitaciones, necesitamos saber dónde está tu propiedad</p>
+      </div>
+      <button type="button" class="rf-close" (click)="cerrarModal()">
+        <app-icon name="x" [size]="18" />
+      </button>
+    </div>
+
+    <div class="auth-error" *ngIf="error()">
+      <app-icon name="alert" [size]="16" />
+      <span>{{ error() }}</span>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="rf-form" novalidate>
+      <div class="field-row">
+        <label class="field">
+          <span>Tipo de propiedad</span>
+          <select formControlName="tipo_establecimiento_id">
+            <option [ngValue]="null" disabled>Selecciona...</option>
+            <option *ngFor="let t of tiposEstablecimiento()" [ngValue]="t.id">{{ t.nombre }}</option>
+          </select>
+        </label>
+        <label class="field">
+          <span>Nombre de la propiedad</span>
+          <input type="text" formControlName="nombre" placeholder="Hotel Pedro" />
+          <small class="field__error" *ngIf="form.get('nombre')?.touched && form.get('nombre')?.invalid">Obligatorio</small>
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Descripción (opcional)</span>
+        <input type="text" formControlName="descripcion_establecimiento" placeholder="Breve descripción de tu propiedad" />
+      </label>
+
+      <label class="field">
+        <span>Ciudad</span>
+        <select formControlName="ciudad_id">
+          <option [ngValue]="null" disabled>Selecciona...</option>
+          <option *ngFor="let c of ciudades()" [ngValue]="c.id">{{ c.nombre }}</option>
+        </select>
+        <small class="field__error" *ngIf="form.get('ciudad_id')?.touched && form.get('ciudad_id')?.invalid">Obligatorio</small>
+      </label>
+
+      <label class="field">
+        <span>Dirección</span>
+        <input type="text" formControlName="texto_direccion" placeholder="Av. Principal 123, Mollendo" />
+        <small class="field__error" *ngIf="form.get('texto_direccion')?.touched && form.get('texto_direccion')?.invalid">Obligatorio</small>
+      </label>
+
+      <button type="submit" class="pms-btn pms-btn--primary rf-submit" [disabled]="cargando()">
+        <span *ngIf="!cargando()">Registrar propiedad</span>
+        <span *ngIf="cargando()">Registrando…</span>
+      </button>
+    </form>
+  </div>
+</div>

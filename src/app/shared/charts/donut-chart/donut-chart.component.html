@@ -1,0 +1,15 @@
+<svg [attr.width]="size" [attr.height]="size" [attr.viewBox]="'0 0 ' + size + ' ' + size">
+  <g [attr.transform]="'rotate(-90 ' + size / 2 + ' ' + size / 2 + ')'">
+    <circle
+      *ngFor="let seg of segments; let i = index"
+      [attr.cx]="size / 2"
+      [attr.cy]="size / 2"
+      [attr.r]="radius"
+      fill="none"
+      [attr.stroke]="seg.color"
+      [attr.stroke-width]="strokeWidth"
+      [attr.stroke-dasharray]="dashArray(seg.pct)"
+      [attr.stroke-dashoffset]="offsetFor(i)"
+    />
+  </g>
+</svg>

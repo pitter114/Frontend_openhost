@@ -1,0 +1,96 @@
+<div class="pms-page">
+  <div class="pms-page-header">
+    <h1>Panel de control global</h1>
+    <p>Vista consolidada de toda la plataforma en tiempo real</p>
+  </div>
+
+  <div class="pms-grid kpi-row">
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__icon" style="background:#e9efff;color:#3b6bf6"><app-icon name="building" [size]="17" /></div>
+      <div class="kpi-card__value">{{ data.resumenGlobal.totalHoteles }}</div>
+      <div class="kpi-card__label">Total Hoteles</div>
+    </div>
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__icon" style="background:#e9f9ef;color:#17a34a"><app-icon name="shield" [size]="17" /></div>
+      <div class="kpi-card__value">{{ data.resumenGlobal.hotelesActivos }}</div>
+      <div class="kpi-card__label">Hoteles Activos</div>
+    </div>
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__icon" style="background:#f2edfe;color:#8b5cf6"><app-icon name="grid" [size]="17" /></div>
+      <div class="kpi-card__value">{{ data.resumenGlobal.totalHabitaciones }}</div>
+      <div class="kpi-card__label">Total Habitaciones</div>
+    </div>
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__top">
+        <div class="kpi-card__icon" style="background:#fdf3e0;color:#f2a30f"><app-icon name="book" [size]="17" /></div>
+        <span class="kpi-card__change">↑ {{ data.resumenGlobal.reservasCrecPct }} %</span>
+      </div>
+      <div class="kpi-card__value">{{ data.resumenGlobal.reservasTotales }}</div>
+      <div class="kpi-card__label">Reservas totales</div>
+    </div>
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__icon" style="background:#e4f7fa;color:#0ea5b7"><app-icon name="users" [size]="17" /></div>
+      <div class="kpi-card__value">{{ data.resumenGlobal.clientesRegistrados }}</div>
+      <div class="kpi-card__label">Clientes Registrados</div>
+    </div>
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__top">
+        <div class="kpi-card__icon" style="background:#e9f9ef;color:#17a34a"><app-icon name="chart" [size]="17" /></div>
+        <span class="kpi-card__change">↑ {{ data.resumenGlobal.ingresosCrecPct }} %</span>
+      </div>
+      <div class="kpi-card__value">S/ {{ data.resumenGlobal.ingresosTotales.toLocaleString('es-PE') }}</div>
+      <div class="kpi-card__label">Ingresos Totales</div>
+    </div>
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__top">
+        <div class="kpi-card__icon" style="background:#fdf3e0;color:#f2a30f"><app-icon name="dollar" [size]="17" /></div>
+        <span class="kpi-card__change">↑ {{ data.resumenGlobal.comisionesCrecPct }} %</span>
+      </div>
+      <div class="kpi-card__value">S/ {{ data.resumenGlobal.comisionesPlataforma.toLocaleString('es-PE') }}</div>
+      <div class="kpi-card__label">Comisiones Plataforma</div>
+    </div>
+  </div>
+
+  <div class="pms-grid two-col">
+    <div class="pms-card chart-card">
+      <h3>Comisiones por Hotel</h3>
+      <p class="chart-card__sub">Comisión estimada sobre reservas de motor web</p>
+      <app-bar-chart [labels]="comisionPorHotelLabels" [series]="comisionPorHotelSeries" [height]="230"></app-bar-chart>
+    </div>
+    <div class="pms-card chart-card">
+      <h3>Evolución Comisiones</h3>
+      <p class="chart-card__sub">Crecimiento mensual acumulado</p>
+      <app-area-chart [labels]="evolucionLabels" [series]="evolucionSeries" [height]="230"></app-area-chart>
+    </div>
+  </div>
+
+  <div class="pms-card">
+    <div class="table-head"><h3>Resumen por Hotel Registrado</h3></div>
+    <table class="pms-table">
+      <thead>
+        <tr>
+          <th>Hotel</th>
+          <th>Ciudad</th>
+          <th>Habitaciones</th>
+          <th>Ocupación Estimada</th>
+          <th>Reservas</th>
+          <th>Ingresos</th>
+          <th>Comisión Estimada</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let h of data.hoteles">
+          <td><b>{{ h.nombre }}</b></td>
+          <td>{{ h.ciudad }}, {{ h.pais }}</td>
+          <td>{{ h.habitaciones }}</td>
+          <td>{{ h.ocupacion }} %</td>
+          <td>{{ h.reservas }}</td>
+          <td>S/ {{ h.ingresos.toLocaleString('es-PE') }}</td>
+          <td class="comision-cell">S/ {{ h.comision.toLocaleString('es-PE') }}</td>
+          <td><span class="pms-badge" [ngClass]="h.estado === 'Activo' ? 'pms-badge--green' : 'pms-badge--amber'">{{ h.estado }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

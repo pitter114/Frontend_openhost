@@ -1,0 +1,183 @@
+<div class="pms-page pms-page--wide">
+  <div class="pms-page-header pms-page-header--flex">
+    <div>
+      <h1>Liquidaciones & Comisiones SaaS</h1>
+      <p>Facturación periódica de suscripciones fijas y comisiones por reservas procesadas</p>
+    </div>
+    <button type="button" class="pms-btn pms-btn--primary" (click)="generarLiquidacionesMes()">
+      <app-icon name="sparkles" [size]="16" />
+      <span>Generar Liquidaciones del Mes</span>
+    </button>
+  </div>
+
+  <!-- KPI Row -->
+  <div class="pms-grid kpi-row">
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__top">
+        <div class="kpi-card__icon" style="background:#e9efff;color:#3b6bf6"><app-icon name="chart" [size]="17" /></div>
+        <span class="kpi-card__change">↑ 14 %</span>
+      </div>
+      <div class="kpi-card__value">S/ {{ data.resumenGlobal.ingresosTotales | number:'1.2-2' }}</div>
+      <div class="kpi-card__label">Ingresos Brutos Hoteles</div>
+    </div>
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__top">
+        <div class="kpi-card__icon" style="background:#fdf3e0;color:#f2870f"><app-icon name="dollar" [size]="17" /></div>
+        <span class="kpi-card__change">↑ 14 %</span>
+      </div>
+      <div class="kpi-card__value">S/ {{ data.resumenGlobal.comisionesPlataforma | number:'1.2-2' }}</div>
+      <div class="kpi-card__label">Comisión Plataforma</div>
+    </div>
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__icon" style="background:#e9f9ef;color:#17a34a"><app-icon name="building" [size]="17" /></div>
+      <div class="kpi-card__value">S/ {{ (data.resumenGlobal.ingresosTotales - data.resumenGlobal.comisionesPlataforma) | number:'1.2-2' }}</div>
+      <div class="kpi-card__label">Neto para Hoteles</div>
+    </div>
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__icon" style="background:#f2edfe;color:#8b5cf6"><app-icon name="sparkles" [size]="17" /></div>
+      <div class="kpi-card__value">{{ data.tasaComisionPct }}%</div>
+      <div class="kpi-card__label">Tasa Promedio Plataforma</div>
+    </div>
+  </div>
+
+  <!-- Tabla de Liquidaciones Mensuales SaaS -->
+  <div class="pms-card liquidaciones-section">
+    <div class="section-header">
+      <div>
+        <h2>Liquidaciones Mensuales Emitidas</h2>
+        <p class="section-sub">Cobro de cuota mensual de software + comisiones variables por hotel</p>
+      </div>
+
+      <div class="filtros-estado">
+        <button
+          type="button"
+          class="pms-btn pms-btn--sm"
+          [class.pms-btn--primary]="filtroEstado() === 'todas'"
+          [class.pms-btn--outline]="filtroEstado() !== 'todas'"
+          (click)="filtroEstado.set('todas')"
+        >
+          Todas
+        </button>
+        <button
+          type="button"
+          class="pms-btn pms-btn--sm"
+          [class.pms-btn--primary]="filtroEstado() === 'Pendiente'"
+          [class.pms-btn--outline]="filtroEstado() !== 'Pendiente'"
+          (click)="filtroEstado.set('Pendiente')"
+        >
+          Pendientes
+        </button>
+        <button
+          type="button"
+          class="pms-btn pms-btn--sm"
+          [class.pms-btn--primary]="filtroEstado() === 'Pagada'"
+          [class.pms-btn--outline]="filtroEstado() !== 'Pagada'"
+          (click)="filtroEstado.set('Pagada')"
+        >
+          Pagadas
+        </button>
+      </div>
+    </div>
+
+    <table class="pms-table" *ngIf="!cargandoLiquidaciones() && liquidacionesFiltradas.length > 0">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Hotel Cliente</th>
+          <th>Período</th>
+          <th>Plan Base</th>
+          <th>Reservas Web</th>
+          <th>Comisión (%)</th>
+          <th>Total a Liquidar</th>
+          <th>Estado</th>
+          <th class="text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let l of liquidacionesFiltradas">
+          <td>
+            <span class="code-pill">{{ l.codigo }}</span>
+          </td>
+          <td>
+            <div class="hotel-info">
+              <strong>{{ l.hotel_nombre }}</strong>
+              <small>{{ l.hotel_ruc || 'RUC no reg.' }}</small>
+            </div>
+          </td>
+          <td>{{ l.periodo }}</td>
+          <td>
+            <span class="plan-tag">{{ l.plan_nombre }}</span>
+            <small class="d-block text-muted">S/ {{ l.cuota_plan | number:'1.2-2' }}</small>
+          </td>
+          <td>
+            <span>{{ l.reservas_procesadas }} reservas</span>
+            <small class="d-block text-muted">Vol. S/ {{ l.volumen_reservas | number:'1.0-0' }}</small>
+          </td>
+          <td>
+            <span class="comision-tag">{{ l.comision_pct }}%</span>
+            <small class="d-block text-muted">S/ {{ l.monto_comision | number:'1.2-2' }}</small>
+          </td>
+          <td>
+            <strong class="total-monto">S/ {{ l.total | number:'1.2-2' }}</strong>
+          </td>
+          <td>
+            <span
+              class="pms-badge"
+              [class.pms-badge--green]="l.estado === 'Pagada'"
+              [class.pms-badge--amber]="l.estado === 'Pendiente'"
+              [class.pms-badge--red]="l.estado === 'En Mora'"
+            >
+              {{ l.estado }}
+            </span>
+          </td>
+          <td>
+            <div class="acciones-cell">
+              <!-- Botón Imprimir / PDF -->
+              <button
+                type="button"
+                class="pms-btn pms-btn--outline pms-btn--sm"
+                (click)="imprimirLiquidacionPdf(l)"
+                title="Descargar o imprimir liquidación en PDF"
+              >
+                <app-icon name="book" [size]="14" />
+                <span>PDF Factura</span>
+              </button>
+
+              <!-- Botón Marcar Pagada si está pendiente -->
+              <button
+                *ngIf="l.estado !== 'Pagada'"
+                type="button"
+                class="pms-btn pms-btn--primary pms-btn--sm"
+                [disabled]="procesandoId() === l.liquidacion_id"
+                (click)="marcarPagada(l)"
+                title="Registrar comprobante como pagado"
+              >
+                <span>{{ procesandoId() === l.liquidacion_id ? '...' : 'Marcar Pagada' }}</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="!cargandoLiquidaciones() && liquidacionesFiltradas.length === 0" class="tabla-vacia">
+      No hay liquidaciones en este filtro. Puedes pulsar <strong>"Generar Liquidaciones del Mes"</strong> para calcular el período actual.
+    </div>
+  </div>
+
+  <!-- Gráficos Analíticos -->
+  <div class="pms-grid two-col">
+    <div class="pms-card chart-card">
+      <h3>Comisión por Hotel (Acumulado)</h3>
+      <app-hbar-list [items]="comisionPorHotelItems"></app-hbar-list>
+    </div>
+    <div class="pms-card chart-card">
+      <h3>Histórico de Facturación & Comisiones</h3>
+      <div class="chart-card__legend">
+        <span><i style="background:#3b6bf6"></i>Ingreso Bruto</span>
+        <span><i style="background:#f2870f"></i>Comisión</span>
+      </div>
+      <app-bar-chart [labels]="labels" [series]="comisionesPorMesSeries" [height]="220"></app-bar-chart>
+    </div>
+  </div>
+</div>

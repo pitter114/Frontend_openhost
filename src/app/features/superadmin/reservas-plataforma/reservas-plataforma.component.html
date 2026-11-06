@@ -1,0 +1,50 @@
+<div class="pms-page pms-page--wide">
+  <div class="pms-page-header">
+    <h1>Reservas Generadas por Plataforma</h1>
+    <p>Flujo consolidado de reservas de todos los hoteles afiliados</p>
+  </div>
+
+  <div class="pms-grid summary-row">
+    <div class="pms-card summary-card">
+      <div class="summary-card__value summary-card__value--blue">{{ data.reservasPlataforma.length }}</div>
+      <div class="summary-card__label">Reservas Totales</div>
+    </div>
+    <div class="pms-card summary-card">
+      <div class="summary-card__value summary-card__value--orange">S/ {{ comisionesGeneradas.toLocaleString('es-PE') }}</div>
+      <div class="summary-card__label">Comisiones Plataforma (10%)</div>
+    </div>
+    <div class="pms-card summary-card">
+      <div class="summary-card__value summary-card__value--green">S/ {{ netoHoteles.toLocaleString('es-PE') }}</div>
+      <div class="summary-card__label">Neto para Hoteles</div>
+    </div>
+  </div>
+
+  <div class="pms-card">
+    <table class="pms-table">
+      <thead>
+        <tr>
+          <th>Hotel</th>
+          <th>Huésped</th>
+          <th>Habitación</th>
+          <th>Total Reserva</th>
+          <th>Comisión Estimada</th>
+          <th>Neto Hotel</th>
+          <th>Estado</th>
+          <th>Canal de Origen</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of data.reservasPlataforma">
+          <td><b>{{ r.hotel }}</b></td>
+          <td>{{ r.cliente }}</td>
+          <td><span class="pms-badge pms-badge--muted">{{ r.habitacion }}</span></td>
+          <td>S/ {{ r.total.toLocaleString('es-PE') }}</td>
+          <td class="comision-cell">S/ {{ r.comision.toLocaleString('es-PE') }}</td>
+          <td class="neto-cell">S/ {{ r.neto.toLocaleString('es-PE') }}</td>
+          <td><span class="pms-badge" [ngClass]="'pms-badge--' + estadoClass(r.estado)">{{ r.estado }}</span></td>
+          <td><span class="canal-cell">{{ r.canal }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

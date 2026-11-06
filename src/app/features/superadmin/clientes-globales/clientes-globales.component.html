@@ -1,0 +1,45 @@
+<div class="pms-page pms-page--wide">
+  <div class="pms-page-header">
+    <h1>Base Global de Huéspedes</h1>
+    <p>Buscador inteligente — todos los hoteles de la plataforma</p>
+  </div>
+
+  <div class="pms-search search-wide">
+    <app-icon name="search" [size]="15" />
+    <input type="text" placeholder="Buscar por nombre, apellidos, DNI, teléfono, correo electrónico..." [(ngModel)]="search" />
+  </div>
+
+  <div class="pms-card">
+    <table class="pms-table">
+      <thead>
+        <tr>
+          <th>Cliente</th>
+          <th>DNI</th>
+          <th>Teléfono</th>
+          <th>Correo electrónico</th>
+          <th>Hoteles</th>
+          <th>Estadías</th>
+          <th>Última Reserva</th>
+          <th>Nivel</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of filtered">
+          <td>
+            <div class="cliente-cell">
+              <span class="avatar">{{ initials(c.nombre) }}</span>
+              {{ c.nombre }}
+            </div>
+          </td>
+          <td>{{ c.documento }}</td>
+          <td>{{ c.telefono }}</td>
+          <td>{{ c.correo }}</td>
+          <td>{{ c.hotel || 'Hotel Afiliado' }}</td>
+          <td><b>{{ c.estadias }}</b></td>
+          <td>{{ c.ultimaReserva }}</td>
+          <td><span class="pms-badge" [ngClass]="'pms-badge--' + nivelClass(c.nivel)">{{ c.nivel === 'VIP' ? '★ VIP' : c.nivel }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>

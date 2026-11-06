@@ -1,0 +1,250 @@
+<div class="pasarelas-container">
+  <!-- Header -->
+  <header class="section-header">
+    <div class="header-titles">
+      <div class="header-badge">
+        <app-icon name="card" [size]="14"></app-icon>
+        <span>SaaS Finanzas & Pasarelas</span>
+      </div>
+      <h2>Pasarelas de Pago Globales & Mercado Pago</h2>
+      <p>Configure los métodos de cobro en línea en Soles (S/) para los motores de reserva y cobros automáticos de la plataforma.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" (click)="cargarPasarelas()">
+        <app-icon name="sparkles" [size]="16"></app-icon>
+        <span>Refrescar</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Métricas Rápidas -->
+  <section class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon blue">
+        <app-icon name="dollar" [size]="22"></app-icon>
+      </div>
+      <div class="metric-info">
+        <span class="label">Volumen Total Procesado</span>
+        <strong class="value">S/ {{ estadisticas.monto_total | number:'1.2-2' }}</strong>
+        <span class="subtext">Vía Mercado Pago Checkout</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon green">
+        <app-icon name="check" [size]="22"></app-icon>
+      </div>
+      <div class="metric-info">
+        <span class="label">Transacciones Aprobadas</span>
+        <strong class="value">{{ estadisticas.transacciones_aprobadas }}</strong>
+        <span class="subtext">Reservas cobradas al 100%</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon amber">
+        <app-icon name="clock" [size]="22"></app-icon>
+      </div>
+      <div class="metric-info">
+        <span class="label">Transacciones Pendientes</span>
+        <strong class="value">{{ estadisticas.transacciones_pendientes }}</strong>
+        <span class="subtext">En espera de pago / IPN</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon purple">
+        <app-icon name="shield" [size]="22"></app-icon>
+      </div>
+      <div class="metric-info">
+        <span class="label">Estado de la Pasarela</span>
+        <strong class="value" [class.text-success]="mpConfig.activo" [class.text-muted]="!mpConfig.activo">
+          {{ mpConfig.activo ? (mpConfig.sandbox ? 'Sandbox (Test)' : 'Producción (Live)') : 'Inactiva' }}
+        </strong>
+        <span class="subtext">Moneda por defecto: PEN (S/)</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tarjeta Principal Mercado Pago -->
+  <div class="gateway-card featured">
+    <div class="gateway-header">
+      <div class="gateway-brand">
+        <div class="mp-logo-badge">
+          <span class="mp-symbol">⚡</span>
+          <span class="mp-text">mercado pago</span>
+        </div>
+        <div class="brand-text">
+          <h3>Mercado Pago Checkout Pro & API</h3>
+          <p>Acepta tarjetas de crédito/débito (Visa, Mastercard, Diners, Amex), billeteras digitales (Yape, Plin) y efectivo vía PagoEfectivo.</p>
+        </div>
+      </div>
+      <div class="gateway-status-pill" [class.active]="mpConfig.activo">
+        <span class="status-dot"></span>
+        <span>{{ mpConfig.activo ? 'Pasarela Operativa' : 'Desactivada' }}</span>
+      </div>
+    </div>
+
+    <div class="gateway-body">
+      <div class="form-grid-2">
+        <!-- Modo Entorno -->
+        <div class="form-group">
+          <label>Modo de Ejecución</label>
+          <div class="mode-selector">
+            <label class="mode-pill" [class.selected]="mpConfig.sandbox">
+              <input type="radio" [value]="true" [(ngModel)]="mpConfig.sandbox" name="sandboxMode" />
+              <span>🛠️ Sandbox (Modo Pruebas)</span>
+            </label>
+            <label class="mode-pill" [class.selected]="!mpConfig.sandbox">
+              <input type="radio" [value]="false" [(ngModel)]="mpConfig.sandbox" name="sandboxMode" />
+              <span>🚀 Producción (Pagos Reales)</span>
+            </label>
+          </div>
+          <span class="help-text">En Sandbox puedes usar tarjetas ficticias provistas por Mercado Pago Developers.</span>
+        </div>
+
+        <!-- Habilitar Pasarela -->
+        <div class="form-group">
+          <label>Disponibilidad en la Plataforma</label>
+          <div class="toggle-control">
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="mpConfig.activo" />
+              <span class="slider round"></span>
+            </label>
+            <span class="toggle-label">{{ mpConfig.activo ? 'Habilitada para todos los hoteles' : 'Oculta en reservas' }}</span>
+          </div>
+        </div>
+
+        <!-- Public Key -->
+        <div class="form-group">
+          <label>Public Key (Clave Pública)</label>
+          <input
+            type="text"
+            class="pms-input"
+            [(ngModel)]="mpConfig.public_key"
+            placeholder="Ej: TEST-74938210-9832-4729-bb43..."
+          />
+          <span class="help-text">Utilizada por el frontend para inicializar el SDK y generar preferencias.</span>
+        </div>
+
+        <!-- Access Token -->
+        <div class="form-group">
+          <label>Access Token (Token de Acceso Privado)</label>
+          <div class="input-with-button">
+            <input
+              [type]="mostrarToken() ? 'text' : 'password'"
+              class="pms-input"
+              [(ngModel)]="mpConfig.access_token"
+              placeholder="Ej: TEST-829104819283-091823..."
+            />
+            <button class="btn-input-action" type="button" (click)="toggleMostrarToken()">
+              <app-icon [name]="mostrarToken() ? 'eye' : 'lock'" [size]="16"></app-icon>
+            </button>
+          </div>
+          <span class="help-text">Token secreto para comunicación servidor a servidor con la API de Mercado Pago.</span>
+        </div>
+
+        <!-- Webhook URL -->
+        <div class="form-group full-width">
+          <label>URL de Notificaciones Webhook (IPN)</label>
+          <div class="input-with-button">
+            <input
+              type="text"
+              class="pms-input readonly-input"
+              [(ngModel)]="mpConfig.webhook_url"
+              readonly
+            />
+            <button class="btn btn-outline btn-sm" type="button" (click)="copiarWebhook()">
+              <app-icon [name]="copiadoWebhook() ? 'check' : 'file'" [size]="14"></app-icon>
+              <span>{{ copiadoWebhook() ? '¡Copiado!' : 'Copiar URL' }}</span>
+            </button>
+          </div>
+          <span class="help-text">Pega esta URL en la consola de Mercado Pago Developers para recibir confirmación instantánea de pagos.</span>
+        </div>
+
+        <!-- Opciones Avanzadas -->
+        <div class="form-group full-width checkbox-row">
+          <label class="checkbox-container">
+            <input type="checkbox" [(ngModel)]="mpConfig.auto_confirmar_reserva" />
+            <span class="checkmark"></span>
+            <span class="label-text">Confirmar automáticamente la reserva y enviar notificación al hotel cuando el pago sea aprobado por Mercado Pago.</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Alerta de prueba de conexión -->
+      @if (testResultado()) {
+        <div class="test-alert" [class.success]="testResultado()?.ok" [class.error]="!testResultado()?.ok">
+          <app-icon [name]="testResultado()?.ok ? 'check' : 'alert'" [size]="18"></app-icon>
+          <div class="test-text">
+            <strong>{{ testResultado()?.ok ? '¡Conexión Exitosa!' : 'Fallo de Conexión' }}</strong>
+            <p>{{ testResultado()?.message }}</p>
+            @if (testResultado()?.nickname) {
+              <small>Cuenta vinculada: <strong>{{ testResultado()?.nickname }}</strong></small>
+            }
+          </div>
+        </div>
+      }
+
+      <!-- Acciones de Pie -->
+      <div class="gateway-actions">
+        <button
+          class="btn btn-secondary"
+          [disabled]="probandoMp() || !mpConfig.access_token"
+          (click)="probarConexion()"
+        >
+          <app-icon name="sparkles" [size]="16"></app-icon>
+          <span>{{ probandoMp() ? 'Probando conexión...' : 'Probar Conexión con Mercado Pago' }}</span>
+        </button>
+
+        <button
+          class="btn btn-primary"
+          [disabled]="guardandoMp()"
+          (click)="guardarMercadoPago()"
+        >
+          <app-icon name="check" [size]="16"></app-icon>
+          <span>{{ guardandoMp() ? 'Guardando...' : 'Guardar Credenciales' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pasarelas Secundarias -->
+  <div class="secondary-gateways-grid">
+    <!-- Culqi -->
+    <div class="secondary-card">
+      <div class="secondary-header">
+        <div class="secondary-brand">
+          <span class="brand-icon orange">💳</span>
+          <div>
+            <h4>Culqi (Perú)</h4>
+            <span class="sub">Pasarela alternativa para tarjetas locales</span>
+          </div>
+        </div>
+        <span class="badge badge-neutral">En Espera</span>
+      </div>
+      <p class="secondary-desc">Permite procesar tarjetas nacionales peruanas con bajas comisiones directas. Puedes activarla como respaldo a Mercado Pago.</p>
+      <div class="secondary-footer">
+        <span class="status-note">Listo para activar cuando requieras doble proveedor.</span>
+      </div>
+    </div>
+
+    <!-- Pagos Presenciales / En Recepción -->
+    <div class="secondary-card">
+      <div class="secondary-header">
+        <div class="secondary-brand">
+          <span class="brand-icon green">🏨</span>
+          <div>
+            <h4>Pago en Hotel / Check-In</h4>
+            <span class="sub">Efectivo, POS Físico o Yape directo en counter</span>
+          </div>
+        </div>
+        <span class="badge badge-success">Activo Siempre</span>
+      </div>
+      <p class="secondary-desc">Permite a los huéspedes reservar sin pagar de inmediato en línea y abonar el monto durante el check-in en recepción.</p>
+      <div class="secondary-footer">
+        <span class="status-note">Disponible en todas las reservas directas.</span>
+      </div>
+    </div>
+  </div>
+</div>

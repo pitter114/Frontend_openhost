@@ -1,0 +1,200 @@
+<div class="pms-page pms-page--wide">
+  <!-- Encabezado Principal -->
+  <div class="pms-page-header pms-page-header--flex">
+    <div>
+      <h1>Planes SaaS & Suscripciones</h1>
+      <p>Gestión de tarifas, límites de habitaciones y monetización de la plataforma hotelera</p>
+    </div>
+    <button type="button" class="pms-btn pms-btn--primary" (click)="abrirCrear()">
+      <app-icon name="plus" [size]="16" />
+      <span>Nuevo Plan SaaS</span>
+    </button>
+  </div>
+
+  <!-- Métricas Rápidas de Facturación SaaS -->
+  <div class="saas-metrics-grid">
+    <div class="saas-metric-card">
+      <div class="saas-metric-card__header">
+        <span class="saas-metric-card__title">MRR Estimado (Mensual)</span>
+        <div class="saas-metric-card__icon saas-metric-card__icon--green">
+          <app-icon name="dollar" [size]="18" />
+        </div>
+      </div>
+      <div class="saas-metric-card__val">S/ {{ mrrTotal() | number:'1.2-2' }}</div>
+      <div class="saas-metric-card__sub">Ingreso recurrente activo de suscripciones</div>
+    </div>
+
+    <div class="saas-metric-card">
+      <div class="saas-metric-card__header">
+        <span class="saas-metric-card__title">Hoteles en Planes</span>
+        <div class="saas-metric-card__icon saas-metric-card__icon--blue">
+          <app-icon name="building" [size]="18" />
+        </div>
+      </div>
+      <div class="saas-metric-card__val">{{ hotelesTotales() }} Hoteles</div>
+      <div class="saas-metric-card__sub">Distribuidos en los diferentes niveles</div>
+    </div>
+
+    <div class="saas-metric-card">
+      <div class="saas-metric-card__header">
+        <span class="saas-metric-card__title">Planes Activos</span>
+        <div class="saas-metric-card__icon saas-metric-card__icon--purple">
+          <app-icon name="card" [size]="18" />
+        </div>
+      </div>
+      <div class="saas-metric-card__val">{{ planes().length }} Planes</div>
+      <div class="saas-metric-card__sub">Disponibles para asignación a clientes</div>
+    </div>
+  </div>
+
+  <!-- Grid de Planes SaaS -->
+  <div class="planes-grid">
+    <div
+      *ngFor="let p of planes()"
+      class="plan-card"
+      [class.plan-card--inactive]="!p.activo"
+      [class.plan-card--popular]="p.nombre.includes('Pro')"
+    >
+      <div class="plan-card__badge" *ngIf="p.nombre.includes('Pro')">
+        ⭐ MÁS POPULAR
+      </div>
+
+      <div class="plan-card__header">
+        <div class="plan-card__title-row">
+          <h2 class="plan-card__name">{{ p.nombre }}</h2>
+          <span class="plan-card__status" [class.plan-card__status--active]="p.activo">
+            {{ p.activo ? 'Activo' : 'Pausado' }}
+          </span>
+        </div>
+        <p class="plan-card__desc">{{ p.descripcion }}</p>
+
+        <div class="plan-card__price">
+          <span class="currency">S/</span>
+          <span class="amount">{{ p.precio | number:'1.0-0' }}</span>
+          <span class="period">/ mes</span>
+        </div>
+      </div>
+
+      <div class="plan-card__limits">
+        <div class="limit-item">
+          <app-icon name="door" [size]="15" />
+          <span>Máximo <strong>{{ p.max_habitaciones >= 999 ? 'Ilimitadas' : (p.max_habitaciones + ' habitaciones') }}</strong></span>
+        </div>
+        <div class="limit-item">
+          <app-icon name="building" [size]="15" />
+          <span>Hasta <strong>{{ p.max_edificios >= 99 ? 'Ilimitados' : (p.max_edificios + ' edificio(s)') }}</strong></span>
+        </div>
+      </div>
+
+      <!-- Módulos Incluidos -->
+      <div class="plan-card__modules">
+        <div class="module-chip" [class.module-chip--active]="p.permite_limpieza">
+          <span class="dot"></span> Limpieza
+        </div>
+        <div class="module-chip" [class.module-chip--active]="p.permite_mantenimiento">
+          <span class="dot"></span> Mantenimiento
+        </div>
+        <div class="module-chip" [class.module-chip--active]="p.permite_inventario">
+          <span class="dot"></span> Inventario
+        </div>
+      </div>
+
+      <!-- Hoteles Suscritos -->
+      <div class="plan-card__meta">
+        <span class="subscriber-pill">
+          <app-icon name="users" [size]="14" />
+          {{ p.hoteles_suscritos ?? 0 }} hoteles suscritos
+        </span>
+      </div>
+
+      <!-- Acciones del Plan -->
+      <div class="plan-card__actions">
+        <button type="button" class="pms-btn pms-btn--outline pms-btn--sm" (click)="abrirEditar(p)">
+          <app-icon name="edit" [size]="14" />
+          <span>Configurar</span>
+        </button>
+        <button
+          type="button"
+          class="pms-btn pms-btn--sm"
+          [class.pms-btn--danger]="p.activo"
+          [class.pms-btn--primary]="!p.activo"
+          (click)="alternarEstado(p)"
+        >
+          <span>{{ p.activo ? 'Desactivar' : 'Activar' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Crear / Editar Plan SaaS -->
+  <div class="modal-backdrop" *ngIf="mostrarModal()" (click)="cerrarModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>{{ editandoPlanId() ? 'Configurar Plan SaaS' : 'Nuevo Plan de Suscripción' }}</h3>
+        <button type="button" class="modal-close" (click)="cerrarModal()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group form-group--full">
+            <label>Nombre del Plan</label>
+            <input type="text" class="pms-input" [(ngModel)]="form.nombre" placeholder="Ej. Starter Hotel, Pro Hotel & Resort" />
+          </div>
+
+          <div class="form-group">
+            <label>Precio Mensual (S/)</label>
+            <input type="number" class="pms-input" [(ngModel)]="form.precio" min="0" step="1" />
+          </div>
+
+          <div class="form-group">
+            <label>Comisión Plataforma (%)</label>
+            <input type="number" class="pms-input" [(ngModel)]="form.comision_pct" min="0" max="100" step="0.5" />
+          </div>
+
+          <div class="form-group">
+            <label>Límite Habitaciones</label>
+            <input type="number" class="pms-input" [(ngModel)]="form.max_habitaciones" min="1" />
+            <small class="form-hint">Usa 999 para ilimitadas</small>
+          </div>
+
+          <div class="form-group">
+            <label>Límite Edificios / Sedes</label>
+            <input type="number" class="pms-input" [(ngModel)]="form.max_edificios" min="1" />
+            <small class="form-hint">Usa 99 para ilimitados</small>
+          </div>
+
+          <div class="form-group form-group--full">
+            <label>Descripción Comercial</label>
+            <textarea class="pms-input" rows="2" [(ngModel)]="form.descripcion" placeholder="Para quién está pensado este plan..."></textarea>
+          </div>
+
+          <!-- Módulos Habilitados -->
+          <div class="form-group form-group--full">
+            <label class="modules-title">Módulos Incluidos en este Plan</label>
+            <div class="checkbox-row">
+              <label class="pms-checkbox-label">
+                <input type="checkbox" [(ngModel)]="form.permite_limpieza" />
+                <span>Módulo de Limpieza (Housekeeping)</span>
+              </label>
+              <label class="pms-checkbox-label">
+                <input type="checkbox" [(ngModel)]="form.permite_mantenimiento" />
+                <span>Módulo de Mantenimiento</span>
+              </label>
+              <label class="pms-checkbox-label">
+                <input type="checkbox" [(ngModel)]="form.permite_inventario" />
+                <span>Módulo de Inventario & Stock</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="pms-btn pms-btn--outline" (click)="cerrarModal()">Cancelar</button>
+        <button type="button" class="pms-btn pms-btn--primary" (click)="guardarPlan()">
+          <span>{{ editandoPlanId() ? 'Guardar Cambios' : 'Crear Plan' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

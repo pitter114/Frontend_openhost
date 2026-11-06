@@ -1,0 +1,6 @@
+@use '../login/login.component.scss' as base;
+
+:host {
+  display: block;
+  height: 100%;
+}

@@ -1,0 +1,197 @@
+<div class="pms-page pms-page--wide">
+  <div class="pms-page-header pms-page-header--flex">
+    <div>
+      <h1>Mantenimiento</h1>
+      <p>Panel técnico de incidencias</p>
+    </div>
+    <button class="pms-btn pms-btn--primary" (click)="abrirFormNueva()">
+      <app-icon name="plus" [size]="15" />Nueva Incidencia
+    </button>
+  </div>
+
+  <div class="pms-grid summary-row">
+    <div class="pms-card summary-card summary-card--red">
+      <div class="summary-card__value">{{ countByEstado('Abierto') }}</div>
+      <div class="summary-card__label">Abiertas</div>
+    </div>
+    <div class="pms-card summary-card summary-card--blue">
+      <div class="summary-card__value">{{ countByEstado('En Proceso') }}</div>
+      <div class="summary-card__label">En Proceso</div>
+    </div>
+    <div class="pms-card summary-card summary-card--green">
+      <div class="summary-card__value">{{ countByEstado('Cerrado') }}</div>
+      <div class="summary-card__label">Cerradas</div>
+    </div>
+  </div>
+
+  <div class="pms-card">
+    <table class="pms-table">
+      <thead>
+        <tr>
+          <th>Habitación / Alojamiento</th>
+          <th>Problema / Incidencia</th>
+          <th>Prioridad</th>
+          <th>Responsable</th>
+          <th>Estado</th>
+          <th>Fecha Reporte</th>
+          <th>Resuelto</th>
+          <th>Acción</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let i of incidencias()">
+          <td><b>{{ i.habitacion }}</b></td>
+          <td class="problema-cell"><app-icon name="wrench" [size]="13" />{{ i.problema }}</td>
+          <td><span class="pms-badge" [ngClass]="'pms-badge--' + prioridadClass(i.prioridad)">{{ i.prioridad }}</span></td>
+          <td>{{ i.responsable }}</td>
+          <td><span class="pms-badge" [ngClass]="'pms-badge--' + estadoClass(i.estado)">{{ i.estado }}</span></td>
+          <td>{{ i.fecha }}</td>
+          <td>
+            <span *ngIf="i.resuelto" class="resuelto-ok"><app-icon name="dot" [size]="10" />{{ i.resuelto }}</span>
+            <span *ngIf="!i.resuelto" class="resuelto-pending">Pendiente</span>
+          </td>
+          <td>
+            <button
+              *ngIf="actionLabel(i)"
+              class="pms-btn"
+              [ngClass]="i.estado === 'Abierto' ? 'action-btn--red' : 'action-btn--blue'"
+              (click)="ejecutarAccion(i)"
+            >
+              {{ actionLabel(i) }}
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="empty-list" *ngIf="incidencias().length === 0 && !cargando()">
+      Sin incidencias registradas en este momento.
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal de Carga ===== -->
+<div class="modal-overlay" *ngIf="cargando()">
+  <div class="modal-panel">
+    <div class="modal-loading">
+      <div class="modal-loading__icon">
+        <app-icon name="sparkles" class="pms-spin" [size]="32" />
+      </div>
+      <h3>Cargando incidencias de mantenimiento…</h3>
+      <p>Obteniendo registros técnicos de la propiedad</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal Nueva Incidencia ===== -->
+<div class="modal-overlay" *ngIf="modalFormAbierto" (click)="cerrarFormNueva()">
+  <div class="modal-panel" (click)="$event.stopPropagation()">
+
+    <!-- Procesando -->
+    <ng-container *ngIf="procesando()">
+      <div class="modal-loading">
+        <div class="modal-loading__icon">
+          <app-icon name="sparkles" class="pms-spin" [size]="32" />
+        </div>
+        <h3>Guardando incidencia…</h3>
+        <p>Registrando reporte técnico de mantenimiento</p>
+      </div>
+    </ng-container>
+
+    <!-- Formulario -->
+    <ng-container *ngIf="!procesando()">
+      <div class="modal-header">
+        <h2><app-icon name="wrench" [size]="20" /> Nueva Incidencia de Mantenimiento</h2>
+        <button class="modal-close" (click)="cerrarFormNueva()"><app-icon name="x" [size]="18" /></button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Alojamiento -->
+        <div class="modal-field" *ngIf="alojamientosDisponibles().length > 0">
+          <label class="modal-detail__label" for="selectAlojamiento">Habitación / Alojamiento</label>
+          <select id="selectAlojamiento" class="modal-select" [(ngModel)]="selectedAlojamientoId">
+            <option *ngFor="let a of alojamientosDisponibles()" [value]="a.id">{{ a.nombre }}</option>
+          </select>
+        </div>
+
+        <div class="modal-field" *ngIf="alojamientosDisponibles().length === 0">
+          <label class="modal-detail__label" for="inputHabitacionNombre">Habitación / Alojamiento</label>
+          <input
+            id="inputHabitacionNombre"
+            type="text"
+            class="modal-input"
+            [(ngModel)]="selectedHabitacionNombre"
+            placeholder="Ej: Habitación 101, Departamento A..."
+          />
+        </div>
+
+        <!-- Problema / Motivo -->
+        <div class="modal-field">
+          <label class="modal-detail__label" for="motivoIncidencia">Descripción del problema / Incidencia</label>
+          <textarea
+            id="motivoIncidencia"
+            class="modal-textarea"
+            [(ngModel)]="motivoIncidencia"
+            placeholder="Ej: Aire acondicionado no enfría correctamente, fuga menor en ducha..."
+            rows="3"
+          ></textarea>
+        </div>
+
+        <!-- Prioridad -->
+        <div class="modal-field">
+          <label class="modal-detail__label">Nivel de Prioridad</label>
+          <div class="prioridad-selector">
+            <button
+              type="button"
+              class="prioridad-btn prioridad-btn--alta"
+              [class.is-selected]="prioridadIncidencia === 'Alta'"
+              (click)="prioridadIncidencia = 'Alta'"
+            >
+              🔴 Alta (Urgente)
+            </button>
+            <button
+              type="button"
+              class="prioridad-btn prioridad-btn--media"
+              [class.is-selected]="prioridadIncidencia === 'Media'"
+              (click)="prioridadIncidencia = 'Media'"
+            >
+              🔵 Media (Normal)
+            </button>
+            <button
+              type="button"
+              class="prioridad-btn prioridad-btn--baja"
+              [class.is-selected]="prioridadIncidencia === 'Baja'"
+              (click)="prioridadIncidencia = 'Baja'"
+            >
+              ⚪ Baja (Rutina)
+            </button>
+          </div>
+        </div>
+
+        <!-- Responsable -->
+        <div class="modal-field">
+          <label class="modal-detail__label" for="responsableIncidencia">Responsable / Técnico asignado (opcional)</label>
+          <input
+            id="responsableIncidencia"
+            type="text"
+            class="modal-input"
+            [(ngModel)]="responsableIncidencia"
+            placeholder="Ej: Fontanero, Técnico HVAC, Electricista..."
+          />
+        </div>
+
+        <!-- Bloquear disponibilidad -->
+        <div class="modal-checkbox-field">
+          <input type="checkbox" id="bloquearDisponibilidad" [(ngModel)]="bloquearDisponibilidad" />
+          <label for="bloquearDisponibilidad">Bloquear disponibilidad de la habitación por mantenimiento mayor</label>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="pms-btn pms-btn--outline" (click)="cerrarFormNueva()">Cancelar</button>
+        <button class="pms-btn pms-btn--primary" (click)="guardarIncidencia()">
+          <app-icon name="plus" [size]="14" /> Registrar Incidencia
+        </button>
+      </div>
+    </ng-container>
+  </div>
+</div>

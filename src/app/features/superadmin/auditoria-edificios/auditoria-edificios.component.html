@@ -1,0 +1,182 @@
+<div class="edificios-container">
+  <!-- Header -->
+  <header class="section-header">
+    <div class="header-titles">
+      <div class="header-badge">
+        <app-icon name="building" [size]="14"></app-icon>
+        <span>Fase P1 · Infraestructura & Límites</span>
+      </div>
+      <h2>Auditoría Multi-Edificios & Control de Límites SaaS</h2>
+      <p>Supervise las torres físicas, pisos y habitaciones asignadas de cada hotel tenant verificando el cumplimiento de su plan contratado.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" (click)="cargarDatos()">
+        <app-icon name="sparkles" [size]="16"></app-icon>
+        <span>Actualizar Datos</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Métricas Globales -->
+  <section class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon blue">
+        <app-icon name="building" [size]="22"></app-icon>
+      </div>
+      <div class="metric-info">
+        <span class="label">Total Edificios & Bloques</span>
+        <strong class="value">{{ totales.edificios }}</strong>
+        <span class="subtext">Sedes físicas activas (ej. TORRE 1)</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon green">
+        <app-icon name="door" [size]="22"></app-icon>
+      </div>
+      <div class="metric-info">
+        <span class="label">Habitaciones en Plataforma</span>
+        <strong class="value">{{ totales.habitaciones }}</strong>
+        <span class="subtext">Unidades de hospedaje</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon purple">
+        <app-icon name="shield" [size]="22"></app-icon>
+      </div>
+      <div class="metric-info">
+        <span class="label">Hoteles Auditados</span>
+        <strong class="value">{{ totales.hoteles }}</strong>
+        <span class="subtext">Tenants registrados en MySQL</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon amber">
+        <app-icon name="check" [size]="22"></app-icon>
+      </div>
+      <div class="metric-info">
+        <span class="label">Cumplimiento de Límites</span>
+        <strong class="value text-success">{{ totales.enRegla }} / {{ totales.hoteles }}</strong>
+        <span class="subtext">Dentro del cupo de su suscripción</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Lista de Hoteles y sus Edificios -->
+  <div class="hotels-infra-list">
+    @for (hotel of hoteles(); track hotel.organizacion_id) {
+      <div class="hotel-infra-card">
+        <div class="card-top">
+          <div class="hotel-identity">
+            <div class="hotel-avatar">
+              <app-icon name="building" [size]="24"></app-icon>
+            </div>
+            <div>
+              <h3>{{ hotel.nombre_comercial }}</h3>
+              <span class="hotel-ruc">RUC: {{ hotel.ruc || 'No registrado' }} · ID Org: #{{ hotel.organizacion_id }}</span>
+            </div>
+          </div>
+
+          <div class="plan-status">
+            <span class="plan-badge">
+              <app-icon name="card" [size]="14"></app-icon>
+              Plan {{ hotel.plan.nombre }} (S/ {{ hotel.plan.precio }}/mes)
+            </span>
+            <span
+              class="compliance-badge"
+              [class.success]="hotel.infraestructura.estado_cumplimiento === 'Cumple límites'"
+              [class.danger]="hotel.infraestructura.estado_cumplimiento !== 'Cumple límites'"
+            >
+              {{ hotel.infraestructura.estado_cumplimiento }}
+            </span>
+          </div>
+        </div>
+
+        <!-- Barras de Uso de Límites -->
+        <div class="limits-bars-grid">
+          <!-- Uso Edificios -->
+          <div class="limit-bar-box">
+            <div class="bar-header">
+              <span class="bar-label">Límite de Edificios / Torres</span>
+              <span class="bar-count">
+                <strong>{{ hotel.infraestructura.total_edificios }}</strong> / {{ hotel.plan.max_edificios }} permitidos
+              </span>
+            </div>
+            <div class="progress-track">
+              <div
+                class="progress-fill"
+                [style.width.%]="hotel.infraestructura.uso_edificios_pct > 100 ? 100 : hotel.infraestructura.uso_edificios_pct"
+                [class.warn]="hotel.infraestructura.uso_edificios_pct >= 80"
+                [class.overflow]="hotel.infraestructura.uso_edificios_pct > 100"
+              ></div>
+            </div>
+            <span class="bar-sub">{{ hotel.infraestructura.uso_edificios_pct }}% del cupo contratado</span>
+          </div>
+
+          <!-- Uso Habitaciones -->
+          <div class="limit-bar-box">
+            <div class="bar-header">
+              <span class="bar-label">Límite de Habitaciones</span>
+              <span class="bar-count">
+                <strong>{{ hotel.infraestructura.total_habitaciones }}</strong> / {{ hotel.plan.max_habitaciones }} permitidas
+              </span>
+            </div>
+            <div class="progress-track">
+              <div
+                class="progress-fill"
+                [style.width.%]="hotel.infraestructura.uso_habitaciones_pct > 100 ? 100 : hotel.infraestructura.uso_habitaciones_pct"
+                [class.warn]="hotel.infraestructura.uso_habitaciones_pct >= 80"
+                [class.overflow]="hotel.infraestructura.uso_habitaciones_pct > 100"
+              ></div>
+            </div>
+            <span class="bar-sub">{{ hotel.infraestructura.uso_habitaciones_pct }}% del cupo contratado</span>
+          </div>
+        </div>
+
+        <!-- Desglose de Edificios Registrados -->
+        <div class="edificios-detail-section">
+          <h4>Edificios Registrados ({{ hotel.infraestructura.edificios.length }})</h4>
+
+          @if (hotel.infraestructura.edificios.length === 0) {
+            <div class="empty-edificios">
+              <app-icon name="box" [size]="20"></app-icon>
+              <span>Este hotel no tiene bloques o torres creados aún (opera con alojamiento general).</span>
+            </div>
+          } @else {
+            <div class="edificios-table-wrapper">
+              <table class="edificios-table">
+                <thead>
+                  <tr>
+                    <th>Nombre del Edificio</th>
+                    <th>Nº Pisos</th>
+                    <th>Habitaciones</th>
+                    <th>Dirección</th>
+                    <th>Fecha de Alta</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (ed of hotel.infraestructura.edificios; track ed.edificio_id) {
+                    <tr>
+                      <td class="ed-name">
+                        <app-icon name="building" [size]="16"></app-icon>
+                        <strong>{{ ed.nombre }}</strong>
+                      </td>
+                      <td>{{ ed.num_pisos }} pisos</td>
+                      <td>
+                        <span class="hab-badge">{{ ed.habitaciones_asignadas }} habs asignadas</span>
+                      </td>
+                      <td class="text-muted">{{ ed.direccion || 'Sede principal' }}</td>
+                      <td class="text-muted">{{ ed.creado_en }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+      </div>
+    }
+  </div>
+</div>

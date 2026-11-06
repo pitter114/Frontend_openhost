@@ -1,0 +1,125 @@
+<div class="shell" [class.shell--soporte]="modoSoporte()">
+  <!-- Barra de Advertencia de Modo Soporte / Asistencia -->
+  <aside class="support-banner" *ngIf="modoSoporte()">
+    <div class="support-banner__content">
+      <app-icon name="shield" [size]="16" color="#fff" />
+      <span>
+        <strong>Modo Asistencia Técnica:</strong> Navegando como <strong>{{ hotelNombre() }}</strong>
+      </span>
+    </div>
+    <button type="button" class="support-banner__btn" (click)="salirModoSoporte()">
+      Volver al Superadmin &rarr;
+    </button>
+  </aside>
+
+  <div class="sidebar-backdrop" *ngIf="menuAbierto()" (click)="cerrarMenu()"></div>
+
+  <aside class="sidebar" [class.sidebar--open]="menuAbierto()">
+    <div class="sidebar__brand">
+      <div class="sidebar__logo"><app-icon name="building" [size]="18" color="#fff" /></div>
+      <div>
+        <div class="sidebar__brand-name">HotelPMS</div>
+        <div class="sidebar__brand-sub">{{ hotelNombre() | uppercase }}</div>
+      </div>
+      <button type="button" class="sidebar__close" (click)="cerrarMenu()">
+        <app-icon name="x" [size]="18" />
+      </button>
+    </div>
+
+    <div class="sidebar__section">Módulos</div>
+    <nav class="sidebar__nav">
+      <a
+        *ngFor="let item of navItems()"
+        [routerLink]="item.route"
+        routerLinkActive="is-active"
+        class="sidebar__link"
+        (click)="cerrarMenu()"
+      >
+        <app-icon [name]="item.icon" [size]="17" />
+        <span>{{ item.label }}</span>
+        <span class="sidebar__badge" *ngIf="item.badge" [class.sidebar__badge--amber]="item.badgeColor === 'amber'">{{ item.badge }}</span>
+      </a>
+    </nav>
+
+    <div class="sidebar__footer">
+      <button class="sidebar__link sidebar__link--ghost" (click)="theme.alternar()">
+        <app-icon [name]="theme.oscuro() ? 'sun' : 'moon'" [size]="17" />
+        <span>{{ theme.oscuro() ? 'Modo Claro' : 'Modo Oscuro' }}</span>
+      </button>
+      <a *ngIf="esOpenHostAdmin()" routerLink="/superadmin/panel" class="sidebar__link sidebar__link--warn">
+        <app-icon name="shield" [size]="17" />
+        <span>Superadministrador</span>
+      </a>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar__left">
+        <button type="button" class="topbar__menu-btn" (click)="menuAbierto.set(true)">
+          <app-icon name="menu" [size]="20" />
+        </button>
+        <h1>{{ pageTitle() }}</h1>
+      </div>
+      <div class="topbar__right">
+        <button type="button" class="topbar__hotel" (click)="cambiarOrganizacion()" title="Cambiar de organización">
+          <span class="dot dot--green"></span>{{ hotelNombre() }}
+        </button>
+        <span class="topbar__date">{{ fecha }}</span>
+        <span class="topbar__user" [title]="usuarioNombre()">{{ usuarioNombre() }}</span>
+        <a routerLink="/cuenta/seguridad" class="topbar__icon-btn" title="Seguridad de la cuenta">
+          <app-icon name="lock" [size]="16" />
+        </a>
+        <button type="button" class="topbar__avatar" (click)="cerrarSesion()" title="Cerrar sesión">
+          {{ iniciales() }}
+        </button>
+      </div>
+    </header>
+
+    <!-- Banner de Comunicado Masivo de Plataforma (Broadcast) -->
+    <div
+      class="broadcast-bar"
+      *ngIf="anuncioVigente() as a"
+      [class.broadcast-bar--mantenimiento]="a.tipo === 'mantenimiento'"
+      [class.broadcast-bar--alerta]="a.tipo === 'alerta'"
+    >
+      <div class="broadcast-bar__icon">
+        <app-icon [name]="a.tipo === 'alerta' ? 'alert' : 'sparkles'" [size]="15" />
+      </div>
+      <div class="broadcast-bar__text">
+        <strong>{{ a.titulo }}:</strong> {{ a.mensaje }}
+      </div>
+      <button type="button" class="broadcast-bar__close" (click)="descartarAnuncio(a)" title="Descartar aviso">
+        <app-icon name="x" [size]="14" />
+      </button>
+    </div>
+
+    <!-- Banner de Suscripción Vencida / Período de Gracia -->
+    <div class="billing-lockout-bar" *ngIf="planVencido()">
+      <div class="billing-lockout-bar__content">
+        <app-icon name="alert" [size]="16" color="#ef4444" />
+        <span>
+          <strong>Suscripción en Mora:</strong> El plan SaaS de este hotel ha vencido. Comunícate con Administración para regularizar tu liquidación mensual.
+        </span>
+      </div>
+      <span class="badge-vencido">Cuenta Suspendida</span>
+    </div>
+
+    <!-- Banner Preventivo (Por vencer en 3 días o menos) -->
+    <div class="billing-warning-bar" *ngIf="!planVencido() && planPorVencer()">
+      <div class="billing-warning-bar__content">
+        <app-icon name="card" [size]="15" color="#f59e0b" />
+        <span>
+          <strong>Recordatorio de Pago:</strong> Tu suscripción SaaS vence en <strong>{{ diasParaVencer() }} día(s)</strong>. Recuerda cancelar tu liquidación mensual para evitar interrupciones.
+        </span>
+      </div>
+    </div>
+
+    <main class="content">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+
+  <!-- Toast Notification Hub -->
+  <app-toast-container />
+</div>

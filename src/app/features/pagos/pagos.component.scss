@@ -1,0 +1,188 @@
+:host { display: block; }
+.pms-page--wide { max-width: none; }
+
+.kpi-row {
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 16px;
+}
+
+.kpi-card {
+  padding: 18px;
+
+  &__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  &__icon {
+    width: 34px; height: 34px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px;
+  }
+  &__value { font-size: 22px; font-weight: 700; }
+  &__label { font-size: 12.5px; color: var(--pms-text-muted); margin-top: 2px; }
+  &__change { font-size: 12px; font-weight: 700; color: var(--pms-green); }
+}
+
+.alert-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--pms-amber-bg);
+  color: var(--pms-orange-dark);
+  border: 1px solid #f3d99a;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 13.5px;
+  margin-bottom: 16px;
+}
+
+.table-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 20px 6px;
+
+  h3 { font-size: 15px; font-weight: 700; }
+  span { font-size: 12.5px; color: var(--pms-text-muted); }
+}
+
+.tipo-cell {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+  font-size: 12.5px;
+
+  &--in { color: var(--pms-green); app-icon { transform: rotate(-90deg); } }
+  &--out { color: var(--pms-red); app-icon { transform: rotate(90deg); } }
+}
+
+.monto-in { color: var(--pms-green); font-weight: 700; }
+.monto-out { color: var(--pms-red); font-weight: 700; }
+
+.pms-page-header--flex {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Modal Form Movimiento */
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 24px 14px;
+  border-bottom: 1px solid var(--pms-border);
+
+  h2 {
+    font-size: 16.5px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+  }
+}
+
+.modal-close {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--pms-text-muted);
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover {
+    color: #f87171;
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.4);
+    transform: rotate(90deg) scale(1.06);
+  }
+
+  &:active {
+    transform: rotate(90deg) scale(0.95);
+  }
+}
+
+.modal-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.modal-footer {
+  padding: 14px 24px 18px;
+  border-top: 1px solid var(--pms-border);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.tipo-selector {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.tipo-btn {
+  padding: 10px 12px;
+  border-radius: var(--pms-radius-sm);
+  border: 1px solid var(--pms-border);
+  background: var(--pms-bg);
+  color: var(--pms-text-muted);
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &--in {
+    border-color: var(--pms-green);
+    background: rgba(16, 185, 129, 0.12);
+    color: var(--pms-green);
+  }
+
+  &--out {
+    border-color: var(--pms-red);
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--pms-red);
+  }
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--pms-text-soft);
+  }
+
+  input, select {
+    width: 100%;
+    border: 1px solid var(--pms-border);
+    border-radius: var(--pms-radius-sm);
+    padding: 9px 12px;
+    font-size: 13.5px;
+    background: var(--pms-card);
+    color: var(--pms-text);
+    outline: none;
+
+    &:focus {
+      border-color: var(--pms-blue);
+      box-shadow: 0 0 0 3px rgba(59, 107, 246, 0.15);
+    }
+  }
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}

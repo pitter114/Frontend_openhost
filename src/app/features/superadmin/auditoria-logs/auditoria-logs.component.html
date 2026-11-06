@@ -1,0 +1,163 @@
+<div class="pms-page pms-page--wide">
+  <div class="pms-page-header pms-page-header--flex">
+    <div>
+      <h1>Historial de Actividad & Auditoría de Seguridad</h1>
+      <p>Flujo de eventos en tiempo real, trazabilidad de operaciones y detector de alertas en toda la plataforma</p>
+    </div>
+    <div class="live-indicator">
+      <span class="pulsing-dot"></span>
+      <span>Monitor en Vivo Activo</span>
+    </div>
+  </div>
+
+  <!-- Detector de Alertas de Seguridad en Vivo -->
+  <div class="pms-card security-detector-card">
+    <div class="detector-header">
+      <div class="detector-title">
+        <app-icon name="shield" [size]="18" color="#ef4444" />
+        <h2>Detector de Amenazas & Bloqueos de Seguridad</h2>
+      </div>
+      <span class="pms-badge pms-badge--red">
+        {{ alertasSeguridad().length }} eventos monitoreados
+      </span>
+    </div>
+
+    <div class="security-alerts-grid">
+      <div
+        *ngFor="let s of alertasSeguridad()"
+        class="sec-card"
+        [class.sec-card--blocked]="s.estado === 'bloqueada'"
+        [class.sec-card--resolved]="s.estado === 'resuelta'"
+      >
+        <div class="sec-card__top">
+          <span class="sec-card__badge" [ngClass]="'sec-card__badge--' + s.estado">
+            {{ s.estado === 'bloqueada' ? '🚨 Bloqueo Activo' : s.estado === 'resuelta' ? '✓ Resuelto' : '⚠️ Alerta Abierta' }}
+          </span>
+          <span class="sec-card__time">{{ s.hora }} hrs</span>
+        </div>
+
+        <h3 class="sec-card__type">{{ s.tipo }}</h3>
+        <p class="sec-card__desc">{{ s.descripcion }}</p>
+
+        <div class="sec-card__meta">
+          <span>Hotel: <strong>{{ s.hotel }}</strong></span>
+          <span>IP: <code>{{ s.ip }}</code></span>
+        </div>
+
+        <div class="sec-card__action" *ngIf="s.estado === 'bloqueada'">
+          <button type="button" class="pms-btn pms-btn--outline pms-btn--sm" (click)="desbloquear(s)">
+            Desbloquear Usuario / IP
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filtros de Auditoría y Búsqueda -->
+  <div class="filters-bar">
+    <div class="search-box">
+      <app-icon name="search" [size]="16" />
+      <input
+        type="text"
+        class="pms-input"
+        placeholder="Buscar por hotel, acción o correo de usuario..."
+        [ngModel]="busqueda()"
+        (ngModelChange)="busqueda.set($event)"
+      />
+    </div>
+
+    <div class="pills-group">
+      <button
+        type="button"
+        class="pms-btn pms-btn--sm"
+        [class.pms-btn--primary]="filtroCategoria() === 'todos'"
+        [class.pms-btn--outline]="filtroCategoria() !== 'todos'"
+        (click)="filtroCategoria.set('todos')"
+      >
+        Todos
+      </button>
+      <button
+        type="button"
+        class="pms-btn pms-btn--sm"
+        [class.pms-btn--primary]="filtroCategoria() === 'seguridad'"
+        [class.pms-btn--outline]="filtroCategoria() !== 'seguridad'"
+        (click)="filtroCategoria.set('seguridad')"
+      >
+        Seguridad
+      </button>
+      <button
+        type="button"
+        class="pms-btn pms-btn--sm"
+        [class.pms-btn--primary]="filtroCategoria() === 'habitaciones'"
+        [class.pms-btn--outline]="filtroCategoria() !== 'habitaciones'"
+        (click)="filtroCategoria.set('habitaciones')"
+      >
+        Habitaciones
+      </button>
+      <button
+        type="button"
+        class="pms-btn pms-btn--sm"
+        [class.pms-btn--primary]="filtroCategoria() === 'reservas'"
+        [class.pms-btn--outline]="filtroCategoria() !== 'reservas'"
+        (click)="filtroCategoria.set('reservas')"
+      >
+        Reservas
+      </button>
+      <button
+        type="button"
+        class="pms-btn pms-btn--sm"
+        [class.pms-btn--primary]="filtroCategoria() === 'saas'"
+        [class.pms-btn--outline]="filtroCategoria() !== 'saas'"
+        (click)="filtroCategoria.set('saas')"
+      >
+        SaaS / Planes
+      </button>
+    </div>
+  </div>
+
+  <!-- Timeline de Flujo de Eventos en Tiempo Real -->
+  <div class="timeline-container">
+    <div
+      *ngFor="let ev of eventosFiltrados()"
+      class="timeline-item"
+      [class.timeline-item--critical]="ev.severidad === 'critical'"
+      [class.timeline-item--warning]="ev.severidad === 'warning'"
+    >
+      <div class="timeline-item__left">
+        <span class="timeline-time">{{ ev.hora }}</span>
+        <span class="timeline-date">{{ ev.fecha }}</span>
+      </div>
+
+      <div class="timeline-item__dot">
+        <span class="dot-circle"></span>
+      </div>
+
+      <div class="timeline-item__card">
+        <div class="card-header">
+          <div class="hotel-pill">
+            <app-icon name="building" [size]="13" />
+            <span>{{ ev.hotel }}</span>
+          </div>
+
+          <span class="cat-pill" [ngClass]="'cat-pill--' + ev.categoria">
+            {{ ev.categoria | uppercase }}
+          </span>
+        </div>
+
+        <p class="card-desc">{{ ev.descripcion }}</p>
+
+        <div class="card-footer">
+          <span class="user-meta">
+            <app-icon name="user" [size]="13" />
+            {{ ev.usuario }}
+          </span>
+          <span class="ip-meta" *ngIf="ev.ip">IP: {{ ev.ip }}</span>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="eventosFiltrados().length === 0" class="no-events">
+      No se encontraron eventos que coincidan con los filtros aplicados.
+    </div>
+  </div>
+</div>

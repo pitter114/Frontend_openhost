@@ -1,0 +1,135 @@
+<div class="pms-page pms-page--wide">
+  <div class="pms-page-header pms-page-header--flex">
+    <div>
+      <h1>Alertas & Comunicados de Plataforma</h1>
+      <p>Notificaciones operativas del sistema y avisos masivos a todos los hoteles clientes</p>
+    </div>
+    <button type="button" class="pms-btn pms-btn--primary" (click)="abrirNuevoAnuncio()">
+      <app-icon name="sparkles" [size]="16" />
+      <span>Publicar Comunicado a Hoteles</span>
+    </button>
+  </div>
+
+  <!-- Sección: Comunicados Masivos de Plataforma (Broadcast) -->
+  <div class="pms-card broadcast-section">
+    <div class="section-title-row">
+      <div>
+        <h2>📢 Comunicados Masivos Activos (Broadcast)</h2>
+        <p class="section-sub">Avisos visibles en la barra superior de todos los hoteles afiliados</p>
+      </div>
+      <span class="pms-badge pms-badge--blue" *ngIf="anuncios().length > 0">
+        {{ anuncios().length }} comunicado{{ anuncios().length === 1 ? '' : 's' }} activo{{ anuncios().length === 1 ? '' : 's' }}
+      </span>
+    </div>
+
+    <div class="broadcast-cards-grid" *ngIf="anuncios().length > 0">
+      <div
+        *ngFor="let an of anuncios()"
+        class="broadcast-card"
+        [class.broadcast-card--mantenimiento]="an.tipo === 'mantenimiento'"
+        [class.broadcast-card--alerta]="an.tipo === 'alerta'"
+      >
+        <div class="broadcast-card__header">
+          <span class="type-pill" [ngClass]="'type-pill--' + an.tipo">
+            {{ an.tipo === 'mantenimiento' ? 'Mantenimiento' : an.tipo === 'alerta' ? 'Aviso Urgente' : 'Informativo' }}
+          </span>
+          <span class="exp-text">Expira: {{ an.fecha_expiracion || 'Sin límite' }}</span>
+        </div>
+        <h3 class="broadcast-card__title">{{ an.titulo }}</h3>
+        <p class="broadcast-card__msg">{{ an.mensaje }}</p>
+        <div class="broadcast-card__footer">
+          <button type="button" class="pms-btn pms-btn--outline pms-btn--sm" (click)="retirarAnuncio(an.anuncio_id)">
+            Retirar Comunicado
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="anuncios().length === 0" class="no-broadcasts">
+      No hay comunicados masivos activos en este momento. Los hoteles solo verán su actividad habitual.
+    </div>
+  </div>
+
+  <!-- Resumen de Alertas Operativas -->
+  <div class="pms-grid summary-row">
+    <div class="pms-card summary-card summary-card--red">
+      <div class="summary-card__value">{{ altas }}</div>
+      <div class="summary-card__label">Alta Prioridad</div>
+    </div>
+    <div class="pms-card summary-card summary-card--amber">
+      <div class="summary-card__value">{{ medias }}</div>
+      <div class="summary-card__label">Media Prioridad</div>
+    </div>
+    <div class="pms-card summary-card summary-card--blue">
+      <div class="summary-card__value">{{ data.alertas.length }}</div>
+      <div class="summary-card__label">Alertas Operativas Totales</div>
+    </div>
+  </div>
+
+  <!-- Lista de Alertas por Hotel -->
+  <div class="alert-list">
+    <div class="pms-card alert-row" *ngFor="let a of data.alertas" [ngClass]="a.prioridad === 'Alta' ? 'alert-row--red' : 'alert-row--amber'">
+      <div class="alert-row__icon"><app-icon [name]="a.icono" [size]="18" /></div>
+      <div class="alert-row__body">
+        <div class="alert-row__title">{{ a.titulo }}</div>
+        <div class="alert-row__detail">{{ a.detalle }}</div>
+      </div>
+      <div class="alert-row__hotel">{{ a.hotel }}</div>
+      <button class="pms-btn pms-btn--sm" [ngClass]="a.prioridad === 'Alta' ? 'btn-red' : 'btn-amber'">Revisar Hotel</button>
+    </div>
+  </div>
+
+  <!-- Modal Redactar Comunicado Masivo -->
+  <div class="modal-backdrop" *ngIf="mostrarModalAnuncio()" (click)="cerrarModalAnuncio()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>Publicar Comunicado a Todos los Hoteles</h3>
+          <p class="modal-sub">Aparecerá en el panel de todos los hoteles afiliados</p>
+        </div>
+        <button type="button" class="modal-close" (click)="cerrarModalAnuncio()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group form-group--full">
+            <label>Título del Comunicado</label>
+            <input type="text" class="pms-input" [(ngModel)]="formAnuncio.titulo" placeholder="Ej. Actualización programada este domingo a las 02:00 AM" />
+          </div>
+
+          <div class="form-group">
+            <label>Tipo de Aviso</label>
+            <select class="pms-input" [(ngModel)]="formAnuncio.tipo">
+              <option value="info">Informativo (Novedades, mejoras)</option>
+              <option value="mantenimiento">Mantenimiento de Servidores</option>
+              <option value="alerta">Aviso Urgente / Facturación</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Días de Vigencia</label>
+            <select class="pms-input" [(ngModel)]="formAnuncio.dias_vigencia">
+              <option [value]="1">24 Horas</option>
+              <option [value]="3">3 Días</option>
+              <option [value]="7">7 Días (1 Semana)</option>
+              <option [value]="15">15 Días</option>
+              <option [value]="30">30 Días</option>
+            </select>
+          </div>
+
+          <div class="form-group form-group--full">
+            <label>Mensaje Completo para los Hoteles</label>
+            <textarea class="pms-input" rows="4" [(ngModel)]="formAnuncio.mensaje" placeholder="Describe los detalles de la actualización o aviso..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="pms-btn pms-btn--outline" (click)="cerrarModalAnuncio()">Cancelar</button>
+        <button type="button" class="pms-btn pms-btn--primary" (click)="publicarAnuncio()">
+          <span>Publicar Comunicado</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

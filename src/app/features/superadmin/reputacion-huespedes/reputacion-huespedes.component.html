@@ -1,0 +1,213 @@
+<div class="rep-container">
+  <!-- Header -->
+  <header class="section-header">
+    <div class="header-titles">
+      <div class="header-badge">
+        <app-icon name="shield" [size]="14"></app-icon>
+        <span>Red de Confianza & Seguridad SaaS</span>
+      </div>
+      <h2>Red de Reputación Inter-Hoteles (Lista Negra Compartida)</h2>
+      <p>Prevención de impagos, daños y fraudes compartida entre todos los hoteles de la plataforma. Si un huésped tiene reporte activo, recepción recibe una alerta preventiva al registrar su DNI.</p>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-outline" (click)="cargarIncidencias()">
+        <app-icon name="sparkles" [size]="16"></app-icon>
+        <span>Actualizar Red</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Métricas Rápidas -->
+  <section class="metrics-grid">
+    <div class="metric-card">
+      <div class="metric-icon red">
+        <app-icon name="alert" [size]="22"></app-icon>
+      </div>
+      <div class="metric-info">
+        <span class="label">Alertas Activas en Red</span>
+        <strong class="value text-danger">{{ totales.activas }}</strong>
+        <span class="subtext">Generan advertencia preventiva</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon amber">
+        <app-icon name="dollar" [size]="22"></app-icon>
+      </div>
+      <div class="metric-info">
+        <span class="label">Deuda Total Registrada</span>
+        <strong class="value">S/ {{ totales.deuda_total | number:'1.2-2' }}</strong>
+        <span class="subtext">Impagos de estadías y consumos</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon purple">
+        <app-icon name="shield" [size]="22"></app-icon>
+      </div>
+      <div class="metric-info">
+        <span class="label">Casos Críticos / Alta Gravedad</span>
+        <strong class="value">{{ totales.casos_criticos }}</strong>
+        <span class="subtext">Fraude o daños materiales</span>
+      </div>
+    </div>
+
+    <div class="metric-card">
+      <div class="metric-icon blue">
+        <app-icon name="users" [size]="22"></app-icon>
+      </div>
+      <div class="metric-info">
+        <span class="label">Total Historial de Reportes</span>
+        <strong class="value">{{ totales.total }}</strong>
+        <span class="subtext">Base de datos de seguridad</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Barra de Filtros y Búsqueda -->
+  <div class="filter-bar">
+    <div class="search-input-wrap">
+      <app-icon name="search" [size]="16"></app-icon>
+      <input
+        type="text"
+        [(ngModel)]="busqueda"
+        (keyup.enter)="cargarIncidencias()"
+        placeholder="Buscar por DNI o Nombre del huésped..."
+      />
+    </div>
+
+    <div class="tabs-filter">
+      <button
+        class="tab-btn"
+        [class.active]="filtroEstado() === 'todos'"
+        (click)="filtroEstado.set('todos'); cargarIncidencias()"
+      >
+        Todos
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="filtroEstado() === 'activa'"
+        (click)="filtroEstado.set('activa'); cargarIncidencias()"
+      >
+        Activas
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="filtroEstado() === 'en_revision'"
+        (click)="filtroEstado.set('en_revision'); cargarIncidencias()"
+      >
+        En Revisión
+      </button>
+      <button
+        class="tab-btn"
+        [class.active]="filtroEstado() === 'descartada'"
+        (click)="filtroEstado.set('descartada'); cargarIncidencias()"
+      >
+        Descartadas
+      </button>
+    </div>
+  </div>
+
+  <!-- Lista de Incidencias / Reportes -->
+  <div class="incidencias-list">
+    @if (cargando()) {
+      <div class="loading-state">
+        <app-icon name="sparkles" [size]="24"></app-icon>
+        <span>Consultando registros de la red de seguridad...</span>
+      </div>
+    } @else if (incidencias().length === 0) {
+      <div class="empty-state">
+        <app-icon name="shield" [size]="36"></app-icon>
+        <h3>No se encontraron reportes de incidencias</h3>
+        <p>No existen registros que coincidan con los filtros seleccionados.</p>
+      </div>
+    } @else {
+      @for (item of incidencias(); track item.id) {
+        <div class="incident-card" [class.danger-border]="item.severidad === 'critica' || item.severidad === 'alta'">
+          <div class="incident-header">
+            <div class="guest-info">
+              <div class="guest-avatar">
+                <app-icon name="user" [size]="20"></app-icon>
+              </div>
+              <div>
+                <h4>{{ item.nombre_completo }}</h4>
+                <div class="guest-doc">
+                  <span class="doc-badge">{{ item.tipo_documento }}: {{ item.numero_documento }}</span>
+                  <span class="hotel-reporter">Reportado por: <strong>{{ item.hotel_nombre }}</strong></span>
+                </div>
+              </div>
+            </div>
+
+            <div class="incident-badges">
+              <span class="badge-severity" [class]="'sev-' + item.severidad">
+                Riesgo {{ item.severidad | uppercase }}
+              </span>
+              <span class="badge-status" [class]="'st-' + item.estado">
+                {{ item.estado === 'activa' ? '⚠️ Alerta Activa' : (item.estado === 'en_revision' ? 'En Revisión' : 'Descartada') }}
+              </span>
+            </div>
+          </div>
+
+          <div class="incident-body">
+            <div class="incident-details-grid">
+              <div class="detail-item">
+                <span class="detail-label">Motivo de Incidencia</span>
+                <span class="detail-value text-capitalize">
+                  {{ item.tipo_incidencia === 'impago' ? 'Impago de estadía/consumos' : (item.tipo_incidencia === 'danos_materiales' ? 'Daños materiales a la unidad' : item.tipo_incidencia) }}
+                </span>
+              </div>
+
+              @if (item.monto_deuda > 0) {
+                <div class="detail-item">
+                  <span class="detail-label">Monto de Deuda Pendiente</span>
+                  <span class="detail-value text-danger font-bold">S/ {{ item.monto_deuda | number:'1.2-2' }}</span>
+                </div>
+              }
+
+              <div class="detail-item">
+                <span class="detail-label">Fecha del Reporte</span>
+                <span class="detail-value">{{ item.fecha }}</span>
+              </div>
+
+              <div class="detail-item">
+                <span class="detail-label">Registrado Por</span>
+                <span class="detail-value">{{ item.reportado_por }}</span>
+              </div>
+            </div>
+
+            <div class="incident-narrative">
+              <span class="narrative-label">Descripción de los hechos:</span>
+              <p>{{ item.descripcion }}</p>
+            </div>
+          </div>
+
+          <!-- Acciones de Moderación del Super Admin -->
+          <div class="incident-actions">
+            <span class="mod-note">Moderación SaaS:</span>
+
+            @if (item.estado !== 'activa') {
+              <button class="btn btn-sm btn-outline-danger" (click)="cambiarEstado(item, 'activa')">
+                <app-icon name="alert" [size]="14"></app-icon>
+                <span>Activar Alerta en Red</span>
+              </button>
+            }
+
+            @if (item.estado !== 'en_revision') {
+              <button class="btn btn-sm btn-outline" (click)="cambiarEstado(item, 'en_revision')">
+                <app-icon name="eye" [size]="14"></app-icon>
+                <span>Poner en Revisión</span>
+              </button>
+            }
+
+            @if (item.estado !== 'descartada') {
+              <button class="btn btn-sm btn-outline-success" (click)="cambiarEstado(item, 'descartada')">
+                <app-icon name="check" [size]="14"></app-icon>
+                <span>Descartar (Falso Positivo / Subsanado)</span>
+              </button>
+            }
+          </div>
+        </div>
+      }
+    }
+  </div>
+</div>

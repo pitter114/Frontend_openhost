@@ -1,0 +1,49 @@
+@use '../login/login.component.scss' as base;
+
+:host {
+  display: block;
+  height: 100%;
+}
+
+.auth-card--wide {
+  max-width: 460px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+select {
+  width: 100%;
+  border: 1px solid var(--pms-border);
+  border-radius: var(--pms-radius-sm);
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--pms-text);
+  outline: none;
+  background: var(--pms-card);
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:focus {
+    border-color: var(--pms-blue);
+    box-shadow: 0 0 0 3px rgba(59, 107, 246, 0.12);
+  }
+}
+
+.auth-success {
+  text-align: center;
+  padding: 12px 0;
+}
+
+.auth-success__icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: var(--pms-green-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}

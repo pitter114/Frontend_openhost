@@ -1,0 +1,65 @@
+<div class="pms-page pms-page--wide">
+  <!-- Modal Procesando Check-In -->
+  <app-loading-modal
+    *ngIf="procesando()"
+    titulo="Procesando Check-In…"
+    subtitulo="Asignando habitación y registrando ingreso del huésped"
+  />
+
+  <div class="pms-page-header">
+    <h1>Registrarse</h1>
+    <p>Panel de registro de entrada</p>
+  </div>
+
+  <div class="split">
+    <div class="pms-card list-card">
+      <div class="pms-search">
+        <app-icon name="search" [size]="15" />
+        <input type="text" placeholder="Buscar reserva o huésped..." [(ngModel)]="search" />
+      </div>
+      <button class="pms-btn pms-btn--outline scan-btn"><app-icon name="scan" [size]="15" />Escanear DNI</button>
+
+      <div class="res-item" *ngFor="let r of pendientes" (click)="select(r)" [class.is-selected]="selected === r">
+        <div class="res-item__top">
+          <span class="res-item__name">{{ r.cliente }}</span>
+          <span class="pms-badge" [ngClass]="r.estado === 'Pendiente' ? 'pms-badge--amber' : 'pms-badge--blue'">{{ r.estado === 'Pendiente' ? 'Pendiente' : 'Confirmada' }}</span>
+        </div>
+        <div class="res-item__sub">{{ r.codigo }} · Hab. {{ r.habitacion }}</div>
+        <div class="res-item__dates">
+          Entrada: <b>{{ formatFecha(r.checkIn) }}</b> &nbsp; Salida: <b>{{ formatFecha(r.checkOut) }}</b> &nbsp; {{ noches(r) }} noches
+        </div>
+      </div>
+      <div class="empty-list" *ngIf="pendientes.length === 0">No hay reservas pendientes de check-in.</div>
+    </div>
+
+    <div class="pms-card detail-card">
+      <div class="auth-success-alert" *ngIf="mensajeExito()" style="margin-bottom: 16px;">
+        <app-icon name="shield" [size]="16" color="var(--pms-green)" />
+        <span>{{ mensajeExito() }}</span>
+      </div>
+
+      <ng-container *ngIf="!selected && !mensajeExito()">
+        <div class="pms-empty-icon"><app-icon name="login" [size]="24" /></div>
+        <h3>Selecciona una reserva</h3>
+        <p>Elige una reserva de la lista para procesar el check-in del huésped.</p>
+      </ng-container>
+
+      <ng-container *ngIf="selected">
+        <h3>{{ selected.cliente }}</h3>
+        <p class="detail-sub">{{ selected.codigo }} · Habitación {{ selected.habitacion }}</p>
+
+        <div class="detail-grid">
+          <div><span>Entrada</span><b>{{ formatFecha(selected.checkIn) }}</b></div>
+          <div><span>Salida</span><b>{{ formatFecha(selected.checkOut) }}</b></div>
+          <div><span>Noches</span><b>{{ noches(selected) }}</b></div>
+          <div><span>Total</span><b>S/ {{ selected.total.toLocaleString('es-ES') }}</b></div>
+        </div>
+
+        <button class="pms-btn pms-btn--primary detail-cta" [disabled]="procesando()" (click)="procesarCheckIn()">
+          <app-icon name="login" [size]="15" />
+          {{ procesando() ? 'Procesando Check-In…' : 'Procesar Check-In' }}
+        </button>
+      </ng-container>
+    </div>
+  </div>
+</div>

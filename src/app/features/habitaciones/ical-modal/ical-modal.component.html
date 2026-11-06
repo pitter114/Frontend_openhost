@@ -1,0 +1,134 @@
+<div class="modal-backdrop" (click)="cerrar.emit()">
+  <div class="modal-card ical-modal-card" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="modal-header">
+      <div class="header-titles">
+        <span class="modal-badge">
+          <app-icon name="calendar" [size]="14"></app-icon>
+          Sincronización Gratuita iCal (RFC 5545)
+        </span>
+        <h3>Conexión OTA: Habitación {{ etiquetaUnidad }}</h3>
+        <p>Sincroniza la disponibilidad bidireccional entre este PMS, Booking.com y Airbnb para evitar sobreventas (overbooking).</p>
+      </div>
+      <button class="btn-close" (click)="cerrar.emit()">
+        <app-icon name="x" [size]="18"></app-icon>
+      </button>
+    </div>
+
+    <!-- Body -->
+    <div class="modal-body">
+      @if (cargando()) {
+        <div class="loading-state">
+          <app-icon name="sparkles" [size]="24"></app-icon>
+          <span>Cargando configuraciones de sincronización...</span>
+        </div>
+      } @else {
+        <!-- Canales Grid -->
+        <div class="feeds-grid">
+          @for (feed of feeds(); track feed.id) {
+            <div class="feed-card" [class.active-sync]="feed.url_importacion">
+              <div class="feed-header">
+                <div class="channel-badge" [class.booking]="feed.nombre_canal === 'Booking.com'" [class.airbnb]="feed.nombre_canal === 'Airbnb'">
+                  <span>{{ feed.nombre_canal === 'Booking.com' ? '🏨' : '🏡' }}</span>
+                  <strong>{{ feed.nombre_canal }}</strong>
+                </div>
+                <div class="feed-status">
+                  @if (feed.url_importacion) {
+                    <span class="badge-synced">
+                      <app-icon name="check" [size]="12"></app-icon>
+                      Conectado
+                    </span>
+                  } @else {
+                    <span class="badge-pending">Pendiente de vincular</span>
+                  }
+                </div>
+              </div>
+
+              <!-- Paso 1: Exportar a la OTA -->
+              <div class="form-group step-group">
+                <label>
+                  <span class="step-num">1</span>
+                  <span>Enlace de Exportación para {{ feed.nombre_canal }}</span>
+                </label>
+                <div class="input-with-button">
+                  <input
+                    type="text"
+                    class="pms-input readonly-input"
+                    [value]="feed.url_exportacion"
+                    readonly
+                  />
+                  <button class="btn btn-outline btn-sm" (click)="copiarEnlace(feed)">
+                    <app-icon [name]="copiadoFeedId() === feed.id ? 'check' : 'file'" [size]="14"></app-icon>
+                    <span>{{ copiadoFeedId() === feed.id ? '¡Copiado!' : 'Copiar URL' }}</span>
+                  </button>
+                </div>
+                <small class="help-text">Pega este enlace en {{ feed.nombre_canal }} (Configuración de Calendario ➡️ Importar Calendario).</small>
+              </div>
+
+              <!-- Paso 2: Importar desde la OTA -->
+              <div class="form-group step-group">
+                <label>
+                  <span class="step-num">2</span>
+                  <span>Pegar enlace iCal provisto por {{ feed.nombre_canal }}</span>
+                </label>
+                <div class="input-with-button">
+                  <input
+                    type="url"
+                    class="pms-input"
+                    [(ngModel)]="feed.url_importacion"
+                    [placeholder]="'Ej: https://admin.' + (feed.nombre_canal === 'Booking.com' ? 'booking.com' : 'airbnb.com') + '/ical/...'"
+                  />
+                  <button
+                    class="btn btn-primary btn-sm"
+                    [disabled]="guardandoId() === feed.id"
+                    (click)="guardarFeed(feed)"
+                  >
+                    <span>{{ guardandoId() === feed.id ? 'Guardando...' : 'Guardar y Vincular' }}</span>
+                  </button>
+                </div>
+                <small class="help-text">Copia la URL de exportación desde la extranet de {{ feed.nombre_canal }} y pégala aquí.</small>
+              </div>
+
+              <!-- Estado de Sincronización y Botón Manual -->
+              <div class="feed-footer">
+                <div class="sync-meta">
+                  <span class="meta-label">Última sincronización:</span>
+                  <span class="meta-value">{{ feed.ultima_sincronizacion || 'Nunca' }}</span>
+                  @if (feed.ultimo_error) {
+                    <span class="error-badge" [title]="feed.ultimo_error">⚠️ Error en última conexión</span>
+                  }
+                </div>
+
+                <button
+                  class="btn btn-outline btn-sm"
+                  [disabled]="!feed.url_importacion || sincronizandoId() === feed.id"
+                  (click)="sincronizarAhora(feed)"
+                >
+                  <app-icon name="sparkles" [size]="14"></app-icon>
+                  <span>{{ sincronizandoId() === feed.id ? 'Sincronizando...' : 'Sincronizar Ahora' }}</span>
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+
+        <!-- Caja de Ayuda Rápida -->
+        <div class="help-box">
+          <div class="help-icon">💡</div>
+          <div class="help-content">
+            <h4>¿Dónde encuentro estos enlaces en Booking.com y Airbnb?</h4>
+            <p><strong>En Booking.com:</strong> Entra a tu Extranet ➡️ Tarifas y Disponibilidad ➡️ Sincronizar Calendarios ➡️ "Importar Calendario" (pega el link 1) y copia el enlace de Booking (pégalo en el link 2).</p>
+            <p><strong>En Airbnb:</strong> Entra a Anuncios ➡️ Precios y Disponibilidad ➡️ Sincronización de Calendarios ➡️ Sigue el mismo procedimiento.</p>
+          </div>
+        </div>
+      }
+    </div>
+
+    <!-- Footer -->
+    <div class="modal-footer">
+      <button class="btn btn-outline" (click)="cerrar.emit()">
+        <span>Cerrar</span>
+      </button>
+    </div>
+  </div>
+</div>

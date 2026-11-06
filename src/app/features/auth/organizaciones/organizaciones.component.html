@@ -1,0 +1,129 @@
+<div class="org-shell">
+  <header class="org-header">
+    <div class="org-header__brand">
+      <div class="auth-brand__logo"><app-icon name="building" [size]="18" color="#fff" /></div>
+      <span>HotelPMS</span>
+    </div>
+    <button class="pms-btn pms-btn--ghost" (click)="cerrarSesion()">
+      <app-icon name="logout" [size]="16" /> Cerrar sesión
+    </button>
+  </header>
+
+  <main class="org-main">
+    <div class="auth-error" *ngIf="error()" style="display: flex; justify-content: space-between; align-items: center;">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <app-icon name="alert" [size]="16" />
+        <span>{{ error() }}</span>
+      </div>
+      <button type="button" class="pms-btn pms-btn--outline pms-btn--sm" (click)="cargar()">
+        Reintentar
+      </button>
+    </div>
+
+    <ng-container *ngIf="vista() === 'lista'; else vistaCrear">
+      <div class="org-main__heading">
+        <h1>Selecciona una organización</h1>
+        <p>Elige el alojamiento con el que quieres trabajar</p>
+      </div>
+
+      <div *ngIf="cargando()" class="org-loading">Cargando organizaciones…</div>
+
+      <div class="org-grid" *ngIf="!cargando()">
+        <button
+          type="button"
+          class="pms-card org-card"
+          *ngFor="let item of organizaciones()"
+          [disabled]="item.organizacion.estado !== 'activa' || entrando() !== null"
+          (click)="entrar(item)"
+        >
+          <div class="org-card__icon"><app-icon name="building" [size]="20" color="var(--pms-blue)" /></div>
+          <div class="org-card__body">
+            <div class="org-card__name">{{ item.organizacion.nombre_comercial }}</div>
+            <div class="org-card__meta">{{ item.organizacion.tipo_organizacion }} · {{ item.roles.join(', ') || 'Miembro' }}</div>
+          </div>
+          <span
+            class="pms-badge"
+            [class.pms-badge--green]="item.organizacion.estado === 'activa'"
+            [class.pms-badge--amber]="item.organizacion.estado === 'pendiente_aprobacion'"
+            [class.pms-badge--red]="item.organizacion.estado === 'rechazada' || item.organizacion.estado === 'suspendida'"
+          >
+            {{ item.organizacion.estado === 'activa' ? 'Activa'
+              : item.organizacion.estado === 'pendiente_aprobacion' ? 'Pendiente de aprobación'
+              : item.organizacion.estado === 'rechazada' ? 'Rechazada' : 'Suspendida' }}
+          </span>
+          <app-icon
+            *ngIf="entrando() === item.id"
+            name="dot"
+            [size]="16"
+          />
+        </button>
+
+        <button type="button" class="pms-card org-card org-card--new" (click)="vista.set('crear')">
+          <app-icon name="plus" [size]="20" />
+          <span>Registrar nueva organización</span>
+        </button>
+      </div>
+    </ng-container>
+
+    <ng-template #vistaCrear>
+      <div class="org-main__heading">
+        <button type="button" class="auth-back" *ngIf="organizaciones().length > 0" (click)="vista.set('lista')">
+          <app-icon name="arrowLeft" [size]="16" /> Volver
+        </button>
+        <h1>Registra tu organización</h1>
+        <p>Ingresa los datos de tu hotel, casa u hostal para comenzar a usar HotelPMS</p>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submitCrear()" class="org-form pms-card" novalidate>
+        <div class="field-row">
+          <label class="field">
+            <span>Tipo de organización</span>
+            <select formControlName="tipo_organizacion_id">
+              <option *ngFor="let t of tiposOrganizacion" [ngValue]="t.id">{{ t.nombre }}</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>Nombre comercial</span>
+            <input type="text" formControlName="nombre_comercial" placeholder="Ej. Hotel El Dorado" />
+            <small class="field__error" *ngIf="form.get('nombre_comercial')?.touched && form.get('nombre_comercial')?.invalid">
+              Obligatorio
+            </small>
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Nombre legal (opcional)</span>
+            <input type="text" formControlName="nombre_legal" placeholder="Razón social" />
+          </label>
+          <label class="field">
+            <span>RUC (opcional)</span>
+            <input type="text" formControlName="ruc" placeholder="20123456789" />
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Correo de contacto</span>
+            <input type="email" formControlName="correo_contacto" placeholder="contacto@hotel.com" />
+            <small class="field__error" *ngIf="form.get('correo_contacto')?.touched && form.get('correo_contacto')?.invalid">
+              Ingresa un correo válido
+            </small>
+          </label>
+          <label class="field">
+            <span>Teléfono de contacto</span>
+            <input type="tel" formControlName="telefono_contacto" placeholder="987654321" />
+            <small class="field__error" *ngIf="form.get('telefono_contacto')?.touched && form.get('telefono_contacto')?.invalid">
+              Obligatorio
+            </small>
+          </label>
+        </div>
+
+        <button type="submit" class="pms-btn pms-btn--primary org-submit" [disabled]="creando()">
+          <span *ngIf="!creando()">Registrar organización</span>
+          <span *ngIf="creando()">Registrando…</span>
+        </button>
+      </form>
+    </ng-template>
+  </main>
+</div>

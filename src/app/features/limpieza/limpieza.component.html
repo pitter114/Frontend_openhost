@@ -1,0 +1,190 @@
+<div class="pms-page">
+  <div class="pms-page-header">
+    <h1>Limpieza — Housekeeping</h1>
+    <p>Panel de control de limpieza</p>
+  </div>
+
+  <div class="pms-grid summary-row">
+    <div class="pms-card summary-card summary-card--amber">
+      <div class="summary-card__value">{{ byEstado('Pendiente').length }}</div>
+      <div class="summary-card__label">Pendiente</div>
+    </div>
+    <div class="pms-card summary-card summary-card--blue">
+      <div class="summary-card__value">{{ byEstado('En Proceso').length }}</div>
+      <div class="summary-card__label">En Proceso</div>
+    </div>
+    <div class="pms-card summary-card summary-card--green">
+      <div class="summary-card__value">{{ completadasHoyCount() }}</div>
+      <div class="summary-card__label">Completada</div>
+    </div>
+  </div>
+
+  <div class="pms-grid kanban">
+    <!-- Pendiente -->
+    <div class="kanban-col">
+      <div class="kanban-col__head kanban-col__head--amber">
+        <app-icon name="dot" [size]="10" />Pendiente <span>{{ byEstado('Pendiente').length }}</span>
+      </div>
+      <div class="pms-card task-card" *ngFor="let t of byEstado('Pendiente')">
+        <div class="task-card__top">
+          <span class="task-card__room">{{ formatRoomTitle(t.habitacion, t.tipoAlojamiento) }}</span>
+          <span class="pms-badge" [ngClass]="'pms-badge--' + prioridadClass(t.prioridad)">{{ t.prioridad }}</span>
+        </div>
+        <div class="task-card__sub">{{ t.piso }} · {{ t.camarera }}</div>
+        <button class="pms-btn task-card__cta task-card__cta--amber" (click)="abrirModal(t, 'iniciar')">
+          Iniciar Limpieza
+        </button>
+      </div>
+      <div class="kanban-empty" *ngIf="byEstado('Pendiente').length === 0">Sin tareas pendientes</div>
+    </div>
+
+    <!-- En Proceso -->
+    <div class="kanban-col">
+      <div class="kanban-col__head kanban-col__head--blue">
+        <app-icon name="dot" [size]="10" />En Proceso <span>{{ byEstado('En Proceso').length }}</span>
+      </div>
+      <div class="pms-card task-card" *ngFor="let t of byEstado('En Proceso')">
+        <div class="task-card__top">
+          <span class="task-card__room">{{ formatRoomTitle(t.habitacion, t.tipoAlojamiento) }}</span>
+          <span class="pms-badge" [ngClass]="'pms-badge--' + prioridadClass(t.prioridad)">{{ t.prioridad }}</span>
+        </div>
+        <div class="task-card__sub">{{ t.piso }} · {{ t.camarera }}</div>
+        <div class="task-card__time" *ngIf="t.minutos">
+          <app-icon name="calendar" [size]="12" /> {{ t.minutos }} min en proceso
+        </div>
+        <button class="pms-btn task-card__cta task-card__cta--blue" (click)="abrirModal(t, 'completar')">
+          Marcar Completada
+        </button>
+      </div>
+      <div class="kanban-empty" *ngIf="byEstado('En Proceso').length === 0">Sin tareas en proceso</div>
+    </div>
+
+    <!-- Completada -->
+    <div class="kanban-col">
+      <div class="kanban-col__head kanban-col__head--green">
+        <app-icon name="dot" [size]="10" />Completada <span>{{ byEstado('Completada').length }}</span>
+      </div>
+      <div class="pms-card task-card" *ngFor="let t of byEstado('Completada')">
+        <div class="task-card__top">
+          <span class="task-card__room">{{ formatRoomTitle(t.habitacion, t.tipoAlojamiento) }}</span>
+          <span class="pms-badge" [ngClass]="'pms-badge--' + prioridadClass(t.prioridad)">{{ t.prioridad }}</span>
+        </div>
+        <div class="task-card__sub">{{ t.piso }} · {{ t.camarera }}</div>
+        <div class="task-card__time" *ngIf="t.minutos">
+          <app-icon name="calendar" [size]="12" /> {{ t.minutos }} min en proceso
+        </div>
+        <div class="task-card__done"><app-icon name="dot" [size]="10" /> Completada</div>
+      </div>
+      <div class="kanban-empty" *ngIf="byEstado('Completada').length === 0">Sin tareas completadas hoy</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal de Carga de Estado ===== -->
+<div class="modal-overlay" *ngIf="cargando()">
+  <div class="modal-panel">
+    <div class="modal-loading">
+      <div class="modal-loading__icon">
+        <app-icon name="sparkles" class="pms-spin" [size]="32" />
+      </div>
+      <h3>Cargando tareas de limpieza…</h3>
+      <p>Obteniendo el estado actualizado de las habitaciones</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== Modal de Acción / Procesando ===== -->
+<div class="modal-overlay" *ngIf="modalAbierto" (click)="cerrarModal()">
+  <div class="modal-panel" (click)="$event.stopPropagation()">
+
+    <!-- Procesando -->
+    <ng-container *ngIf="procesando">
+      <div class="modal-loading">
+        <div class="modal-loading__icon">
+          <app-icon name="sparkles" class="pms-spin" [size]="32" />
+        </div>
+        <h3>Procesando actualización…</h3>
+        <p>Actualizando el estado de la habitación</p>
+      </div>
+    </ng-container>
+
+    <!-- Formulario normal -->
+    <ng-container *ngIf="!procesando">
+      <!-- Header -->
+      <div class="modal-header">
+        <div class="modal-header__info">
+          <h2 *ngIf="modalAccion === 'iniciar'">
+            <app-icon name="sparkles" [size]="20" /> Iniciar Limpieza
+          </h2>
+          <h2 *ngIf="modalAccion === 'completar'">
+            <app-icon name="sparkles" [size]="20" /> Marcar como Completada
+          </h2>
+        </div>
+        <button class="modal-close" (click)="cerrarModal()">
+          <app-icon name="x" [size]="18" />
+        </button>
+      </div>
+
+      <!-- Body -->
+      <div class="modal-body" *ngIf="tareaSeleccionada">
+        <div class="modal-detail-grid">
+          <div class="modal-detail">
+            <span class="modal-detail__label">Propiedad / Habitación</span>
+            <span class="modal-detail__value">{{ formatRoomTitle(tareaSeleccionada.habitacion, tareaSeleccionada.tipoAlojamiento) }}</span>
+          </div>
+          <div class="modal-detail">
+            <span class="modal-detail__label">Piso</span>
+            <span class="modal-detail__value">{{ tareaSeleccionada.piso }}</span>
+          </div>
+          <div class="modal-detail">
+            <span class="modal-detail__label">Camarera asignada</span>
+            <span class="modal-detail__value">{{ tareaSeleccionada.camarera }}</span>
+          </div>
+          <div class="modal-detail">
+            <span class="modal-detail__label">Prioridad</span>
+            <span class="pms-badge" [ngClass]="'pms-badge--' + prioridadClass(tareaSeleccionada.prioridad)">
+              {{ tareaSeleccionada.prioridad }}
+            </span>
+          </div>
+        </div>
+
+        <div class="modal-field" *ngIf="modalAccion === 'completar' && tareaSeleccionada.minutos">
+          <span class="modal-detail__label">Tiempo en proceso</span>
+          <span class="modal-detail__value">{{ tareaSeleccionada.minutos }} minutos</span>
+        </div>
+
+        <div class="modal-field">
+          <label class="modal-detail__label" for="modalNotas">Notas (opcional)</label>
+          <textarea
+            id="modalNotas"
+            class="modal-textarea"
+            [(ngModel)]="modalNotas"
+            placeholder="Ej: Cambio de sábanas completo, reposición de amenities..."
+            rows="3"
+          ></textarea>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="modal-footer">
+        <button class="pms-btn pms-btn--outline" (click)="cerrarModal()">Cancelar</button>
+
+        <button
+          *ngIf="modalAccion === 'iniciar'"
+          class="pms-btn pms-btn--orange"
+          (click)="confirmarAccion()"
+        >
+          <app-icon name="sparkles" [size]="14" /> Iniciar Limpieza
+        </button>
+
+        <button
+          *ngIf="modalAccion === 'completar'"
+          class="pms-btn pms-btn--primary"
+          (click)="confirmarAccion()"
+        >
+          <app-icon name="sparkles" [size]="14" /> Marcar Completada
+        </button>
+      </div>
+    </ng-container>
+  </div>
+</div>

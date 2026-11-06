@@ -1,0 +1,25 @@
+:host { display: block; }
+.pms-page--wide { max-width: none; }
+
+.summary-row {
+  grid-template-columns: repeat(3, 1fr);
+  margin-bottom: 16px;
+}
+
+.summary-card {
+  padding: 22px;
+  text-align: center;
+
+  &__value {
+    font-size: 26px;
+    font-weight: 700;
+    &--blue { color: var(--pms-blue); }
+    &--orange { color: var(--pms-orange-dark); }
+    &--green { color: var(--pms-green); }
+  }
+  &__label { font-size: 13px; color: var(--pms-text-muted); margin-top: 4px; }
+}
+
+.comision-cell { color: var(--pms-orange-dark); font-weight: 700; }
+.neto-cell { color: var(--pms-green); font-weight: 700; }
+.canal-cell { color: var(--pms-purple); font-weight: 600; font-style: italic; }

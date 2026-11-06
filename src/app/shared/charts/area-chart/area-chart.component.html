@@ -1,0 +1,26 @@
+<svg [attr.viewBox]="'0 0 ' + width + ' ' + height" class="area-chart" preserveAspectRatio="none">
+  <defs>
+    <linearGradient *ngFor="let s of series; let i = index" [attr.id]="'grad-' + i" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" [attr.stop-color]="s.color" stop-opacity="0.22" />
+      <stop offset="100%" [attr.stop-color]="s.color" stop-opacity="0" />
+    </linearGradient>
+  </defs>
+
+  <line
+    *ngFor="let y of gridLines()"
+    [attr.x1]="padLeft"
+    [attr.x2]="width - padRight"
+    [attr.y1]="y"
+    [attr.y2]="y"
+    class="grid-line"
+  />
+
+  <g *ngFor="let s of series; let i = index">
+    <path *ngIf="s.fill !== false" [attr.d]="areaPath(s)" [attr.fill]="'url(#grad-' + i + ')'" stroke="none" />
+    <path [attr.d]="linePath(s)" fill="none" [attr.stroke]="s.color" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+  </g>
+
+  <text *ngFor="let l of labels; let i = index" [attr.x]="xFor(i)" [attr.y]="height - 6" text-anchor="middle" class="axis-label">
+    {{ l }}
+  </text>
+</svg>

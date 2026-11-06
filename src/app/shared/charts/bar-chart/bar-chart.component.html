@@ -1,0 +1,26 @@
+<svg [attr.viewBox]="'0 0 ' + width + ' ' + height" class="bar-chart" preserveAspectRatio="none">
+  <line
+    *ngFor="let y of gridLines()"
+    [attr.x1]="padLeft"
+    [attr.x2]="width - padRight"
+    [attr.y1]="y"
+    [attr.y2]="y"
+    class="grid-line"
+  />
+
+  <ng-container *ngFor="let s of series; let si = index">
+    <rect
+      *ngFor="let v of s.values; let gi = index"
+      [attr.x]="barX(gi, si)"
+      [attr.y]="barY(v)"
+      [attr.width]="barWidth()"
+      [attr.height]="barHeight(v)"
+      [attr.fill]="s.color"
+      rx="3"
+    />
+  </ng-container>
+
+  <text *ngFor="let l of labels; let i = index" [attr.x]="groupCenter(i)" [attr.y]="height - 6" text-anchor="middle" class="axis-label">
+    {{ l }}
+  </text>
+</svg>

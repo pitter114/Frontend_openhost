@@ -1,0 +1,85 @@
+<div class="pms-page">
+  <!-- Modal de Carga de Informes -->
+  <app-loading-modal
+    *ngIf="cargando()"
+    titulo="Generando informe…"
+    subtitulo="Procesando registros de la base de datos y preparando archivo"
+  />
+
+  <div class="pms-page-header">
+    <div>
+      <h1>Informes y Reportes</h1>
+      <p>Generación de informes en PDF y Excel (.xlsx) desde los registros reales de la base de datos</p>
+    </div>
+    <div class="header-actions">
+      <button class="pms-btn pms-btn--excel-master" (click)="exportarTodoExcel()" [disabled]="cargando()" title="Descargar libro Excel con todas las hojas">
+        <app-icon name="excel" [size]="16" />
+        <span>Exportar Libro Completo (XLSX)</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="pms-card date-filter-bar">
+    <div class="filter-group">
+      <label>📅 Fecha Desde:</label>
+      <input type="date" [(ngModel)]="fechaInicio" class="date-input" />
+    </div>
+    <div class="filter-group">
+      <label>📅 Fecha Hasta:</label>
+      <input type="date" [(ngModel)]="fechaFin" class="date-input" />
+    </div>
+    <div class="filter-info">
+      <span>Los informes PDF y Excel incluirán los registros reales entre {{ fechaInicio }} y {{ fechaFin }}.</span>
+    </div>
+  </div>
+
+  <div class="pms-grid report-grid">
+    <div class="pms-card report-card" *ngFor="let r of reportes">
+      <div class="report-card__top">
+        <div class="report-card__icon" [style.background]="r.iconBg" [style.color]="r.iconColor">
+          <app-icon [name]="r.icon" [size]="18" />
+        </div>
+        <span class="pms-badge" [ngClass]="'pms-badge--' + r.categoriaColor">{{ r.categoria }}</span>
+      </div>
+      <h3>{{ r.titulo }}</h3>
+      <p>{{ r.descripcion }}</p>
+      <div class="report-card__actions">
+        <button class="pms-btn report-card__pdf" (click)="exportar(r.key, 'pdf')" [disabled]="cargando()">
+          <app-icon name="file" [size]="14" />PDF
+        </button>
+        <button class="pms-btn report-card__excel" (click)="exportar(r.key, 'excel')" [disabled]="cargando()">
+          <app-icon name="excel" [size]="14" />Excel (XLSX)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="pms-card chart-card">
+    <h3>Ingresos vs Salidas (Gastos) — Período Activo</h3>
+    <p class="chart-card__sub">Resumen financiero basado en reservas de la base de datos</p>
+    <div class="chart-card__legend">
+      <span><i style="background:#17a34a"></i>Ingresos Reservas</span>
+      <span><i style="background:#e0342c"></i>Salidas / Gastos</span>
+    </div>
+    <app-bar-chart [labels]="labels" [series]="ingresosSalidasSeries" [height]="230"></app-bar-chart>
+  </div>
+
+  <div class="footnote">
+    <app-icon name="chart" [size]="15" />
+    Los informes se generan dinámicamente con registros reales de la base de datos en Soles (S/). Si no hay datos registrados, el sistema te notificará.
+  </div>
+</div>
+
+<!-- Modal cuando no existen registros en la BD -->
+<div class="modal-overlay" *ngIf="mostrarModalSinDatos()">
+  <div class="modal-card">
+    <div class="modal-icon-warning">
+      <app-icon name="info" [size]="32" />
+    </div>
+    <h3>{{ modalTitulo() }}</h3>
+    <p>{{ modalMensaje() }}</p>
+    <div class="modal-actions">
+      <button class="pms-btn pms-btn--primary" (click)="cerrarModalSinDatos()">Entendido</button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,158 @@
+@use '../../auth/login/login.component.scss' as base;
+
+:host { display: block; }
+
+.pms-page--narrow { max-width: 560px; }
+
+.auth-exito {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--pms-green-bg);
+  color: var(--pms-green);
+  border-radius: var(--pms-radius-sm);
+  padding: 10px 12px;
+  font-size: 13px;
+  margin-bottom: 16px;
+}
+
+.seg-card {
+  display: flex;
+  gap: 14px;
+  padding: 22px;
+}
+
+.seg-card--form {
+  display: block;
+
+  h2 {
+    font-size: 17px;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+}
+
+.seg-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #e9efff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &--green { background: var(--pms-green-bg); }
+}
+
+.seg-card__title {
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.seg-card__desc {
+  color: var(--pms-text-muted);
+  font-size: 13.5px;
+  margin: 6px 0 14px;
+  line-height: 1.5;
+}
+
+.seg-opciones {
+  display: grid;
+  gap: 10px;
+}
+
+.seg-opcion {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 16px;
+  text-align: left;
+  border: 1px solid var(--pms-border);
+  box-shadow: none;
+  font-family: inherit;
+
+  &:hover:not(:disabled) { border-color: var(--pms-blue); }
+  &:disabled { opacity: 0.6; }
+}
+
+.seg-opcion__title { font-weight: 600; font-size: 13.5px; }
+.seg-opcion__desc { font-size: 12.5px; color: var(--pms-text-muted); margin-top: 2px; }
+
+.pms-btn--danger {
+  background: var(--pms-red-bg);
+  color: var(--pms-red);
+  border: none;
+
+  &:hover { filter: brightness(0.96); }
+}
+
+.pms-btn--outline.pms-btn--danger {
+  background: none;
+  border: 1px solid var(--pms-red);
+}
+
+.seg-qr {
+  display: flex;
+  justify-content: center;
+  padding: 16px;
+  background: var(--pms-card);
+  border: 1px solid var(--pms-border);
+  border-radius: var(--pms-radius-sm);
+  margin-bottom: 14px;
+
+  ::ng-deep svg { width: 180px; height: 180px; }
+}
+
+.seg-secreto {
+  margin-bottom: 16px;
+  font-size: 12.5px;
+  color: var(--pms-text-muted);
+
+  summary { cursor: pointer; }
+
+  code {
+    display: block;
+    margin-top: 8px;
+    padding: 8px 10px;
+    background: var(--pms-bg);
+    border-radius: 6px;
+    word-break: break-all;
+    font-size: 12px;
+  }
+}
+
+.pms-btn--sm {
+  padding: 6px 12px;
+  font-size: 12.5px;
+}
+
+.seg-reenvio {
+  margin-bottom: 16px;
+}
+
+.seg-codigos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.seg-codigo {
+  flex: 1 1 calc(50% - 8px);
+  min-width: 130px;
+  box-sizing: border-box;
+  padding: 10px 8px;
+  background: var(--pms-bg);
+  border: 1px solid var(--pms-border);
+  border-radius: 6px;
+  text-align: center;
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}

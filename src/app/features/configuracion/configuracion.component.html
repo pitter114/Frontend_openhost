@@ -1,0 +1,197 @@
+<div class="pms-page pms-page--wide">
+  <!-- Header -->
+  <div class="pms-page-header pms-page-header--flex">
+    <div>
+      <h1>⚙️ Configuración de la Sede</h1>
+      <p>Gestión de horarios de estancia, check-out automático y seguridad de red Wi-Fi</p>
+    </div>
+    <button
+      type="button"
+      class="pms-btn pms-btn--primary"
+      (click)="guardar()"
+      [disabled]="guardando() || cargando()"
+    >
+      <span>{{ guardando() ? 'Guardando cambios...' : '💾 Guardar Configuración' }}</span>
+    </button>
+  </div>
+
+  <!-- Toast de éxito -->
+  <div class="feedback-toast" *ngIf="mensajeFeedback()">
+    <app-icon name="alert" [size]="16" />
+    <span>{{ mensajeFeedback() }}</span>
+  </div>
+
+  <div class="loading-state" *ngIf="cargando()">
+    <p>Cargando configuración de la sede...</p>
+  </div>
+
+  <div class="config-grid" *ngIf="!cargando()">
+    <!-- BLOQUE 1: HORARIOS & CHECK-OUT AUTOMÁTICO -->
+    <div class="pms-card config-card">
+      <div class="config-card__header">
+        <div class="config-card__icon config-card__icon--indigo">
+          <app-icon name="calendar" [size]="18" />
+        </div>
+        <div>
+          <h3>⏰ Horarios de Operación y Check-Out Automático</h3>
+          <p class="config-card__sub">Define los horarios pactados de estancia y la liberación de cuartos</p>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Hora de Check-In (Ingreso Oficial)</label>
+          <input type="time" class="pms-input" [(ngModel)]="form.hora_check_in" />
+          <span class="field-hint">A partir de esta hora el huésped puede ingresar a su habitación.</span>
+        </div>
+
+        <div class="form-group">
+          <label>Hora de Check-Out (Salida Límite)</label>
+          <input type="time" class="pms-input" [(ngModel)]="form.hora_check_out" />
+          <span class="field-hint">Hora máxima para desocupar y devolver las llaves en recepción.</span>
+        </div>
+      </div>
+
+      <!-- Cuadro de Automatización -->
+      <div class="feature-box">
+        <div class="feature-box__header">
+          <div>
+            <strong>Liberación Automática de Habitaciones (Check-Out)</strong>
+            <p>
+              Si el recepcionista olvida registrar la salida, el sistema finaliza la estancia y pasa el cuarto
+              a estado <strong>'En Limpieza' (Sucia)</strong> para que la mucama lo atienda.
+            </p>
+          </div>
+          <label class="switch-toggle">
+            <input type="checkbox" [(ngModel)]="form.checkout_automatico" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="form-group" *ngIf="form.checkout_automatico" style="margin-top: 14px;">
+          <label>Margen de Tolerancia / Gracia tras el vencimiento</label>
+          <select class="pms-select" [(ngModel)]="form.checkout_tolerancia_minutos">
+            <option [value]="0">0 minutos (Inmediato a la hora de salida)</option>
+            <option [value]="15">15 minutos</option>
+            <option [value]="30">30 minutos (Recomendado)</option>
+            <option [value]="45">45 minutos</option>
+            <option [value]="60">60 minutos (1 hora)</option>
+          </select>
+        </div>
+
+        <div class="manual-checkout-row">
+          <button
+            type="button"
+            class="btn-trigger"
+            (click)="forzarCheckout()"
+            [disabled]="ejecutandoCheckout()"
+          >
+            <span *ngIf="!ejecutandoCheckout()">⚡ Ejecutar Check-Out Ahora Mismo</span>
+            <span *ngIf="ejecutandoCheckout()">Procesando estancias vencidas...</span>
+          </button>
+          <span class="manual-checkout-desc">Revisa y libera al instante todas las habitaciones vencidas hoy.</span>
+        </div>
+
+        <div class="checkout-feedback" *ngIf="mensajeCheckout()">
+          ℹ️ {{ mensajeCheckout() }}
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOQUE 2: SEGURIDAD DE RED & IP WHITELIST -->
+    <div class="pms-card config-card">
+      <div class="config-card__header">
+        <div class="config-card__icon config-card__icon--emerald">
+          <app-icon name="shield" [size]="18" />
+        </div>
+        <div>
+          <h3>🛡️ Seguridad de Red & Control de Acceso Wi-Fi</h3>
+          <p class="config-card__sub">Evita que recepcionistas y cajeros abran el sistema desde sus casas</p>
+        </div>
+      </div>
+
+      <!-- Cuadro de IP actual detectada -->
+      <div class="ip-detector-banner">
+        <div>
+          <span class="ip-detector-banner__label">Tu IP Pública de Internet Actual:</span>
+          <strong class="ip-detector-banner__val">{{ tuIpActual() }}</strong>
+        </div>
+        <button type="button" class="btn-capture" (click)="capturarMiIp()">
+          📍 Capturar IP de este Hotel
+        </button>
+      </div>
+
+      <!-- Interruptor de Restricción -->
+      <div class="feature-box">
+        <div class="feature-box__header">
+          <div>
+            <strong>Restringir acceso operativo al Wi-Fi / Red del Hotel</strong>
+            <p>
+              Solo el personal de recepción, caja y mucamas estará obligado a conectarse desde esta sede.
+              <strong>Los propietarios y gerentes siempre tienen acceso remoto desde cualquier lugar.</strong>
+            </p>
+          </div>
+          <label class="switch-toggle">
+            <input type="checkbox" [(ngModel)]="form.restringir_ip_operativa" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="form-group" style="margin-top: 14px;">
+          <label>Direcciones IP Autorizadas del Hotel (Separadas por comas)</label>
+          <input
+            type="text"
+            class="pms-input"
+            [(ngModel)]="form.ip_whitelist"
+            placeholder="Ejemplo: 190.113.88.24, 200.48.10.50, 127.0.0.1"
+          />
+          <span class="field-hint">
+            Si el hotel cuenta con dos proveedores de internet (ej. fibra principal y respaldo móvil),
+            puedes colocar ambas IPs separadas por coma.
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- BLOQUE 3: INFORMACIÓN DE LA SEDE -->
+    <div class="pms-card config-card full-width">
+      <div class="config-card__header">
+        <div class="config-card__icon config-card__icon--blue">
+          <app-icon name="bed" [size]="18" />
+        </div>
+        <div>
+          <h3>🏨 Información Comercial del Hotel</h3>
+          <p class="config-card__sub">Datos visibles en comprobantes, tickets de tienda y folios de huéspedes</p>
+        </div>
+      </div>
+
+      <div class="form-row form-row--3">
+        <div class="form-group">
+          <label>Nombre Comercial</label>
+          <input type="text" class="pms-input" [(ngModel)]="form.nombre_comercial" />
+        </div>
+
+        <div class="form-group">
+          <label>Teléfono de Contacto / Recepción</label>
+          <input type="text" class="pms-input" [(ngModel)]="form.telefono_contacto" />
+        </div>
+
+        <div class="form-group">
+          <label>RUC / Identificación Fiscal</label>
+          <input type="text" class="pms-input pms-input--readonly" [value]="form.ruc || 'Sin RUC registrado'" readonly />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="bottom-actions" *ngIf="!cargando()">
+    <button
+      type="button"
+      class="pms-btn pms-btn--primary pms-btn--lg"
+      (click)="guardar()"
+      [disabled]="guardando()"
+    >
+      <span>{{ guardando() ? 'Guardando cambios...' : '💾 Guardar Toda la Configuración' }}</span>
+    </button>
+  </div>
+</div>

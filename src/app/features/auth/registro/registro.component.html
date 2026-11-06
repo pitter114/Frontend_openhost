@@ -1,0 +1,124 @@
+<div class="auth-shell">
+  <div class="auth-brand">
+    <div class="auth-brand__logo"><app-icon name="building" [size]="20" color="#fff" /></div>
+    <div class="auth-brand__name">HotelPMS</div>
+    <p class="auth-brand__tagline">Crea tu cuenta para administrar reservas, huéspedes y operaciones de tu alojamiento desde un solo lugar.</p>
+
+    <div class="auth-brand__stats">
+      <div>
+        <div class="auth-brand__stat-value">+300</div>
+        <div class="auth-brand__stat-label">Habitaciones gestionadas</div>
+      </div>
+      <div>
+        <div class="auth-brand__stat-value">24/7</div>
+        <div class="auth-brand__stat-label">Disponibilidad</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-panel">
+    <div class="auth-card auth-card--wide" *ngIf="!exito(); else pantallaExito">
+      <h1>Crear cuenta</h1>
+      <p class="auth-card__sub">Completa tus datos para comenzar</p>
+
+      <div class="auth-error" *ngIf="error()">
+        <app-icon name="alert" [size]="16" />
+        <span>{{ error() }}</span>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="field-row">
+          <label class="field">
+            <span>Nombre</span>
+            <input type="text" formControlName="nombre" placeholder="Juan" autocomplete="given-name" />
+            <small class="field__error" *ngIf="form.get('nombre')?.touched && form.get('nombre')?.invalid">Obligatorio</small>
+          </label>
+          <label class="field">
+            <span>Apellido</span>
+            <input type="text" formControlName="apellido" placeholder="Pérez" autocomplete="family-name" />
+            <small class="field__error" *ngIf="form.get('apellido')?.touched && form.get('apellido')?.invalid">Obligatorio</small>
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Tipo de documento</span>
+            <select formControlName="tipo_documento_id">
+              <option *ngFor="let t of tiposDocumento" [ngValue]="t.id">{{ t.nombre }}</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>N.° de documento</span>
+            <input type="text" formControlName="numero_documento" placeholder="12345678" />
+            <small class="field__error" *ngIf="form.get('numero_documento')?.touched && form.get('numero_documento')?.invalid">Obligatorio</small>
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Teléfono</span>
+          <input type="tel" formControlName="numero_telefono" placeholder="987654321" autocomplete="tel" />
+          <small class="field__error" *ngIf="form.get('numero_telefono')?.touched && form.get('numero_telefono')?.invalid">
+            Solo números
+          </small>
+        </label>
+
+        <label class="field">
+          <span>Correo electrónico</span>
+          <input type="email" formControlName="correo" placeholder="tucorreo@ejemplo.com" autocomplete="email" />
+          <small class="field__error" *ngIf="form.get('correo')?.touched && form.get('correo')?.invalid">
+            Ingresa un correo válido
+          </small>
+        </label>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Contraseña</span>
+            <div class="field__password">
+              <input
+                [type]="verPassword() ? 'text' : 'password'"
+                formControlName="contrasena"
+                placeholder="••••••••••"
+                autocomplete="new-password"
+              />
+              <button type="button" class="field__eye" (click)="verPassword.set(!verPassword())" tabindex="-1">
+                <app-icon name="eye" [size]="17" />
+              </button>
+            </div>
+            <small class="field__error" *ngIf="form.get('contrasena')?.touched && form.get('contrasena')?.invalid">
+              Mín. 10 caracteres, mayúscula, minúscula, número y símbolo
+            </small>
+          </label>
+          <label class="field">
+            <span>Confirmar contraseña</span>
+            <input
+              [type]="verPassword() ? 'text' : 'password'"
+              formControlName="contrasena_confirmation"
+              placeholder="••••••••••"
+              autocomplete="new-password"
+            />
+            <small class="field__error" *ngIf="form.get('contrasena_confirmation')?.touched && form.hasError('noCoinciden')">
+              Las contraseñas no coinciden
+            </small>
+          </label>
+        </div>
+
+        <button type="submit" class="pms-btn pms-btn--primary auth-submit" [disabled]="cargando()">
+          <span *ngIf="!cargando()">Crear cuenta</span>
+          <span *ngIf="cargando()">Creando cuenta…</span>
+        </button>
+      </form>
+
+      <p class="auth-card__footer">
+        ¿Ya tienes cuenta? <a routerLink="/login">Iniciar sesión</a>
+      </p>
+    </div>
+
+    <ng-template #pantallaExito>
+      <div class="auth-card auth-success">
+        <div class="auth-success__icon"><app-icon name="shield" [size]="26" color="var(--pms-green)" /></div>
+        <h1>Cuenta creada</h1>
+        <p class="auth-card__sub">Ya puedes iniciar sesión con tu correo y contraseña. Te redirigiremos en un momento…</p>
+      </div>
+    </ng-template>
+  </div>
+</div>

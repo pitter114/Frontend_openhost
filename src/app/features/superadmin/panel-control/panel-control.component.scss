@@ -1,0 +1,44 @@
+:host { display: block; }
+
+.kpi-row {
+  grid-template-columns: repeat(4, 1fr);
+  margin-bottom: 16px;
+}
+
+.kpi-card {
+  padding: 18px;
+
+  &__top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  &__icon {
+    width: 34px; height: 34px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 12px;
+  }
+  &__value { font-size: 21px; font-weight: 700; }
+  &__label { font-size: 12.5px; color: var(--pms-text-muted); margin-top: 2px; }
+  &__change { font-size: 12px; font-weight: 700; color: var(--pms-green); }
+}
+
+.two-col {
+  grid-template-columns: 1fr 1fr;
+  margin-bottom: 16px;
+}
+
+.chart-card {
+  padding: 20px 22px;
+
+  h3 { font-size: 15px; font-weight: 700; }
+  &__sub { font-size: 12.5px; color: var(--pms-text-muted); margin-top: 2px; margin-bottom: 14px; }
+}
+
+.table-head {
+  padding: 18px 20px 6px;
+  h3 { font-size: 15px; font-weight: 700; }
+}
+
+.comision-cell { color: var(--pms-orange-dark); font-weight: 700; }
+
+@media (max-width: 1200px) {
+  .kpi-row { grid-template-columns: repeat(2, 1fr); }
+  .two-col { grid-template-columns: 1fr; }
+}

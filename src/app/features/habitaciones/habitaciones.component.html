@@ -1,0 +1,418 @@
+<div class="pms-page">
+  <div class="pms-page-header pms-page-header--flex">
+    <div>
+      <h1>Habitaciones</h1>
+      <p>{{ data.hotelNombre }}</p>
+    </div>
+    <div class="header-actions" *ngIf="!cargandoEstablecimientos()">
+      <button type="button" class="pms-btn pms-btn--outline" (click)="mostrarServicios.set(true)">
+        Servicios
+      </button>
+      <button type="button" class="pms-btn pms-btn--primary" (click)="abrirNuevoAlojamiento()">
+        <app-icon name="plus" [size]="15" /> Nuevo Alojamiento
+      </button>
+    </div>
+  </div>
+
+  <div class="notificacion-reserva-banner" *ngIf="nuevaReservaNotificacion() as n">
+    <div class="banner-content">
+      <app-icon name="check" [size]="18" />
+      <span><strong>¡Reserva confirmada por el cliente!</strong> {{ n.cliente }} ha completado su reserva.</span>
+    </div>
+    <button type="button" class="pms-btn pms-btn--primary" (click)="aceptarNotificacionReserva()">
+      Actualizar vista
+    </button>
+  </div>
+
+  <div class="auth-error" *ngIf="error()">
+    <app-icon name="alert" [size]="16" />
+    <span>{{ error() }}</span>
+  </div>
+
+  <!-- Onboarding: sin propiedad registrada todavía -->
+  <div class="pms-card empty-state" *ngIf="!cargandoEstablecimientos() && establecimientos().length === 0">
+    <div class="pms-empty-icon"><app-icon name="building" [size]="24" /></div>
+    <h2>Registra tu propiedad para empezar</h2>
+    <p>Antes de crear habitaciones, departamentos o casas, necesitamos saber dónde está tu propiedad.</p>
+    <button type="button" class="pms-btn pms-btn--primary" (click)="mostrarFormEstablecimiento.set(true)">
+      Registrar mi propiedad
+    </button>
+  </div>
+
+  <ng-container *ngIf="cargandoEstablecimientos() || establecimientos().length > 0">
+    <div class="pms-grid stat-row" *ngIf="stats() as s">
+      <div class="pms-card stat-card">
+        <span class="stat-card__dot" [style.background]="color('disponible')"></span>
+        <div class="stat-card__value">{{ s.disponibles }}</div>
+        <div class="stat-card__label">Disponible</div>
+      </div>
+      <div class="pms-card stat-card">
+        <span class="stat-card__dot" [style.background]="color('ocupado')"></span>
+        <div class="stat-card__value">{{ s.ocupados }}</div>
+        <div class="stat-card__label">Ocupada</div>
+      </div>
+      <div class="pms-card stat-card">
+        <span class="stat-card__dot" [style.background]="color('reservado')"></span>
+        <div class="stat-card__value">{{ s.reservados }}</div>
+        <div class="stat-card__label">Reservada</div>
+      </div>
+      <div class="pms-card stat-card">
+        <span class="stat-card__dot" [style.background]="color('en_limpieza')"></span>
+        <div class="stat-card__value">{{ s.en_limpieza }}</div>
+        <div class="stat-card__label">Limpieza</div>
+      </div>
+      <div class="pms-card stat-card">
+        <span class="stat-card__dot" [style.background]="color('mantenimiento')"></span>
+        <div class="stat-card__value">{{ s.mantenimiento }}</div>
+        <div class="stat-card__label">Mantenimiento</div>
+      </div>
+    </div>
+
+    <div class="filtros">
+      <button
+        type="button"
+        class="pms-btn pms-btn--sm"
+        *ngFor="let f of estadosFiltro"
+        [class.pms-btn--primary]="filtro() === f.key"
+        [class.pms-btn--outline]="filtro() !== f.key"
+        (click)="setFiltro(f.key)"
+      >
+        {{ f.label }}
+      </button>
+    </div>
+
+    <div class="pms-grid room-grid" *ngIf="!cargando()">
+      <div 
+        class="pms-card room-card" 
+        *ngFor="let a of alojamientos()" 
+        (click)="abrirReserva(a)"
+        [class.room-card--available]="a.estados.includes('disponible')"
+      >
+        <!-- Media / Header with Image & Badges -->
+        <div class="room-card__media">
+          <img *ngIf="a.imagen_principal" [src]="a.imagen_principal" [alt]="a.etiqueta_unidad" />
+          <div *ngIf="!a.imagen_principal" class="room-card__placeholder">
+            <app-icon name="bed" [size]="32" />
+          </div>
+
+          <!-- Frosted Glass Status Badge (Top-Left) -->
+          <div class="room-card__status-badge" [class]="'status--' + estadoPrincipal(a)">
+            <span class="status-dot" [style.background]="color(estadoPrincipal(a))"></span>
+            <span>{{ label(estadoPrincipal(a)) }}</span>
+          </div>
+
+          <!-- Frosted Glass Floating Actions (Top-Right) -->
+          <div class="room-card__quick-actions">
+            <button
+              type="button"
+              class="action-pill action-pill--limpieza"
+              title="Mandar a Limpieza"
+              *ngIf="!a.estados.includes('en_limpieza')"
+              (click)="abrirModalLimpieza(a, $event)"
+            >
+              <app-icon name="sparkles" [size]="13" />
+            </button>
+            <button
+              type="button"
+              class="action-pill action-pill--mantenimiento"
+              title="Mandar a Mantenimiento"
+              *ngIf="!a.estados.includes('mantenimiento')"
+              (click)="abrirModalMantenimiento(a, $event)"
+            >
+              <app-icon name="wrench" [size]="13" />
+            </button>
+            <button 
+              type="button" 
+              class="action-pill action-pill--ical" 
+              title="Sincronizar Booking.com / Airbnb (iCal)" 
+              (click)="abrirIcal(a); $event.stopPropagation()"
+            >
+              <app-icon name="calendar" [size]="13" />
+            </button>
+            <button 
+              type="button" 
+              class="action-pill action-pill--edit" 
+              title="Editar Alojamiento" 
+              (click)="abrirEditarAlojamiento(a, $event)"
+            >
+              <app-icon name="pencil" [size]="13" />
+            </button>
+            <button 
+              type="button" 
+              class="action-pill action-pill--delete" 
+              title="Eliminar Alojamiento" 
+              (click)="eliminarAlojamiento(a, $event)"
+            >
+              <app-icon name="trash" [size]="13" />
+            </button>
+          </div>
+        </div>
+
+        <!-- Room Details Body -->
+        <div class="room-card__body">
+          <div class="room-card__header-info">
+            <h3 class="room-card__title" [title]="a.etiqueta_unidad">{{ a.etiqueta_unidad }}</h3>
+            <span class="room-card__type">{{ a.tipo_alojamiento }}</span>
+          </div>
+
+          <!-- Guest Banner (Shown when occupied / reserved) -->
+          <div class="room-card__guest-pill" *ngIf="a.reserva && a.reserva.huesped">
+            <app-icon name="user" [size]="12" />
+            <span class="guest-name" [title]="a.reserva.huesped">{{ a.reserva.huesped }}</span>
+          </div>
+
+          <!-- Price & Action Footer -->
+          <div class="room-card__footer">
+            <div class="room-card__price-wrap">
+              <span class="currency">S/</span>
+              <span class="amount">{{ a.precio_base }}</span>
+              <span class="period">/noche</span>
+            </div>
+
+            <button
+              type="button"
+              class="room-card__book-btn"
+              *ngIf="a.estados.includes('disponible')"
+              (click)="abrirReserva(a); $event.stopPropagation()"
+            >
+              <app-icon name="plus" [size]="12" />
+              <span>Reservar</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+
+    <div *ngIf="!cargando() && alojamientos().length === 0" class="tabla-estado">
+      Todavía no tienes alojamientos creados —
+      <a (click)="abrirNuevoAlojamiento()">crea el primero</a>.
+    </div>
+
+    <div class="paginacion" *ngIf="!cargando() && totalPaginas() > 1">
+      <button type="button" class="pms-btn pms-btn--outline pms-btn--sm" [disabled]="pagina() === 1" (click)="irAPagina(pagina() - 1)">
+        Anterior
+      </button>
+      <span>Página {{ pagina() }} de {{ totalPaginas() }}</span>
+      <button type="button" class="pms-btn pms-btn--outline pms-btn--sm" [disabled]="pagina() === totalPaginas()" (click)="irAPagina(pagina() + 1)">
+        Siguiente
+      </button>
+    </div>
+  </ng-container>
+
+  <app-reserva-form
+    *ngIf="habitacionSeleccionada() as hab"
+    [habitacion]="hab"
+    [hotelNombre]="data.hotelNombre"
+    (cerrar)="cerrarReserva()"
+  />
+
+  <app-establecimiento-form
+    *ngIf="mostrarFormEstablecimiento()"
+    (creado)="onEstablecimientoCreado()"
+    (cerrar)="mostrarFormEstablecimiento.set(false)"
+  />
+
+  <app-alojamiento-form
+    *ngIf="mostrarFormAlojamiento()"
+    [establecimientos]="establecimientos()"
+    [alojamientoAEditar]="alojamientoAEditar()"
+    (creado)="onAlojamientoGuardado()"
+    (actualizado)="onAlojamientoGuardado()"
+    (cerrar)="cerrarFormAlojamiento()"
+  />
+
+  <app-servicios-panel *ngIf="mostrarServicios()" (cerrar)="mostrarServicios.set(false)" />
+
+  <app-ical-modal
+    *ngIf="alojamientoParaIcal() as h"
+    [alojamientoId]="h.alojamiento_id"
+    [etiquetaUnidad]="h.etiqueta_unidad"
+    (cerrar)="cerrarIcal()"
+  />
+
+  <!-- ===== Modal de Carga de Alojamientos ===== -->
+  <div class="modal-overlay" *ngIf="cargando() && establecimientos().length > 0">
+    <div class="modal-panel">
+      <div class="modal-loading">
+        <div class="modal-loading__icon">
+          <app-icon name="sparkles" class="pms-spin" [size]="32" />
+        </div>
+        <h3>Cargando alojamientos…</h3>
+        <p>Obteniendo el estado de las habitaciones</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== Modal Mandar a Limpieza (Admin Prioridad) ===== -->
+  <div class="modal-overlay" *ngIf="modalLimpiezaAbierto" (click)="cerrarModalLimpieza()">
+    <div class="modal-panel" (click)="$event.stopPropagation()">
+
+      <!-- Estado cargando / procesando envio -->
+      <ng-container *ngIf="enviandoLimpieza">
+        <div class="modal-loading">
+          <div class="modal-loading__icon">
+            <app-icon name="sparkles" class="pms-spin" [size]="32" />
+          </div>
+          <h3>Enviando a Limpieza…</h3>
+          <p>Registrando orden con prioridad {{ prioridadLimpieza }}</p>
+        </div>
+      </ng-container>
+
+      <!-- Formulario -->
+      <ng-container *ngIf="!enviandoLimpieza">
+        <div class="modal-header">
+          <h2><app-icon name="sparkles" [size]="20" /> Mandar a Limpieza</h2>
+          <button class="modal-close" (click)="cerrarModalLimpieza()"><app-icon name="x" [size]="18" /></button>
+        </div>
+
+        <div class="modal-body" *ngIf="alojamientoParaLimpieza as a">
+          <div class="modal-detail-grid">
+            <div class="modal-detail">
+              <span class="modal-detail__label">Habitación / Alojamiento</span>
+              <span class="modal-detail__value">{{ a.etiqueta_unidad }}</span>
+            </div>
+            <div class="modal-detail">
+              <span class="modal-detail__label">Tipo</span>
+              <span class="modal-detail__value">{{ a.tipo_alojamiento }}</span>
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label class="modal-detail__label">Prioridad de Limpieza</label>
+            <div class="prioridad-selector">
+              <button
+                type="button"
+                class="prioridad-btn prioridad-btn--alta"
+                [class.is-selected]="prioridadLimpieza === 'Alta'"
+                (click)="prioridadLimpieza = 'Alta'"
+              >
+                🔴 Alta (Urgente)
+              </button>
+              <button
+                type="button"
+                class="prioridad-btn prioridad-btn--media"
+                [class.is-selected]="prioridadLimpieza === 'Media'"
+                (click)="prioridadLimpieza = 'Media'"
+              >
+                🔵 Media (Normal)
+              </button>
+              <button
+                type="button"
+                class="prioridad-btn prioridad-btn--baja"
+                [class.is-selected]="prioridadLimpieza === 'Baja'"
+                (click)="prioridadLimpieza = 'Baja'"
+              >
+                ⚪ Baja (Rutina)
+              </button>
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label class="modal-detail__label" for="notasLimpieza">Notas adicionales (opcional)</label>
+            <textarea
+              id="notasLimpieza"
+              class="modal-textarea"
+              [(ngModel)]="notasLimpieza"
+              placeholder="Ej: Cambio de sábanas completo, reposición de amenities..."
+              rows="2"
+            ></textarea>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="pms-btn pms-btn--outline" (click)="cerrarModalLimpieza()">Cancelar</button>
+          <button class="pms-btn pms-btn--orange" (click)="confirmarEnviarALimpieza()">
+            <app-icon name="sparkles" [size]="14" /> Enviar a Limpieza
+          </button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+
+  <!-- ===== Modal Mandar a Mantenimiento (Admin) ===== -->
+  <div class="modal-overlay" *ngIf="modalMantenimientoAbierto" (click)="cerrarModalMantenimiento()">
+    <div class="modal-panel" (click)="$event.stopPropagation()">
+
+      <!-- Procesando envio -->
+      <ng-container *ngIf="enviandoMantenimiento">
+        <div class="modal-loading">
+          <div class="modal-loading__icon">
+            <app-icon name="sparkles" class="pms-spin" [size]="32" />
+          </div>
+          <h3>Enviando a Mantenimiento…</h3>
+          <p>Registrando orden de mantenimiento técnico</p>
+        </div>
+      </ng-container>
+
+      <!-- Formulario -->
+      <ng-container *ngIf="!enviandoMantenimiento">
+        <div class="modal-header">
+          <h2><app-icon name="wrench" [size]="20" /> Mandar a Mantenimiento</h2>
+          <button class="modal-close" (click)="cerrarModalMantenimiento()"><app-icon name="x" [size]="18" /></button>
+        </div>
+
+        <div class="modal-body" *ngIf="alojamientoParaMantenimiento as a">
+          <div class="modal-detail-grid">
+            <div class="modal-detail">
+              <span class="modal-detail__label">Habitación / Alojamiento</span>
+              <span class="modal-detail__value">{{ a.etiqueta_unidad }}</span>
+            </div>
+            <div class="modal-detail">
+              <span class="modal-detail__label">Tipo</span>
+              <span class="modal-detail__value">{{ a.tipo_alojamiento }}</span>
+            </div>
+          </div>
+
+          <div class="modal-field">
+            <label class="modal-detail__label" for="motivoMantenimiento">Descripción del problema / Incidencia</label>
+            <textarea
+              id="motivoMantenimiento"
+              class="modal-textarea"
+              [(ngModel)]="motivoMantenimiento"
+              placeholder="Ej: Fuga de agua en el baño, aire acondicionado descompuesto..."
+              rows="3"
+            ></textarea>
+          </div>
+
+          <div class="modal-field">
+            <label class="modal-detail__label">Prioridad</label>
+            <div class="prioridad-selector">
+              <button
+                type="button"
+                class="prioridad-btn prioridad-btn--alta"
+                [class.is-selected]="prioridadMantenimiento === 'alta'"
+                (click)="prioridadMantenimiento = 'alta'"
+              >
+                🔴 Alta (Urgente)
+              </button>
+              <button
+                type="button"
+                class="prioridad-btn prioridad-btn--media"
+                [class.is-selected]="prioridadMantenimiento === 'media'"
+                (click)="prioridadMantenimiento = 'media'"
+              >
+                🔵 Media (Normal)
+              </button>
+              <button
+                type="button"
+                class="prioridad-btn prioridad-btn--baja"
+                [class.is-selected]="prioridadMantenimiento === 'baja'"
+                (click)="prioridadMantenimiento = 'baja'"
+              >
+                ⚪ Baja (Rutina)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button class="pms-btn pms-btn--outline" (click)="cerrarModalMantenimiento()">Cancelar</button>
+          <button class="pms-btn pms-btn--primary" (click)="confirmarEnviarAMantenimiento()">
+            <app-icon name="wrench" [size]="14" /> Enviar a Mantenimiento
+          </button>
+        </div>
+      </ng-container>
+    </div>
+  </div>
+</div>

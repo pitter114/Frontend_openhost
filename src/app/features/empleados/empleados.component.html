@@ -1,0 +1,152 @@
+<div class="pms-page pms-page--wide">
+  <div class="pms-page-header pms-page-header--flex">
+    <div>
+      <h1>Empleados</h1>
+      <p>{{ empleados().length }} personas con acceso a tu organización</p>
+    </div>
+    <button type="button" class="pms-btn pms-btn--primary" (click)="abrirForm()" *ngIf="!mostrarForm()">
+      <app-icon name="plus" [size]="16" /> Invitar empleado
+    </button>
+  </div>
+
+  <div class="auth-error" *ngIf="error()">
+    <app-icon name="alert" [size]="16" />
+    <span>{{ error() }}</span>
+  </div>
+
+  <!-- Formulario de invitación -->
+  <div class="pms-card emp-form" *ngIf="mostrarForm()">
+    <ng-container *ngIf="!invitacionExitosa(); else exito">
+      <div class="emp-form__head">
+        <h2>Invitar nuevo empleado</h2>
+        <button type="button" class="emp-form__close" (click)="cerrarForm()">
+          <app-icon name="x" [size]="18" />
+        </button>
+      </div>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
+        <div class="field-row">
+          <label class="field">
+            <span>Nombre</span>
+            <input type="text" formControlName="nombre" placeholder="María" />
+            <small class="field__error" *ngIf="form.get('nombre')?.touched && form.get('nombre')?.invalid">Obligatorio</small>
+          </label>
+          <label class="field">
+            <span>Apellido</span>
+            <input type="text" formControlName="apellido" placeholder="Gómez" />
+            <small class="field__error" *ngIf="form.get('apellido')?.touched && form.get('apellido')?.invalid">Obligatorio</small>
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Tipo de documento</span>
+            <select formControlName="tipo_documento_id">
+              <option *ngFor="let t of tiposDocumento" [ngValue]="t.id">{{ t.nombre }}</option>
+            </select>
+          </label>
+          <label class="field">
+            <span>N.° de documento</span>
+            <input type="text" formControlName="numero_documento" placeholder="12345678" />
+            <small class="field__error" *ngIf="form.get('numero_documento')?.touched && form.get('numero_documento')?.invalid">Obligatorio</small>
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Teléfono</span>
+            <input type="tel" formControlName="numero_telefono" placeholder="987654321" />
+            <small class="field__error" *ngIf="form.get('numero_telefono')?.touched && form.get('numero_telefono')?.invalid">Solo números</small>
+          </label>
+          <label class="field">
+            <span>Rol</span>
+            <select formControlName="rol_slug">
+              <option *ngFor="let r of rolesEmpleado" [ngValue]="r.slug">{{ r.nombre }}</option>
+            </select>
+          </label>
+        </div>
+
+        <label class="field">
+          <span>Correo electrónico</span>
+          <input type="email" formControlName="correo" placeholder="empleado@correo.com" />
+          <small class="field__error" *ngIf="form.get('correo')?.touched && form.get('correo')?.invalid">
+            Ingresa un correo válido
+          </small>
+        </label>
+
+        <p class="emp-form__hint">
+          Si el correo no tiene cuenta todavía, le llega una invitación para crear su contraseña. Si ya tiene cuenta
+          en HotelPMS, se une a tu organización directamente.
+        </p>
+
+        <button type="submit" class="pms-btn pms-btn--primary emp-submit" [disabled]="guardando()">
+          <span *ngIf="!guardando()">Invitar</span>
+          <span *ngIf="guardando()">Invitando…</span>
+        </button>
+      </form>
+    </ng-container>
+
+    <ng-template #exito>
+      <div class="emp-exito">
+        <div class="emp-exito__icon"><app-icon name="shield" [size]="24" color="var(--pms-green)" /></div>
+        <div class="emp-exito__title">Empleado invitado</div>
+        <p>Ya aparece en tu lista de personal.</p>
+      </div>
+    </ng-template>
+  </div>
+
+  <!-- Listado -->
+  <!-- Modal de Carga de Empleados -->
+  <app-loading-modal
+    *ngIf="cargando()"
+    titulo="Cargando empleados…"
+    subtitulo="Obteniendo la lista de miembros y accesos del hotel"
+  />
+
+  <!-- Modal Procesando Invitación -->
+  <app-loading-modal
+    *ngIf="guardando()"
+    titulo="Enviando invitación…"
+    subtitulo="Registrando nuevo miembro del equipo"
+  />
+
+  <div class="pms-card table-card">
+    <div class="table-card__head">
+      <div class="pms-search">
+        <app-icon name="search" [size]="15" />
+        <input type="text" placeholder="Buscar por nombre o correo..." [value]="search()" (input)="search.set($any($event.target).value)" />
+      </div>
+      <span class="count-pill">{{ filtrados().length }} empleados</span>
+    </div>
+
+    <table class="pms-table" *ngIf="!cargando() && filtrados().length > 0">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Correo</th>
+          <th>Roles</th>
+          <th>Estado</th>
+          <th>Desde</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let emp of filtrados()">
+          <td>{{ emp.nombre }} {{ emp.apellido }}</td>
+          <td>{{ emp.correo }}</td>
+          <td>
+            <span class="pms-badge pms-badge--gray" *ngFor="let r of emp.roles">{{ r }}</span>
+          </td>
+          <td>
+            <span class="pms-badge pms-badge--green" *ngIf="emp.estado === 'activo'">Activo</span>
+            <span class="pms-badge pms-badge--amber" *ngIf="emp.estado !== 'activo'">{{ emp.estado }}</span>
+          </td>
+          <td>{{ emp.fecha_ingreso | date: 'd MMM y' }}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="!cargando() && filtrados().length === 0" class="tabla-estado">
+      No hay empleados que coincidan con la búsqueda.
+    </div>
+  </div>
+</div>

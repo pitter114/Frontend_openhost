@@ -1,0 +1,512 @@
+<div class="pms-page">
+  <!-- Encabezado -->
+  <div class="pms-page-header pms-page-header--flex">
+    <div>
+      <h1>👥 Cuentas & Seguridad de Plataforma</h1>
+      <p>Gestión asistida de accesos, protocolo de robo de celulares, 2FA y lista blanca de IPs</p>
+    </div>
+    <div class="header-badges">
+      <span class="badge-shield">
+        <app-icon name="shield" [size]="14" />
+        Protección Activa
+      </span>
+    </div>
+  </div>
+
+  <!-- Notificación Flotante -->
+  <div class="feedback-toast" *ngIf="mensajeFeedback()">
+    <app-icon name="alert" [size]="16" />
+    <span>{{ mensajeFeedback() }}</span>
+  </div>
+
+  <!-- Tarjetas KPI Rápidas de Seguridad -->
+  <div class="pms-grid kpi-row">
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__icon kpi-card__icon--blue">
+        <app-icon name="users" [size]="18" />
+      </div>
+      <div class="kpi-card__value">{{ totalCuentas() }}</div>
+      <div class="kpi-card__label">Cuentas Registradas</div>
+    </div>
+
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__icon kpi-card__icon--green">
+        <app-icon name="shield" [size]="18" />
+      </div>
+      <div class="kpi-card__value">{{ cuentasCon2fa() }}</div>
+      <div class="kpi-card__label">Con 2FA / Authenticator</div>
+    </div>
+
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__icon kpi-card__icon--purple">
+        <app-icon name="login" [size]="18" />
+      </div>
+      <div class="kpi-card__value">{{ totalSesiones() }}</div>
+      <div class="kpi-card__label">Sesiones Activas (Tokens)</div>
+    </div>
+
+    <div class="pms-card kpi-card">
+      <div class="kpi-card__icon kpi-card__icon--red">
+        <app-icon name="alert" [size]="18" />
+      </div>
+      <div class="kpi-card__value">{{ cuentasBloqueadas() }}</div>
+      <div class="kpi-card__label">Cuentas Suspendidas</div>
+    </div>
+  </div>
+
+  <!-- Navegación de Pestañas -->
+  <div class="tabs-nav">
+    <button
+      type="button"
+      class="tab-btn"
+      [class.tab-btn--active]="pestanaActiva() === 'cuentas'"
+      (click)="pestanaActiva.set('cuentas')"
+    >
+      <span>👤 Directorio Global de Cuentas</span>
+      <span class="tab-count">{{ cuentasFiltradas().length }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="tab-btn"
+      [class.tab-btn--active]="pestanaActiva() === 'ips'"
+      (click)="pestanaActiva.set('ips')"
+    >
+      <span>🌐 Restricción de Red e IP Whitelist</span>
+      <span class="tab-count">{{ hotelesIp().length }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="tab-btn"
+      [class.tab-btn--active]="pestanaActiva() === 'auditoria'"
+      (click)="pestanaActiva.set('auditoria')"
+    >
+      <span>🛡️ Auditoría Forense & Logs de Seguridad</span>
+      <span class="tab-count">{{ logs().length }}</span>
+    </button>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- PESTAÑA 1: DIRECTORIO DE CUENTAS           -->
+  <!-- ========================================== -->
+  <div class="tab-content" *ngIf="pestanaActiva() === 'cuentas'">
+    <div class="pms-card toolbar-card">
+      <div class="search-box">
+        <app-icon name="search" [size]="16" />
+        <input
+          type="text"
+          placeholder="Buscar por nombre, correo, hotel o documento..."
+          [ngModel]="busqueda()"
+          (ngModelChange)="busqueda.set($event)"
+        />
+      </div>
+
+      <div class="filters-group">
+        <select class="pms-select" [ngModel]="filtroRol()" (ngModelChange)="filtroRol.set($event)">
+          <option value="todos">Todos los Roles</option>
+          <option value="propietario">Propietarios</option>
+          <option value="administrador">Administradores</option>
+          <option value="gerente">Gerentes</option>
+          <option value="recepcionista">Recepcionistas</option>
+          <option value="caja">Cajeros</option>
+          <option value="limpieza">Limpieza / Mucamas</option>
+        </select>
+
+        <select class="pms-select" [ngModel]="filtroEstado()" (ngModelChange)="filtroEstado.set($event)">
+          <option value="todos">Todos los Estados</option>
+          <option value="activo">Solo Activas</option>
+          <option value="suspendido">Solo Suspendidas / Bloqueadas</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="pms-card table-card">
+      <div class="table-responsive">
+        <table class="pms-table">
+          <thead>
+            <tr>
+              <th>Usuario & Contacto</th>
+              <th>Hotel Asignado</th>
+              <th>Rol & Nivel</th>
+              <th>Seguridad 2FA</th>
+              <th>Sesiones</th>
+              <th>Estado</th>
+              <th>Acciones Rápidas de Seguridad</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let c of cuentasFiltradas()">
+              <td>
+                <div class="user-cell">
+                  <div class="user-avatar" [class.user-avatar--suspended]="c.estado === 'suspendido'">
+                    {{ c.nombre.charAt(0).toUpperCase() }}
+                  </div>
+                  <div>
+                    <strong class="user-name">{{ c.nombre }}</strong>
+                    <div class="user-email">{{ c.correo }}</div>
+                    <span class="user-doc" *ngIf="c.documento !== '—'">Doc: {{ c.documento }}</span>
+                  </div>
+                </div>
+              </td>
+
+              <td>
+                <span class="hotel-pill">{{ c.hotel }}</span>
+              </td>
+
+              <td>
+                <span class="role-badge" [class.role-badge--op]="c.es_operativo">
+                  {{ c.rol }}
+                </span>
+                <span class="badge-role-type" *ngIf="c.es_operativo">Operativo</span>
+                <span class="badge-role-type badge-role-type--admin" *ngIf="!c.es_operativo">Gestión</span>
+              </td>
+
+              <td>
+                <span class="badge-2fa" [class.badge-2fa--active]="c.dosfa_activo">
+                  <app-icon name="shield" [size]="12" />
+                  {{ c.dosfa_activo ? '2FA Activo' : 'Sin 2FA' }}
+                </span>
+                <span class="temp-badge" *ngIf="c.contrasena_temporal" title="El usuario debe cambiarla al entrar">
+                  🔑 Clave Temporal
+                </span>
+              </td>
+
+              <td>
+                <span class="sessions-badge" [class.sessions-badge--active]="c.sesiones_activas > 0">
+                  <span class="dot"></span>
+                  {{ c.sesiones_activas }} {{ c.sesiones_activas === 1 ? 'dispositivo' : 'dispositivos' }}
+                </span>
+              </td>
+
+              <td>
+                <span
+                  class="status-tag"
+                  [class.status-tag--active]="c.estado === 'activo'"
+                  [class.status-tag--blocked]="c.estado === 'suspendido'"
+                >
+                  {{ c.estado === 'activo' ? 'Activo' : 'Suspendido' }}
+                </span>
+              </td>
+
+              <td>
+                <div class="actions-group">
+                  <!-- Botón 🚨 Robo Celular -->
+                  <button
+                    type="button"
+                    class="btn-sec-action btn-sec-action--danger"
+                    title="🚨 Emergencia por robo: Revoca sesiones, limpia 2FA y genera clave temporal"
+                    (click)="abrirModalRobo(c)"
+                  >
+                    🚨 Robo Celular
+                  </button>
+
+                  <!-- Botón 🔑 Reset Clave -->
+                  <button
+                    type="button"
+                    class="btn-sec-action btn-sec-action--primary"
+                    title="Cambiar o generar contraseña temporal"
+                    (click)="abrirModalReset(c)"
+                  >
+                    🔑 Clave
+                  </button>
+
+                  <!-- Botón ⚡ Expulsar Sesiones -->
+                  <button
+                    type="button"
+                    class="btn-sec-action btn-sec-action--warn"
+                    title="Cerrar todas las sesiones abiertas de esta cuenta"
+                    (click)="cerrarSesiones(c)"
+                    [disabled]="c.sesiones_activas === 0"
+                  >
+                    ⚡ Expulsar
+                  </button>
+
+                  <!-- Botón 🔒 Bloquear / Desbloquear -->
+                  <button
+                    type="button"
+                    class="btn-sec-action"
+                    [class.btn-sec-action--unblock]="c.estado === 'suspendido'"
+                    [title]="c.estado === 'activo' ? 'Suspender acceso temporalmente' : 'Reactivar cuenta'"
+                    (click)="toggleBloqueo(c)"
+                  >
+                    {{ c.estado === 'activo' ? '🔒 Bloquear' : '🔓 Desbloquear' }}
+                  </button>
+                </div>
+              </td>
+            </tr>
+
+            <tr *ngIf="cuentasFiltradas().length === 0">
+              <td colspan="7" class="table-empty">
+                No se encontraron cuentas con los filtros seleccionados.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- PESTAÑA 2: LISTA BLANCA DE IPS             -->
+  <!-- ========================================== -->
+  <div class="tab-content" *ngIf="pestanaActiva() === 'ips'">
+    <div class="ip-info-banner">
+      <div class="ip-info-banner__left">
+        <h3>🌐 Política de Red y Acceso Físico en Sedes</h3>
+        <p>
+          Protege a los hoteles obligando a que recepcionistas, cajeros y mucamas
+          <strong>solo puedan ingresar conectados a la red Wi-Fi o fibra del hotel</strong>.
+          Los propietarios y gerentes conservan acceso remoto desde cualquier lugar.
+        </p>
+      </div>
+      <div class="current-ip-box">
+        <span class="label">Tu IP Pública Actual:</span>
+        <strong class="ip-val">{{ tuIpActual() }}</strong>
+      </div>
+    </div>
+
+    <div class="hotels-ip-grid">
+      <div class="pms-card hotel-ip-card" *ngFor="let h of hotelesIp()">
+        <div class="hotel-ip-card__header">
+          <div>
+            <h4>{{ h.hotel }}</h4>
+            <span class="hotel-ip-card__meta">RUC: {{ h.ruc || 'Sin RUC' }} · {{ h.correo }}</span>
+          </div>
+
+          <label class="switch-toggle" title="Activar/Desactivar restricción de red">
+            <input type="checkbox" [(ngModel)]="h.restringir_ip_operativa" />
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="policy-indicator" [class.policy-indicator--active]="h.restringir_ip_operativa">
+          <span class="dot"></span>
+          <span>
+            {{
+              h.restringir_ip_operativa
+                ? 'Restricción ACTIVADA: Personal operativo bloqueado fuera de estas IPs'
+                : 'Restricción DESACTIVADA: Empleados pueden entrar desde cualquier red'
+            }}
+          </span>
+        </div>
+
+        <div class="form-group" style="margin-top: 14px;">
+          <div class="label-with-action">
+            <label>IPs Autorizadas de la Sede (Separadas por comas)</label>
+            <button type="button" class="btn-capture-ip" (click)="capturarMiIp(h)">
+              📍 Capturar mi IP actual
+            </button>
+          </div>
+          <input
+            type="text"
+            class="pms-input"
+            [(ngModel)]="h.ip_whitelist"
+            placeholder="Ejemplo: 190.113.88.24, 200.48.10.50, 127.0.0.1"
+          />
+          <span class="field-hint">
+            Agrega la IP pública del router de recepción. Puedes añadir varias separadas por coma.
+          </span>
+        </div>
+
+        <div class="hotel-ip-card__footer">
+          <button
+            type="button"
+            class="pms-btn pms-btn--primary"
+            (click)="guardarIpConfig(h)"
+            [disabled]="guardandoIpId() === h.organizacion_id"
+          >
+            <span>{{ guardandoIpId() === h.organizacion_id ? 'Guardando...' : 'Guardar Política IP' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- PESTAÑA 3: AUDITORÍA FORENSE & LOGS        -->
+  <!-- ========================================== -->
+  <div class="tab-content" *ngIf="pestanaActiva() === 'auditoria'">
+    <div class="pms-card table-card">
+      <div class="table-card__header">
+        <h3>🛡️ Historial Forense de Acciones de Seguridad</h3>
+        <p class="chart-card__sub">Registro inmutable de reseteos de claves, emergencias de robo y bloqueos</p>
+      </div>
+
+      <div class="table-responsive">
+        <table class="pms-table">
+          <thead>
+            <tr>
+              <th>Fecha y Hora</th>
+              <th>Tipo de Evento</th>
+              <th>Usuario Afectado</th>
+              <th>Hotel / Sede</th>
+              <th>IP Origen</th>
+              <th>Detalle de la Operación</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let l of logs()">
+              <td class="cell-mono">{{ l.fecha }}</td>
+              <td>
+                <span class="event-tag" [ngClass]="'event-tag--' + l.tipo_evento">
+                  {{ l.tipo_evento }}
+                </span>
+              </td>
+              <td>
+                <strong>{{ l.usuario }}</strong>
+                <div class="user-email">{{ l.correo }}</div>
+              </td>
+              <td>{{ l.hotel }}</td>
+              <td class="cell-mono">{{ l.ip_origen }}</td>
+              <td class="cell-desc">{{ l.descripcion }}</td>
+            </tr>
+
+            <tr *ngIf="logs().length === 0">
+              <td colspan="6" class="table-empty">
+                No hay eventos de seguridad registrados hasta el momento.
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: CAMBIO / RESET DE CONTRASEÑA        -->
+  <!-- ========================================== -->
+  <div class="modal-backdrop" *ngIf="mostrarModalReset()" (click)="cerrarModalReset()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>🔑 Restablecer Contraseña</h3>
+          <p class="modal-sub">Cuenta: <strong>{{ cuentaSeleccionada()?.correo }}</strong> ({{ cuentaSeleccionada()?.nombre }})</p>
+        </div>
+        <button type="button" class="modal-close" (click)="cerrarModalReset()">&times;</button>
+      </div>
+
+      <div class="modal-body" *ngIf="!resultadoClave()">
+        <div class="mode-selector">
+          <label class="mode-option" [class.mode-option--active]="modoReset() === 'temporal'">
+            <input type="radio" name="modoReset" value="temporal" [(ngModel)]="modoReset" />
+            <div>
+              <strong>Generar Clave Temporal Segura (Recomendado)</strong>
+              <p>Crea una contraseña aleatoria y obliga al usuario a cambiarla apenas inicie sesión.</p>
+            </div>
+          </label>
+
+          <label class="mode-option" [class.mode-option--active]="modoReset() === 'manual'">
+            <input type="radio" name="modoReset" value="manual" [(ngModel)]="modoReset" />
+            <div>
+              <strong>Asignar Contraseña Manualmente</strong>
+              <p>Escribe tú mismo una nueva clave para asistencia presencial o telefónica.</p>
+            </div>
+          </label>
+        </div>
+
+        <div class="form-group" *ngIf="modoReset() === 'manual'" style="margin-top: 14px;">
+          <label>Nueva Contraseña (mínimo 6 caracteres)</label>
+          <input
+            type="text"
+            class="pms-input"
+            [(ngModel)]="nuevaClaveManual"
+            placeholder="Escribe la nueva contraseña..."
+          />
+        </div>
+      </div>
+
+      <!-- Pantalla de Éxito con la Clave Generada -->
+      <div class="modal-body modal-body--success" *ngIf="resultadoClave()">
+        <div class="success-icon">✅</div>
+        <h4>¡Contraseña Generada con Éxito!</h4>
+        <p>Copia esta contraseña y entrégala al usuario por un medio seguro:</p>
+
+        <div class="key-display-box">
+          <code>{{ resultadoClave() }}</code>
+        </div>
+
+        <div class="alert-box-warning" *ngIf="modoReset() === 'temporal'">
+          ℹ️ Esta clave es temporal. Al iniciar sesión, el sistema le exigirá crear su nueva clave personal.
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="pms-btn pms-btn--outline" (click)="cerrarModalReset()">
+          {{ resultadoClave() ? 'Cerrar' : 'Cancelar' }}
+        </button>
+        <button
+          type="button"
+          class="pms-btn pms-btn--primary"
+          *ngIf="!resultadoClave()"
+          (click)="ejecutarResetPassword()"
+          [disabled]="procesandoReset()"
+        >
+          <span>{{ procesandoReset() ? 'Actualizando...' : 'Confirmar Cambio de Clave' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================== -->
+  <!-- MODAL: EMERGENCIA POR ROBO DE CELULAR      -->
+  <!-- ========================================== -->
+  <div class="modal-backdrop" *ngIf="mostrarModalRobo()" (click)="cerrarModalRobo()">
+    <div class="modal-card modal-card--danger" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>🚨 Protocolo de Emergencia por Robo</h3>
+          <p class="modal-sub">Usuario: <strong>{{ cuentaSeleccionada()?.correo }}</strong></p>
+        </div>
+        <button type="button" class="modal-close" (click)="cerrarModalRobo()">&times;</button>
+      </div>
+
+      <div class="modal-body" *ngIf="!resultadoRobo()">
+        <div class="theft-warning-box">
+          <div class="warning-title">⚠️ Acción Inmediata de Seguridad</div>
+          <p>Al confirmar el protocolo de robo, el sistema ejecutará automáticamente:</p>
+          <ul class="theft-checklist">
+            <li><strong>Expulsión Total:</strong> Cierra y revoca todas las sesiones en teléfonos y navegadores al instante.</li>
+            <li><strong>Desvincular 2FA:</strong> Limpia el secreto de Google Authenticator del teléfono robado.</li>
+            <li><strong>Nueva Clave Temporal:</strong> Invalida la contraseña anterior y emite una clave de rescate de un solo uso.</li>
+          </ul>
+        </div>
+
+        <label class="freeze-checkbox">
+          <input type="checkbox" [(ngModel)]="suspenderEnRobo" />
+          <span>Congelar la cuenta preventivamente (No permitir login hasta nuevo aviso).</span>
+        </label>
+      </div>
+
+      <!-- Pantalla de Rescate Tras Ejecución -->
+      <div class="modal-body modal-body--success" *ngIf="resultadoRobo()">
+        <div class="success-icon">🛡️</div>
+        <h4>¡Dispositivo Robado Expulsado!</h4>
+        <p>El ladrón ha sido desconectado y el 2FA fue reseteado. Entrega esta clave de rescate al dueño legítimo:</p>
+
+        <div class="key-display-box key-display-box--emergency">
+          <code>{{ resultadoRobo()?.clave }}</code>
+        </div>
+
+        <p class="theft-note">
+          El usuario podrá entrar con esta clave temporal y vincular su nuevo celular con total tranquilidad.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="pms-btn pms-btn--outline" (click)="cerrarModalRobo()">
+          {{ resultadoRobo() ? 'Cerrar' : 'Cancelar' }}
+        </button>
+        <button
+          type="button"
+          class="pms-btn pms-btn--danger-full"
+          *ngIf="!resultadoRobo()"
+          (click)="ejecutarProtocoloRobo()"
+          [disabled]="procesandoRobo()"
+        >
+          <span>{{ procesandoRobo() ? 'Expulsando sesiones...' : '⚡ Ejecutar Protocolo de Rescate' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

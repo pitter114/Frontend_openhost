@@ -1,0 +1,277 @@
+<div class="pms-page pms-page--wide">
+  <!-- Modal de Carga de Calendario -->
+  <app-loading-modal
+    *ngIf="data.cargandoReservas() || cargandoAlojamientos()"
+    titulo="Cargando calendario…"
+    subtitulo="Consultando ocupación y reservas activas por unidad"
+  />
+
+  <!-- Encabezado del Calendario -->
+  <div class="pms-page-header pms-page-header--flex">
+    <div>
+      <div class="header-title-row">
+        <h1>Calendario PMS</h1>
+        <span class="pms-badge pms-badge--blue">
+          <app-icon name="calendar" [size]="12" />
+          {{ reservasEnRango }} reservas en este periodo
+        </span>
+      </div>
+      <p>Matriz de ocupación interactiva con visualización de estancias continuas</p>
+    </div>
+
+    <!-- Controles de Vista y Navegación Temporal -->
+    <div class="header-controls">
+      <!-- Selector de Rango Responsivo (7 Días / 14 Días / Mes) -->
+      <div class="range-selector">
+        <button
+          type="button"
+          class="range-btn"
+          [class.is-active]="vistaRango() === '7'"
+          (click)="setVistaRango('7')"
+          title="Vista semanal de 7 días (ideal para móviles y detalles amplios)"
+        >
+          7 Días
+        </button>
+        <button
+          type="button"
+          class="range-btn"
+          [class.is-active]="vistaRango() === '14'"
+          (click)="setVistaRango('14')"
+          title="Vista quincenal de 14 días (balance óptimo)"
+        >
+          14 Días
+        </button>
+        <button
+          type="button"
+          class="range-btn"
+          [class.is-active]="vistaRango() === 'mes'"
+          (click)="setVistaRango('mes')"
+          title="Vista de mes completo"
+        >
+          Mes
+        </button>
+      </div>
+
+      <!-- Navegador de Periodo -->
+      <div class="month-nav">
+        <button type="button" class="icon-btn" title="Periodo Anterior" (click)="shift(-1)">
+          <app-icon name="chevronLeft" [size]="16" />
+        </button>
+        <button type="button" class="btn-hoy" (click)="irAHoy()" title="Ir al día de hoy">
+          Hoy
+        </button>
+        <span class="month-label">{{ rangeLabel }}</span>
+        <button type="button" class="icon-btn" title="Periodo Siguiente" (click)="shift(1)">
+          <app-icon name="chevronRight" [size]="16" />
+        </button>
+      </div>
+
+      <!-- Buscador de Habitaciones -->
+      <div class="pms-search cal-search">
+        <app-icon name="search" [size]="15" />
+        <input
+          type="text"
+          placeholder="Buscar habitación..."
+          [ngModel]="filtroTexto()"
+          (ngModelChange)="filtroTexto.set($event)"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Barra de Leyenda de Estados -->
+  <div class="legend-bar pms-card">
+    <div class="legend-items">
+      <span *ngFor="let l of legend" class="legend-item">
+        <i class="legend-dot" [style.background]="l.color"></i>
+        <span>{{ l.label }}</span>
+      </span>
+    </div>
+    <div class="legend-hint">
+      <app-icon name="sparkles" [size]="13" />
+      <span>Haz clic en una reserva para ver sus detalles o en un día libre para reservar</span>
+    </div>
+  </div>
+
+  <!-- Contenedor Tape-Chart con Scroll Horizontal Protegido y Columnas Ocupables -->
+  <div class="pms-card grid-wrap">
+    <table class="cal-table" [class.cal-table--week]="vistaRango() === '7'" [class.cal-table--biweek]="vistaRango() === '14'">
+      <thead>
+        <tr>
+          <!-- Columna Fija Totalmente Opaca (Sin solapamientos ni transparencias) -->
+          <th class="cal-table__room-col">
+            <div class="col-title">Unidad / Alojamiento</div>
+            <div class="col-sub">{{ habitacionesFiltradas.length }} unidades</div>
+          </th>
+
+          <!-- Columnas de los Días -->
+          <th
+            *ngFor="let d of days"
+            class="cal-table__day-th"
+            [class.is-today]="d.isToday"
+            [class.is-weekend]="d.isWeekend"
+            [title]="d.dateStr"
+          >
+            <!-- En vista de 7 días se muestra nombre de día expandido (Lun, Mar...) -->
+            <div class="cal-table__dow" *ngIf="vistaRango() === '7'">{{ d.dowLong }}</div>
+            <div class="cal-table__dow" *ngIf="vistaRango() !== '7'">{{ d.dow }}</div>
+            
+            <div class="cal-table__day-badge" [class.badge-today]="d.isToday">
+              <span>{{ d.num }}</span>
+              <small *ngIf="vistaRango() === '7'" class="sub-month">{{ d.monthShort }}</small>
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let h of habitacionesFiltradas">
+          <!-- Columna Fija de la Habitación (Opaque Ground) -->
+          <td class="cal-table__room-col">
+            <div class="room-info">
+              <div class="room-name" [title]="h.nombre">{{ h.nombre }}</div>
+              <div class="room-type">{{ h.tipo }}</div>
+              <div class="room-price" *ngIf="h.precio">S/ {{ h.precio }} <small>/noche</small></div>
+            </div>
+          </td>
+
+          <!-- Celdas de Fechas -->
+          <td
+            *ngFor="let d of days"
+            class="cal-cell"
+            [class.is-today]="d.isToday"
+            [class.is-weekend]="d.isWeekend"
+            (click)="!getReservaForCell(h, d.dateStr) && crearReservaEnFecha(h, d.dateStr)"
+          >
+            <!-- Caso 1: Hay Reserva Activa en este día -->
+            <ng-container *ngIf="getReservaForCell(h, d.dateStr) as res">
+              <div
+                class="res-bar"
+                [class.res-bar--start]="isReservaStart(res, d.dateStr)"
+                [class.res-bar--end]="isReservaEnd(res, d.dateStr)"
+                [style.background]="getReservaColor(res)"
+                (click)="abrirDetalleReserva(res, $event)"
+                [title]="'Reserva ' + res.codigo + ': ' + res.cliente + ' (' + res.checkIn + ' al ' + res.checkOut + ')'"
+              >
+                <!-- Texto en la barra: Se muestra siempre si es el inicio o primer día de la vista -->
+                <div class="res-bar__content" *ngIf="isReservaStart(res, d.dateStr) || d.dateStr === days[0].dateStr">
+                  <span class="res-client">{{ res.cliente }}</span>
+                  <span class="res-code">{{ res.codigo }}</span>
+                </div>
+              </div>
+            </ng-container>
+
+            <!-- Caso 2: Día Disponible / Libre -->
+            <div *ngIf="!getReservaForCell(h, d.dateStr)" class="empty-cell-hint" title="Crear reserva en esta fecha">
+              <app-icon name="plus" [size]="12" />
+            </div>
+          </td>
+        </tr>
+
+        <!-- Estado vacío si el filtro de búsqueda no encuentra habitaciones -->
+        <tr *ngIf="habitacionesFiltradas.length === 0">
+          <td [attr.colspan]="days.length + 1" class="empty-filter-state">
+            <app-icon name="search" [size]="24" />
+            <p>No se encontraron unidades con el término "{{ filtroTexto() }}".</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Modal Detalle de Reserva (Frosted Glass) -->
+  <div class="modal-overlay" *ngIf="reservaSeleccionada() as res" (click)="cerrarDetalle()">
+    <div class="modal-panel cal-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div class="cal-modal__title-row">
+          <div class="cal-modal__icon" [style.background]="getReservaColor(res) + '22'" [style.color]="getReservaColor(res)">
+            <app-icon name="calendar" [size]="20" />
+          </div>
+          <div>
+            <h2>Reserva {{ res.codigo }}</h2>
+            <p class="modal-subtitle">Detalles de ocupación y estancia</p>
+          </div>
+          <span class="pms-badge" [style.background]="getReservaColor(res) + '20'" [style.color]="getReservaColor(res)">
+            {{ res.estado }}
+          </span>
+        </div>
+        <button type="button" class="modal-close" (click)="cerrarDetalle()">
+          <app-icon name="x" [size]="18" />
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <div class="cal-detail-grid">
+          <div class="cal-detail-item">
+            <span class="label">Huésped / Titular</span>
+            <span class="val bold">{{ res.cliente }}</span>
+          </div>
+
+          <div class="cal-detail-item">
+            <span class="label">Documento</span>
+            <span class="val">{{ res.documento || 'No registrado' }}</span>
+          </div>
+
+          <div class="cal-detail-item">
+            <span class="label">Teléfono</span>
+            <span class="val">{{ res.telefono || 'Sin teléfono' }}</span>
+          </div>
+
+          <div class="cal-detail-item">
+            <span class="label">Alojamiento</span>
+            <span class="val bold highlight">{{ res.habitacion }}</span>
+          </div>
+
+          <div class="cal-detail-item">
+            <span class="label">Fecha Check-in</span>
+            <span class="val">{{ res.checkIn }}</span>
+          </div>
+
+          <div class="cal-detail-item">
+            <span class="label">Fecha Check-out</span>
+            <span class="val">{{ res.checkOut }}</span>
+          </div>
+
+          <div class="cal-detail-item">
+            <span class="label">Monto Total</span>
+            <span class="val bold text-green">S/ {{ res.total }}</span>
+          </div>
+
+          <div class="cal-detail-item">
+            <span class="label">Saldo Pendiente</span>
+            <span class="val bold" [class.text-red]="res.debe > 0">
+              S/ {{ res.debe }}
+              <small *ngIf="res.debe === 0" class="text-green">(Pagado completo)</small>
+            </span>
+          </div>
+
+          <div class="cal-detail-item" *ngIf="res.origen">
+            <span class="label">Canal / Origen</span>
+            <span class="val">{{ res.origen }}</span>
+          </div>
+
+          <div class="cal-detail-item" *ngIf="res.huespedes">
+            <span class="label">N° de Huéspedes</span>
+            <span class="val">{{ res.huespedes }} personas</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="pms-btn pms-btn--outline" (click)="cerrarDetalle()">
+          Cerrar
+        </button>
+        <a routerLink="/admin/reservas" class="pms-btn pms-btn--primary" (click)="cerrarDetalle()">
+          <app-icon name="book" [size]="15" /> Ver en Gestión de Reservas
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Formulario de Reserva desde celda vacía -->
+  <app-reserva-form
+    *ngIf="habitacionParaReserva() as hab"
+    [habitacion]="hab"
+    [hotelNombre]="data.hotelNombre"
+    (cerrar)="cerrarReservaForm()"
+  />
+</div>

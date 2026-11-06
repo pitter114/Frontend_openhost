@@ -1,0 +1,168 @@
+<div class="pms-page pms-page--wide">
+  <!-- Modal de Carga de Clientes -->
+  <app-loading-modal
+    *ngIf="cargando()"
+    titulo="Cargando directorio de clientes…"
+    subtitulo="Sincronizando información de huéspedes de la base de datos"
+  />
+
+  <div class="pms-page-header pms-page-header--flex">
+    <div>
+      <h1>Clientes y Huéspedes</h1>
+      <p>{{ clientes().length }} clientes registrados en el sistema</p>
+    </div>
+  </div>
+
+  <div class="pms-card table-card">
+    <div class="table-card__head">
+      <div class="pms-search">
+        <app-icon name="search" [size]="15" />
+        <input type="text" placeholder="Buscar cliente, DNI, correo electrónico..." [(ngModel)]="search" />
+      </div>
+      <span class="count-pill">{{ filtered.length }} encontrados</span>
+    </div>
+
+    <table class="pms-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Nombre</th>
+          <th>DNI</th>
+          <th>Teléfono</th>
+          <th>Correo electrónico</th>
+          <th>Nac.</th>
+          <th>Estadías</th>
+          <th>Gastado</th>
+          <th>Última Visita</th>
+          <th>Frecuencia</th>
+          <th class="text-right">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let c of filtered; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td>
+            <div class="cliente-cell">
+              <span class="avatar">{{ initials(c.nombre) }}</span>
+              <div>
+                <div class="cliente-name">{{ c.nombre }}</div>
+                <div class="cliente-vip" *ngIf="c.vip">★ VIP</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ c.documento }}</td>
+          <td>{{ c.telefono }}</td>
+          <td>{{ c.correo }}</td>
+          <td><span class="pms-badge pms-badge--gray">{{ c.nacionalidad }}</span></td>
+          <td><b>{{ c.estadias }}</b></td>
+          <td class="gastado">S/ {{ c.gastado.toLocaleString('es-ES') }}</td>
+          <td>{{ formatFecha(c.ultimaVisita) }}</td>
+          <td><span class="pms-badge" [ngClass]="'pms-badge--' + frecuenciaClass(c.frecuencia)">{{ c.frecuencia }}</span></td>
+          <td class="text-right">
+            <button
+              type="button"
+              class="pms-btn pms-btn--outline pms-btn--sm btn-reportar"
+              (click)="abrirReportarIncidencia(c)"
+              title="Reportar impago, daños o conducta a la lista negra compartida"
+            >
+              <app-icon name="alert" [size]="13" />
+              <span>Reportar</span>
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="pms-card recurrentes-card" *ngIf="topRecurrentes.length > 0">
+    <h3><app-icon name="trophy" [size]="16" color="var(--pms-amber)" /> Principales clientes recurrentes</h3>
+    <div class="recurrentes-grid">
+      <div class="rec-card" *ngFor="let c of topRecurrentes; let i = index" [class.rec-card--first]="i === 0">
+        <div class="rec-card__rank"># {{ i + 1 }}<app-icon *ngIf="i === 0" name="trophy" [size]="15" color="var(--pms-amber)" /></div>
+        <div class="rec-card__name">{{ c.nombre }}</div>
+        <div class="rec-card__stays">{{ c.estadias }} estancias</div>
+        <div class="rec-card__amount">S/ {{ c.gastado.toLocaleString('es-ES') }}</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Reportar Incidencia a Lista Negra -->
+  <div class="modal-backdrop" *ngIf="mostrarModalIncidencia()" (click)="cerrarModalIncidencia()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>⚠️ Reportar Incidencia a Red de Seguridad</h3>
+          <p class="modal-sub">
+            Huésped: <strong>{{ clienteSeleccionado()?.nombre }}</strong> · DNI: <strong>{{ clienteSeleccionado()?.documento }}</strong>
+          </p>
+        </div>
+        <button type="button" class="modal-close" (click)="cerrarModalIncidencia()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="report-info-box">
+          <p>
+            Al registrar una incidencia, se enviará una alerta discreta a todos los hoteles de la red SaaS
+            cuando este mismo DNI intente realizar una reserva o check-in.
+          </p>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Tipo de Falta</label>
+            <select class="pms-input" [(ngModel)]="incidenciaForm.tipo_incidencia">
+              <option value="impago">Impago (Se retiró sin pagar)</option>
+              <option value="danos_materiales">Daños Materiales a Habitación</option>
+              <option value="conducta_inapropiada">Conducta Inapropiada / Disturbios</option>
+              <option value="fraude">Fraude con Tarjeta / Documento Falso</option>
+              <option value="otro">Otro Motivo Grave</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Nivel de Severidad</label>
+            <select class="pms-input" [(ngModel)]="incidenciaForm.severidad">
+              <option value="baja">Baja (Aviso informativo)</option>
+              <option value="media">Media (Precaución)</option>
+              <option value="alta">Alta (Solicitar depósito en garantía)</option>
+              <option value="critica">Crítica (No admitir)</option>
+            </select>
+          </div>
+
+          <div class="form-group form-group--full">
+            <label>Monto Adeudado o Daño Estimado (S/ Soles)</label>
+            <input
+              type="number"
+              class="pms-input"
+              [(ngModel)]="incidenciaForm.monto_deuda"
+              placeholder="0.00"
+              min="0"
+            />
+          </div>
+
+          <div class="form-group form-group--full">
+            <label>Descripción de lo Sucedido *</label>
+            <textarea
+              class="pms-input"
+              rows="3"
+              [(ngModel)]="incidenciaForm.descripcion"
+              placeholder="Ej. Salió sin liquidar noche de estancia ni frigobar, o rompió televisor..."
+            ></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="pms-btn pms-btn--outline" (click)="cerrarModalIncidencia()">Cancelar</button>
+        <button
+          type="button"
+          class="pms-btn pms-btn--danger"
+          (click)="enviarIncidencia()"
+          [disabled]="enviandoIncidencia()"
+        >
+          <span>{{ enviandoIncidencia() ? 'Registrando...' : 'Confirmar Reporte a Lista Negra' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

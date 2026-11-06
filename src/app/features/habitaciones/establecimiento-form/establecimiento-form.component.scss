@@ -1,0 +1,37 @@
+@use '../../reservas/reserva-form/reserva-form.component.scss' as base;
+
+:host { display: contents; }
+
+.auth-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--pms-red-bg);
+  color: var(--pms-red);
+  border-radius: var(--pms-radius-sm);
+  padding: 10px 12px;
+  font-size: 13px;
+  margin: 0 22px 12px;
+}
+
+select {
+  width: 100%;
+  border: 1px solid var(--pms-border);
+  border-radius: var(--pms-radius-sm);
+  padding: 9px 12px;
+  font-size: 13.5px;
+  background: var(--pms-card);
+  color: var(--pms-text);
+  outline: none;
+
+  &:focus {
+    border-color: var(--pms-blue);
+    box-shadow: 0 0 0 3px rgba(59, 107, 246, 0.12);
+  }
+}
+
+.rf-submit {
+  width: 100%;
+  justify-content: center;
+  margin-top: 6px;
+}

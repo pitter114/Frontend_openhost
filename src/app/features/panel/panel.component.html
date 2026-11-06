@@ -1,0 +1,238 @@
+<div class="pms-page">
+  <div class="pms-page-header pms-page-header--flex">
+    <div>
+      <h1>Panel</h1>
+      <p>{{ data.hotelNombre }}</p>
+    </div>
+    <span class="online-pill"><span class="dot"></span>Sistema Online</span>
+  </div>
+
+  <div class="auth-error" *ngIf="error()">
+    <app-icon name="alert" [size]="16" />
+    <span>{{ error() }}</span>
+  </div>
+
+  <app-loading-modal
+    *ngIf="cargando()"
+    titulo="Cargando estadísticas…"
+    subtitulo="Consultando métricas y ocupación del hotel"
+  />
+
+  <ng-container *ngIf="!cargando()">
+    <div class="pms-grid kpi-row">
+      <div class="pms-card kpi-card" *ngFor="let k of rowOne()">
+        <div class="kpi-card__icon" [style.background]="k.iconBg" [style.color]="k.iconColor">
+          <app-icon [name]="k.icon" [size]="18" />
+        </div>
+        <div class="kpi-card__value">{{ k.value }}</div>
+        <div class="kpi-card__label">{{ k.label }}</div>
+      </div>
+    </div>
+
+    <div class="pms-grid kpi-row">
+      <div class="pms-card kpi-card" *ngFor="let k of rowTwo()">
+        <div class="kpi-card__top">
+          <div class="kpi-card__icon" [style.background]="k.iconBg" [style.color]="k.iconColor">
+            <app-icon [name]="k.icon" [size]="18" />
+          </div>
+        </div>
+        <div class="kpi-card__value">{{ k.value }}</div>
+        <div class="kpi-card__label">{{ k.label }}</div>
+        <div class="kpi-card__sub" *ngIf="k.sub">{{ k.sub }}</div>
+      </div>
+    </div>
+
+    <div class="pms-grid two-col">
+      <div class="pms-card chart-card">
+        <h3>Ocupación e Ingresos Mensuales</h3>
+        <p class="chart-card__sub">Julio – Diciembre 2024</p>
+        <div class="chart-card__legend">
+          <span><i style="background:#3b6bf6"></i>Ingresos</span>
+          <span><i style="background:#e0342c"></i>Salidas</span>
+        </div>
+        <app-area-chart [labels]="ocupacionLabels" [series]="ocupacionSeries" [height]="230"></app-area-chart>
+      </div>
+
+      <div class="pms-card chart-card">
+        <h3>Reservas por Canal</h3>
+        <p class="chart-card__sub">Distribución del mes</p>
+        <div class="donut-wrap">
+          <app-donut-chart [segments]="canalSegments" [size]="150" [strokeWidth]="24"></app-donut-chart>
+          <ul class="donut-legend">
+            <li *ngFor="let c of data.reservasPorCanal">
+              <span class="donut-legend__dot" [style.background]="c.color"></span>
+              {{ c.canal }}
+              <b>{{ c.pct }} %</b>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="pms-grid two-col">
+      <div class="pms-card chart-card">
+        <h3>Clientes Nuevos vs Recurrentes</h3>
+        <p class="chart-card__sub">Últimos 6 meses</p>
+        <div class="chart-card__legend">
+          <span><i style="background:#3b6bf6"></i>Nuevos</span>
+          <span><i style="background:#17a34a"></i>Recurrentes</span>
+        </div>
+        <app-bar-chart [labels]="clientesLabels()" [series]="clientesSeries()" [height]="220"></app-bar-chart>
+      </div>
+
+      <div class="pms-card chart-card">
+        <h3>Top Alojamientos Más Reservados</h3>
+        <p class="chart-card__sub">Por ingresos generados (este año)</p>
+        <app-hbar-list [items]="topAlojamientosItems()"></app-hbar-list>
+      </div>
+    </div>
+
+    <div class="pms-card chart-card full">
+      <h3>Tasa de Ocupación Mensual</h3>
+      <p class="chart-card__sub">Porcentaje de ocupación por mes</p>
+      <app-area-chart [labels]="ocupacionRateLabels()" [series]="ocupacionRateSeries()" [height]="200" [maxValue]="100"></app-area-chart>
+    </div>
+
+    <!-- Operaciones & Horarios del Hotel + Alertas Reales -->
+    <div class="pms-grid two-col operations-row">
+      <!-- 1. Horarios de Operación y Check-Out Automático -->
+      <div class="pms-card schedules-card">
+        <div class="schedules-card__header">
+          <div>
+            <h3>⏰ Horarios del Hotel & Check-Out Automático</h3>
+            <p class="chart-card__sub">Control de horarios de estancia y liberación de habitaciones</p>
+          </div>
+          <button type="button" class="btn-action-edit" (click)="abrirModalHorarios()">
+            ⚙️ Configurar
+          </button>
+        </div>
+
+        <div class="schedules-grid">
+          <div class="schedule-pill">
+            <span class="schedule-pill__label">Hora Check-In (Ingreso)</span>
+            <strong class="schedule-pill__time">{{ horarios()?.hora_check_in || '14:00' }}</strong>
+            <span class="schedule-pill__note">Recepción a partir de esta hora</span>
+          </div>
+          <div class="schedule-pill">
+            <span class="schedule-pill__label">Hora Check-Out (Salida)</span>
+            <strong class="schedule-pill__time">{{ horarios()?.hora_check_out || '12:00' }}</strong>
+            <span class="schedule-pill__note">Límite entrega de llaves</span>
+          </div>
+        </div>
+
+        <div class="auto-checkout-bar">
+          <div class="auto-checkout-bar__info">
+            <div class="auto-checkout-bar__status">
+              <span class="dot" [class.dot--active]="horarios()?.checkout_automatico"></span>
+              <strong>Check-Out Automático:</strong>
+              <span class="status-badge" [class.status-badge--on]="horarios()?.checkout_automatico">
+                {{ horarios()?.checkout_automatico ? 'Activado (' + (horarios()?.checkout_tolerancia_minutos ?? 30) + ' min gracia)' : 'Desactivado' }}
+              </span>
+            </div>
+            <p class="auto-checkout-bar__desc">
+              Si el recepcionista olvida marcar la salida, el sistema finaliza la estancia y pasa el cuarto a 'En Limpieza' automáticamente.
+            </p>
+          </div>
+
+          <button 
+            type="button" 
+            class="btn-trigger-checkout" 
+            (click)="ejecutarCheckoutManual()"
+            [disabled]="ejecutandoCheckout()"
+          >
+            <span *ngIf="!ejecutandoCheckout()">⚡ Ejecutar Check-Out Ahora</span>
+            <span *ngIf="ejecutandoCheckout()">Verificando estancias...</span>
+          </button>
+        </div>
+
+        <div class="checkout-feedback" *ngIf="mensajeCheckout()">
+          ℹ️ {{ mensajeCheckout() }}
+        </div>
+      </div>
+
+      <!-- 2. Alertas del Sistema Conectadas a Datos Reales -->
+      <div class="pms-card alerts-card">
+        <div class="alerts-card__header">
+          <h3>🔔 Alertas Operativas en Vivo</h3>
+          <span class="badge-live">Datos Reales</span>
+        </div>
+
+        <div class="alerts-list" *ngIf="alertasSistema().length > 0">
+          <div 
+            *ngFor="let item of alertasSistema()" 
+            class="alerts-card__item" 
+            [ngClass]="'alerts-card__item--' + item.color"
+          >
+            <app-icon [name]="item.icono" [size]="16" />
+            <span>{{ item.texto }}</span>
+          </div>
+        </div>
+
+        <div class="alerts-empty" *ngIf="alertasSistema().length === 0">
+          <div class="alerts-empty__icon">✅</div>
+          <p class="alerts-empty__title">Todo en orden</p>
+          <p class="alerts-empty__desc">No hay habitaciones sucias, averías críticas ni check-ins pendientes por ahora.</p>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- Modal para Configurar Horarios y Check-Out -->
+  <div class="modal-backdrop" *ngIf="mostrarModalHorarios()" (click)="cerrarModalHorarios()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>⏰ Configurar Horarios de la Sede</h3>
+          <p class="modal-sub">Horarios oficiales del hotel y política de Check-Out Automático</p>
+        </div>
+        <button type="button" class="modal-close" (click)="cerrarModalHorarios()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Hora de Check-In (Ingreso)</label>
+            <input type="time" class="pms-input" [(ngModel)]="formHorarios.hora_check_in" />
+            <span class="help-text">Hora oficial a partir de la cual el huésped puede ingresar.</span>
+          </div>
+          <div class="form-group">
+            <label>Hora de Check-Out (Salida)</label>
+            <input type="time" class="pms-input" [(ngModel)]="formHorarios.hora_check_out" />
+            <span class="help-text">Hora límite para desocupar la habitación.</span>
+          </div>
+        </div>
+
+        <div class="feature-box">
+          <div class="feature-box__header">
+            <div>
+              <strong>Check-Out Automático de Seguridad</strong>
+              <p>Evita estancias colgadas cuando recepción olvida marcar la salida.</p>
+            </div>
+            <label class="switch-toggle">
+              <input type="checkbox" [(ngModel)]="formHorarios.checkout_automatico" />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <div class="form-group" *ngIf="formHorarios.checkout_automatico" style="margin-top: 14px;">
+            <label>Margen de Tolerancia (Gracia)</label>
+            <select class="pms-input" [(ngModel)]="formHorarios.checkout_tolerancia_minutos">
+              <option [value]="0">0 min (Inmediato a la hora de check-out)</option>
+              <option [value]="15">15 minutos</option>
+              <option [value]="30">30 minutos (Recomendado)</option>
+              <option [value]="45">45 minutos</option>
+              <option [value]="60">60 minutos (1 hora)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="pms-btn pms-btn--outline" (click)="cerrarModalHorarios()">Cancelar</button>
+        <button type="button" class="pms-btn pms-btn--primary" (click)="guardarHorarios()" [disabled]="guardandoHorarios()">
+          <span>{{ guardandoHorarios() ? 'Guardando...' : 'Guardar Horarios' }}</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

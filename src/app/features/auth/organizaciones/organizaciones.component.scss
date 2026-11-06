@@ -1,0 +1,155 @@
+@use '../login/login.component.scss' as base;
+
+:host {
+  display: block;
+  min-height: 100vh;
+  background: var(--pms-bg);
+}
+
+.org-shell {
+  min-height: 100vh;
+}
+
+.org-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 32px;
+  background: var(--pms-card);
+  border-bottom: 1px solid var(--pms-border);
+}
+
+.org-header__brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+  font-size: 15px;
+
+  .auth-brand__logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    margin-bottom: 0;
+  }
+}
+
+.org-main {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 24px 64px;
+}
+
+.org-main__heading {
+  margin-bottom: 28px;
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  p {
+    margin-top: 6px;
+    color: var(--pms-text-muted);
+    font-size: 13.5px;
+  }
+}
+
+.org-loading {
+  color: var(--pms-text-muted);
+  font-size: 13.5px;
+  padding: 24px 0;
+}
+
+.org-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.org-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 16px 18px;
+  background: var(--pms-card);
+  border: none;
+  text-align: left;
+  font-family: inherit;
+}
+
+.org-card__icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: #e9efff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.org-card__body {
+  flex: 1;
+  min-width: 0;
+}
+
+.org-card__name {
+  font-weight: 600;
+  font-size: 14.5px;
+}
+
+.org-card__meta {
+  font-size: 12.5px;
+  color: var(--pms-text-muted);
+  margin-top: 2px;
+}
+
+.org-card--new {
+  justify-content: center;
+  color: var(--pms-text-muted);
+  border: 1px dashed var(--pms-border);
+  box-shadow: none;
+  font-weight: 600;
+  font-size: 13.5px;
+
+  &:hover {
+    color: var(--pms-blue);
+    border-color: var(--pms-blue);
+  }
+}
+
+.org-form {
+  padding: 24px;
+}
+
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+select {
+  width: 100%;
+  border: 1px solid var(--pms-border);
+  border-radius: var(--pms-radius-sm);
+  padding: 10px 12px;
+  font-size: 14px;
+  color: var(--pms-text);
+  outline: none;
+  background: var(--pms-card);
+
+  &:focus {
+    border-color: var(--pms-blue);
+    box-shadow: 0 0 0 3px rgba(59, 107, 246, 0.12);
+  }
+}
+
+.org-submit {
+  width: 100%;
+  justify-content: center;
+  padding: 11px 16px;
+  font-size: 14px;
+  margin-top: 4px;
+}

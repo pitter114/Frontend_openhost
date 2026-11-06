@@ -1,0 +1,541 @@
+:host { display: block; }
+
+.pms-page--wide {
+  max-width: none;
+}
+
+.header-title-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  h1 { margin: 0; font-size: 22px; font-weight: 700; letter-spacing: -0.015em; }
+}
+
+.header-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Range Selector (7 Días / 14 Días / Mes) */
+.range-selector {
+  display: flex;
+  align-items: center;
+  background: var(--pms-card, #141b29);
+  border: 1px solid var(--pms-border, rgba(255, 255, 255, 0.12));
+  padding: 3px;
+  border-radius: var(--pms-radius-sm, 10px);
+  gap: 3px;
+  box-shadow: var(--pms-shadow-card);
+}
+
+.range-btn {
+  padding: 6px 12px;
+  border: none;
+  background: transparent;
+  color: var(--pms-text-muted);
+  font-size: 12.5px;
+  font-weight: 600;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+
+  &:hover {
+    color: var(--pms-text);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  &.is-active {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+  }
+
+  &:active {
+    transform: scale(0.96);
+  }
+}
+
+.cal-search {
+  width: 200px;
+}
+
+.month-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--pms-card, #141b29);
+  border: 1px solid var(--pms-border, rgba(255, 255, 255, 0.12));
+  padding: 4px 6px;
+  border-radius: var(--pms-radius-sm, 10px);
+  box-shadow: var(--pms-shadow-card);
+
+  .icon-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
+    border: 1px solid var(--pms-border, rgba(255, 255, 255, 0.12));
+    background: rgba(255, 255, 255, 0.04);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--pms-text-soft);
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.15);
+      border-color: #3b82f6;
+      color: #60a5fa;
+      transform: translateY(-1.5px);
+    }
+
+    &:active {
+      transform: scale(0.92);
+    }
+  }
+
+  .btn-hoy {
+    padding: 5px 12px;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid var(--pms-border, rgba(255, 255, 255, 0.12));
+    border-radius: 7px;
+    color: var(--pms-text);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s ease;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.25);
+    }
+
+    &:active {
+      transform: scale(0.95);
+    }
+  }
+
+  .month-label {
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--pms-text);
+    min-width: 140px;
+    text-align: center;
+    user-select: none;
+    white-space: nowrap;
+  }
+}
+
+/* Legend Bar */
+.legend-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 18px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+
+  .legend-items {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex-wrap: wrap;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    color: var(--pms-text-soft);
+    font-weight: 500;
+  }
+
+  .legend-dot {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    display: inline-block;
+    box-shadow: 0 0 6px currentColor;
+  }
+
+  .legend-hint {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--pms-text-muted);
+  }
+}
+
+/* ==========================================================================
+   Tape Chart Grid (Anti-Solapamiento & Soporte Responsivo)
+   ========================================================================== */
+.grid-wrap {
+  overflow-x: auto;
+  border-radius: var(--pms-radius-md, 14px);
+  position: relative;
+  box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.4);
+  background: var(--pms-card, #141b29);
+  -webkit-overflow-scrolling: touch;
+}
+
+.cal-table {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+
+  th, td {
+    text-align: center;
+    border-bottom: 1px solid var(--pms-border-soft, rgba(255, 255, 255, 0.06));
+    border-right: 1px solid var(--pms-border-soft, rgba(255, 255, 255, 0.06));
+    box-sizing: border-box;
+  }
+
+  /* Encabezados de días comunes */
+  thead th {
+    padding: 10px 4px;
+    background: #111726; /* 100% Opaco para evitar solapamientos al scrollear */
+    color: var(--pms-text-muted);
+    font-weight: 600;
+    user-select: none;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    border-bottom: 1px solid var(--pms-border, rgba(255, 255, 255, 0.1));
+
+    &.is-today {
+      background: #162035;
+    }
+
+    &.is-weekend {
+      background: #0d121f;
+    }
+  }
+
+  /* ==========================================================================
+     COLUMNA DE HABITACIÓN: Totalmente sólida y aislada (Soluciona el bug de la imagen)
+     ========================================================================== */
+  thead th.cal-table__room-col {
+    position: sticky !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 50 !important; /* Por encima de cualquier día desplazado */
+    background: #101624 !important; /* 100% Opaco y sólido */
+    border-right: 2px solid var(--pms-border, rgba(255, 255, 255, 0.15)) !important;
+    border-bottom: 2px solid var(--pms-border, rgba(255, 255, 255, 0.15)) !important;
+    box-shadow: 4px 4px 16px rgba(0, 0, 0, 0.6) !important;
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    text-align: left !important;
+    padding: 12px 16px !important;
+
+    .col-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--pms-text-muted);
+      font-weight: 700;
+    }
+    .col-sub {
+      font-size: 11px;
+      color: var(--pms-text-muted);
+      margin-top: 2px;
+    }
+  }
+
+  tbody td.cal-table__room-col {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 30 !important;
+    background: #141b29 !important; /* 100% Opaco y sólido */
+    border-right: 2px solid var(--pms-border, rgba(255, 255, 255, 0.15)) !important;
+    box-shadow: 4px 0 16px rgba(0, 0, 0, 0.45) !important;
+    width: 200px !important;
+    min-width: 200px !important;
+    max-width: 200px !important;
+    text-align: left !important;
+    padding: 12px 16px !important;
+
+    .room-info {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .room-name {
+      font-weight: 700;
+      font-size: 14.5px;
+      color: var(--pms-text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .room-type {
+      font-size: 11.5px;
+      color: var(--pms-text-muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .room-price {
+      font-size: 12px;
+      font-weight: 700;
+      color: #38bdf8;
+      margin-top: 2px;
+
+      small {
+        font-weight: 400;
+        color: var(--pms-text-muted);
+      }
+    }
+  }
+
+  /* Dimensiones adaptativas según la vista */
+  th.cal-table__day-th,
+  td.cal-cell {
+    min-width: 44px;
+    width: 44px;
+  }
+
+  &--week {
+    th.cal-table__day-th,
+    td.cal-cell {
+      min-width: 110px !important;
+      width: calc((100% - 200px) / 7) !important;
+    }
+  }
+
+  &--biweek {
+    th.cal-table__day-th,
+    td.cal-cell {
+      min-width: 65px !important;
+      width: calc((100% - 200px) / 14) !important;
+    }
+  }
+
+  &__dow {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--pms-text-muted);
+    margin-bottom: 2px;
+  }
+
+  &__day-badge {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--pms-text);
+    width: 28px;
+    height: 28px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    gap: 3px;
+
+    &.badge-today {
+      background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+      color: #ffffff;
+      box-shadow: 0 0 12px rgba(59, 130, 246, 0.6);
+    }
+
+    .sub-month {
+      font-size: 10px;
+      font-weight: 500;
+      opacity: 0.85;
+      text-transform: uppercase;
+    }
+  }
+
+  /* Celdas de Fechas */
+  .cal-cell {
+    height: 54px;
+    padding: 6px 0;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.15s ease;
+
+    &.is-today {
+      background: rgba(59, 130, 246, 0.05);
+    }
+
+    &.is-weekend {
+      background: rgba(0, 0, 0, 0.08);
+    }
+
+    &:hover {
+      background: rgba(59, 130, 246, 0.08);
+
+      .empty-cell-hint {
+        opacity: 0.8;
+        transform: scale(1);
+      }
+    }
+  }
+
+  .empty-cell-hint {
+    opacity: 0;
+    transform: scale(0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: var(--pms-text-muted);
+    transition: all 0.15s ease;
+  }
+}
+
+/* ==========================================================================
+   Barra de Reserva Continua (Gantt)
+   ========================================================================== */
+.res-bar {
+  height: 38px;
+  margin: 0 -1px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  color: #ffffff;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: visible;
+
+  &--start {
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+    margin-left: 3px;
+  }
+
+  &--end {
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+    margin-right: 3px;
+  }
+
+  &:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1.5px);
+    z-index: 35;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+  }
+
+  &__content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 8px;
+    line-height: 1.2;
+    z-index: 2;
+    pointer-events: none;
+    position: absolute;
+    left: 0;
+    white-space: nowrap;
+  }
+
+  .res-client {
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+    max-width: 170px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .res-code {
+    font-size: 10px;
+    font-weight: 500;
+    opacity: 0.9;
+    color: rgba(255, 255, 255, 0.9);
+  }
+}
+
+.empty-filter-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--pms-text-muted);
+
+  p { margin-top: 8px; font-size: 14px; }
+}
+
+/* ==========================================================================
+   Modal Detalle de Reserva (Frosted Glass)
+   ========================================================================== */
+.cal-modal {
+  max-width: 520px;
+
+  &__title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+}
+
+.cal-detail-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px 20px;
+}
+
+.cal-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+
+  .label {
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--pms-text-muted);
+    font-weight: 600;
+  }
+
+  .val {
+    font-size: 13.5px;
+    color: var(--pms-text);
+
+    &.bold { font-weight: 700; }
+    &.highlight { color: #38bdf8; }
+    &.text-green { color: #4ade80; }
+    &.text-red { color: #f87171; }
+  }
+}
+
+@media (max-width: 900px) {
+  .header-controls {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+
+    .range-selector { width: 100%; justify-content: stretch; button { flex: 1; } }
+    .cal-search { width: 100%; }
+    .month-nav { justify-content: space-between; }
+  }
+
+  thead th.cal-table__room-col,
+  tbody td.cal-table__room-col {
+    width: 160px !important;
+    min-width: 160px !important;
+    max-width: 160px !important;
+    padding: 10px 12px !important;
+  }
+}

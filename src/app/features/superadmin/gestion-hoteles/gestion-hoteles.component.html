@@ -1,0 +1,419 @@
+<div class="pms-page pms-page--wide">
+  <div class="pms-page-header pms-page-header--flex">
+    <div>
+      <h1>Gestión de Hoteles</h1>
+      <p>Organizaciones registradas en la plataforma SaaS y soporte técnico</p>
+    </div>
+    <span class="pms-badge pms-badge--amber" *ngIf="pendientesCount() > 0">
+      {{ pendientesCount() }} pendiente{{ pendientesCount() === 1 ? '' : 's' }} de aprobación
+    </span>
+  </div>
+
+  <div class="auth-error" *ngIf="error()">
+    <app-icon name="alert" [size]="16" />
+    <span>{{ error() }}</span>
+  </div>
+
+  <div class="filtros">
+    <button
+      type="button"
+      class="pms-btn"
+      [class.pms-btn--primary]="filtro() === 'todas'"
+      [class.pms-btn--outline]="filtro() !== 'todas'"
+      (click)="setFiltro('todas')"
+    >
+      Todas
+    </button>
+    <button
+      type="button"
+      class="pms-btn"
+      [class.pms-btn--primary]="filtro() === 'pendiente_aprobacion'"
+      [class.pms-btn--outline]="filtro() !== 'pendiente_aprobacion'"
+      (click)="setFiltro('pendiente_aprobacion')"
+    >
+      Pendientes
+    </button>
+    <button
+      type="button"
+      class="pms-btn"
+      [class.pms-btn--primary]="filtro() === 'activa'"
+      [class.pms-btn--outline]="filtro() !== 'activa'"
+      (click)="setFiltro('activa')"
+    >
+      Activas
+    </button>
+    <button
+      type="button"
+      class="pms-btn"
+      [class.pms-btn--primary]="filtro() === 'rechazada'"
+      [class.pms-btn--outline]="filtro() !== 'rechazada'"
+      (click)="setFiltro('rechazada')"
+    >
+      Rechazadas
+    </button>
+  </div>
+
+  <app-loading-modal
+    *ngIf="cargando()"
+    titulo="Cargando organizaciones…"
+    subtitulo="Obteniendo la lista de hoteles registrados en OpenHost"
+  />
+
+  <div class="pms-card">
+    <table class="pms-table" *ngIf="!cargando() && filtradas().length > 0">
+      <thead>
+        <tr>
+          <th>Organización / Hotel</th>
+          <th>Tipo</th>
+          <th>Contacto</th>
+          <th>Plan SaaS</th>
+          <th>Estado</th>
+          <th class="text-right">Acciones de Plataforma</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let org of filtradas()">
+          <td>
+            <div class="org-cell">
+              <div class="org-cell__icon"><app-icon name="building" [size]="16" color="var(--pms-blue)" /></div>
+              <div>
+                <div class="org-cell__name">{{ org.nombre_comercial }}</div>
+                <div class="org-cell__legal" *ngIf="org.nombre_legal">{{ org.nombre_legal }}</div>
+              </div>
+            </div>
+          </td>
+          <td>{{ org.tipo_organizacion || 'Hotel' }}</td>
+          <td>
+            <div>{{ org.correo_contacto }}</div>
+            <div class="org-cell__legal">{{ org.telefono_contacto }}</div>
+          </td>
+          <td>
+            <div class="plan-info-cell" *ngIf="org.plan_actual">
+              <span class="plan-name-badge" [class.plan-name-badge--pro]="org.plan_actual.nombre.includes('Pro')">
+                {{ org.plan_actual.nombre }}
+              </span>
+              <span class="plan-sub-text">
+                {{ org.plan_actual.estado === 'prueba' ? 'Período Prueba' : 'Activo' }} · Hasta {{ org.plan_actual.fecha_fin }}
+              </span>
+            </div>
+            <div *ngIf="!org.plan_actual" class="no-plan-text">
+              <span class="pms-badge pms-badge--muted">Sin Plan</span>
+            </div>
+          </td>
+          <td>
+            <span
+              class="pms-badge"
+              [class.pms-badge--green]="org.estado === 'activa'"
+              [class.pms-badge--amber]="org.estado === 'pendiente_aprobacion'"
+              [class.pms-badge--red]="org.estado === 'rechazada' || org.estado === 'suspendida'"
+            >
+              {{ org.estado === 'activa' ? 'Activa'
+                : org.estado === 'pendiente_aprobacion' ? 'Pendiente'
+                : org.estado === 'rechazada' ? 'Rechazada' : 'Suspendida' }}
+            </span>
+          </td>
+          <td>
+            <div class="acciones-row">
+              <!-- Botón Impersonación / Soporte -->
+              <button
+                type="button"
+                class="pms-btn pms-btn--outline pms-btn--sm btn-impersonar"
+                (click)="impersonar(org)"
+                [disabled]="procesando() === org.id"
+                title="Acceder al panel de este hotel en modo soporte"
+              >
+                <app-icon name="eye" [size]="14" />
+                <span>{{ procesando() === org.id ? 'Entrando...' : 'Entrar (Soporte)' }}</span>
+              </button>
+
+              <!-- Botón Asignar / Cambiar Plan -->
+              <button
+                type="button"
+                class="pms-btn pms-btn--outline pms-btn--sm"
+                (click)="abrirModalPlan(org)"
+                title="Asignar o renovar suscripción SaaS"
+              >
+                <app-icon name="card" [size]="14" />
+                <span>Plan</span>
+              </button>
+
+              <!-- Botón Feature Flags / Módulos -->
+              <button
+                type="button"
+                class="pms-btn pms-btn--outline pms-btn--sm btn-modulos"
+                (click)="abrirModalModulos(org)"
+                title="Encender o apagar módulos individuales para este hotel"
+              >
+                <app-icon name="wrench" [size]="14" />
+                <span>Módulos</span>
+              </button>
+
+              <!-- Botones de aprobación si está pendiente -->
+              <ng-container *ngIf="org.estado === 'pendiente_aprobacion'">
+                <button
+                  type="button"
+                  class="pms-btn pms-btn--primary pms-btn--sm"
+                  [disabled]="procesando() !== null"
+                  (click)="aprobar(org)"
+                >
+                  Aprobar
+                </button>
+                <button
+                  type="button"
+                  class="pms-btn pms-btn--danger pms-btn--sm"
+                  [disabled]="procesando() !== null"
+                  (click)="rechazar(org)"
+                >
+                  Rechazar
+                </button>
+              </ng-container>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div *ngIf="!cargando() && filtradas().length === 0" class="tabla-estado">
+      No hay organizaciones en este filtro.
+    </div>
+  </div>
+
+  <!-- Modal Asignar Plan SaaS al Hotel -->
+  <div class="modal-backdrop" *ngIf="mostrarModalPlan()" (click)="cerrarModalPlan()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>Asignar Plan SaaS</h3>
+          <p class="modal-sub">Hotel: <strong>{{ orgSeleccionada()?.nombre_comercial }}</strong></p>
+        </div>
+        <button type="button" class="modal-close" (click)="cerrarModalPlan()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="form-grid">
+          <div class="form-group form-group--full">
+            <label>Seleccionar Plan</label>
+            <select class="pms-input" [(ngModel)]="planForm.plan_id" (change)="alCambiarPlan()">
+              <option *ngFor="let p of planesDisponibles()" [value]="p.plan_id">
+                {{ p.nombre }} — S/ {{ p.precio }}/mes (Hasta {{ p.max_habitaciones }} hab.)
+              </option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Duración</label>
+            <select class="pms-input" [(ngModel)]="planForm.duracion_meses" (change)="alCambiarPlan()">
+              <option [value]="1">1 Mes</option>
+              <option [value]="3">3 Meses (Trimestral)</option>
+              <option [value]="6">6 Meses (Semestral)</option>
+              <option [value]="12">12 Meses (Anual)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Estado de Suscripción</label>
+            <select class="pms-input" [(ngModel)]="planForm.estado">
+              <option value="activa">Activa (Pagada)</option>
+              <option value="prueba">Período de Prueba (Trial)</option>
+              <option value="vencida">Vencida / En Mora</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Monto a Cobrar (S/)</label>
+            <input type="number" class="pms-input" [(ngModel)]="planForm.monto_pagado" min="0" />
+          </div>
+
+          <div class="form-group form-group--full">
+            <label>Notas Internas de Facturación</label>
+            <input type="text" class="pms-input" [(ngModel)]="planForm.notas" placeholder="Ej. Pago confirmado vía transferencia BCP o cortesía de onboarding." />
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="pms-btn pms-btn--outline" (click)="cerrarModalPlan()">Cancelar</button>
+        <button type="button" class="pms-btn pms-btn--primary" (click)="guardarAsignacionPlan()">
+          <span>Confirmar Asignación</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Feature Flags: Encender / Apagar Módulos por Hotel -->
+  <div class="modal-backdrop" *ngIf="mostrarModalModulos()" (click)="cerrarModalModulos()">
+    <div class="modal-card modal-card--lg" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <div>
+          <h3>⚙️ Feature Flags: Módulos Activos</h3>
+          <p class="modal-sub">
+            Hotel: <strong>{{ orgSeleccionada()?.nombre_comercial }}</strong> · Plan Base: 
+            <span class="badge-plan-info">{{ modulosDetalle()?.plan_nombre || orgSeleccionada()?.plan_actual?.nombre || 'Starter Hotel' }}</span>
+          </p>
+        </div>
+        <button type="button" class="modal-close" (click)="cerrarModalModulos()">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div class="flags-intro">
+          <p>
+            Personaliza qué funciones puede usar este hotel. Si activas o desactivas un switch,
+            <strong>sobrescribirá</strong> la configuración estándar de su plan contratado.
+          </p>
+        </div>
+
+        <div class="flags-list">
+          <!-- 1. Limpieza -->
+          <div class="flag-item" [class.flag-item--active]="modulosForm.limpieza">
+            <div class="flag-item__info">
+              <div class="flag-item__header">
+                <span class="flag-item__icon">🧹</span>
+                <strong>Módulo de Limpieza (Housekeeping)</strong>
+                <span class="badge-origen" *ngIf="modulosDetalle()?.overrides?.limpieza !== undefined && modulosDetalle()?.overrides?.limpieza !== null">
+                  Personalizado
+                </span>
+                <span class="badge-origen badge-origen--plan" *ngIf="modulosDetalle()?.overrides?.limpieza === undefined || modulosDetalle()?.overrides?.limpieza === null">
+                  Plan Base
+                </span>
+              </div>
+              <p>Asignación de mucamas, tiempos estimados, control de habitaciones sucias y limpias.</p>
+            </div>
+            <label class="switch-toggle">
+              <input type="checkbox" [(ngModel)]="modulosForm.limpieza" />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- 2. Mantenimiento -->
+          <div class="flag-item" [class.flag-item--active]="modulosForm.mantenimiento">
+            <div class="flag-item__info">
+              <div class="flag-item__header">
+                <span class="flag-item__icon">🔧</span>
+                <strong>Módulo de Mantenimiento</strong>
+                <span class="badge-origen" *ngIf="modulosDetalle()?.overrides?.mantenimiento !== undefined && modulosDetalle()?.overrides?.mantenimiento !== null">
+                  Personalizado
+                </span>
+                <span class="badge-origen badge-origen--plan" *ngIf="modulosDetalle()?.overrides?.mantenimiento === undefined || modulosDetalle()?.overrides?.mantenimiento === null">
+                  Plan Base
+                </span>
+              </div>
+              <p>Registro de averías, reparaciones de cuartos y bloqueos automáticos de calendario.</p>
+            </div>
+            <label class="switch-toggle">
+              <input type="checkbox" [(ngModel)]="modulosForm.mantenimiento" />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- 3. Inventario y Stock -->
+          <div class="flag-item" [class.flag-item--active]="modulosForm.inventario">
+            <div class="flag-item__info">
+              <div class="flag-item__header">
+                <span class="flag-item__icon">📦</span>
+                <strong>Módulo de Inventario y Stock</strong>
+                <span class="badge-origen" *ngIf="modulosDetalle()?.overrides?.inventario !== undefined && modulosDetalle()?.overrides?.inventario !== null">
+                  Personalizado
+                </span>
+                <span class="badge-origen badge-origen--plan" *ngIf="modulosDetalle()?.overrides?.inventario === undefined || modulosDetalle()?.overrides?.inventario === null">
+                  Plan Base
+                </span>
+              </div>
+              <p>Kardex de insumos, amenidades de cortesía, sábanas, toallas y control de almacén.</p>
+            </div>
+            <label class="switch-toggle">
+              <input type="checkbox" [(ngModel)]="modulosForm.inventario" />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- 4. Multi-Edificios / Torres -->
+          <div class="flag-item" [class.flag-item--active]="modulosForm.edificios">
+            <div class="flag-item__info">
+              <div class="flag-item__header">
+                <span class="flag-item__icon">🏢</span>
+                <strong>Módulo Multi-Edificios / Torres</strong>
+                <span class="badge-origen" *ngIf="modulosDetalle()?.overrides?.edificios !== undefined && modulosDetalle()?.overrides?.edificios !== null">
+                  Personalizado
+                </span>
+                <span class="badge-origen badge-origen--plan" *ngIf="modulosDetalle()?.overrides?.edificios === undefined || modulosDetalle()?.overrides?.edificios === null">
+                  Plan Base
+                </span>
+              </div>
+              <p>División física de habitaciones en torres independientes, bloques y asignación de pisos.</p>
+            </div>
+            <label class="switch-toggle">
+              <input type="checkbox" [(ngModel)]="modulosForm.edificios" />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- 5. Motor de Reservas Web Online -->
+          <div class="flag-item" [class.flag-item--active]="modulosForm.reservas_web">
+            <div class="flag-item__info">
+              <div class="flag-item__header">
+                <span class="flag-item__icon">🌐</span>
+                <strong>Motor de Reservas Web Online (Mercado Pago)</strong>
+                <span class="badge-origen" *ngIf="modulosDetalle()?.overrides?.reservas_web !== undefined && modulosDetalle()?.overrides?.reservas_web !== null">
+                  Personalizado
+                </span>
+                <span class="badge-origen badge-origen--plan" *ngIf="modulosDetalle()?.overrides?.reservas_web === undefined || modulosDetalle()?.overrides?.reservas_web === null">
+                  Plan Base
+                </span>
+              </div>
+              <p>Portal web público de reservas directas con checkout integrado y recepción de pagos en línea.</p>
+            </div>
+            <label class="switch-toggle">
+              <input type="checkbox" [(ngModel)]="modulosForm.reservas_web" />
+              <span class="slider"></span>
+            </label>
+          </div>
+
+          <!-- 6. Tienda / POS & Frigobar -->
+          <div class="flag-item" [class.flag-item--active]="modulosForm.tienda">
+            <div class="flag-item__info">
+              <div class="flag-item__header">
+                <span class="flag-item__icon">🛒</span>
+                <strong>Módulo de Tienda / POS & Frigobar</strong>
+                <span class="badge-origen" *ngIf="modulosDetalle()?.overrides?.tienda !== undefined && modulosDetalle()?.overrides?.tienda !== null">
+                  Personalizado
+                </span>
+                <span class="badge-origen badge-origen--plan" *ngIf="modulosDetalle()?.overrides?.tienda === undefined || modulosDetalle()?.overrides?.tienda === null">
+                  Plan Base
+                </span>
+              </div>
+              <p>Ventas de snacks, frigobar y souvenirs con cargo a habitación o pago directo en efectivo/Yape.</p>
+            </div>
+            <label class="switch-toggle">
+              <input type="checkbox" [(ngModel)]="modulosForm.tienda" />
+              <span class="slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer modal-footer--space-between">
+        <button
+          type="button"
+          class="pms-btn pms-btn--outline pms-btn--danger-text"
+          (click)="restablecerValoresPlan()"
+          [disabled]="guardandoModulos()"
+          title="Eliminar personalizaciones y volver a lo que incluye su plan"
+        >
+          🔄 Restablecer a Valores del Plan
+        </button>
+
+        <div class="modal-actions-right">
+          <button type="button" class="pms-btn pms-btn--outline" (click)="cerrarModalModulos()">Cancelar</button>
+          <button
+            type="button"
+            class="pms-btn pms-btn--primary"
+            (click)="guardarModulos()"
+            [disabled]="guardandoModulos()"
+          >
+            <span>{{ guardandoModulos() ? 'Guardando...' : 'Guardar Configuración' }}</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

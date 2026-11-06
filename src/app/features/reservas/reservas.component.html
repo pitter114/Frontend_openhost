@@ -1,0 +1,277 @@
+<div class="pms-page">
+  <!-- Modal de Carga de Reservas -->
+  <app-loading-modal
+    *ngIf="data.cargandoReservas()"
+    titulo="Cargando reservas…"
+    subtitulo="Sincronizando el libro de reservas y huéspedes"
+  />
+
+  <div class="pms-page-header pms-page-header--flex">
+    <div>
+      <h1>Reservas</h1>
+      <p>{{ filtered.length }} reservas · {{ data.hotelNombre }}</p>
+    </div>
+    <div class="header-actions">
+      <div class="pms-search">
+        <app-icon name="search" [size]="15" />
+        <input type="text" placeholder="Buscar reserva o huésped..." [(ngModel)]="search" />
+      </div>
+      <button type="button" class="pms-btn pms-btn--primary" (click)="abrirNuevaReserva()">
+        <app-icon name="plus" [size]="15" /> Nueva Reserva
+      </button>
+    </div>
+  </div>
+
+  <div class="pms-card">
+    <table class="pms-table">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Cliente</th>
+          <th>Hab.</th>
+          <th>Registrarse</th>
+          <th>Verificar</th>
+          <th>Estado</th>
+          <th>Total</th>
+          <th>Origen</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of filtered">
+          <td class="cell-code">{{ r.codigo }}</td>
+          <td>
+            <div class="cell-cliente">{{ r.cliente }}</div>
+            <div class="cell-doc">{{ r.documento }}</div>
+          </td>
+          <td>{{ r.habitacion }}</td>
+          <td>{{ formatFecha(r.checkIn) }}</td>
+          <td>{{ formatFecha(r.checkOut) }}</td>
+          <td><span class="pms-badge" [ngClass]="'pms-badge--' + badgeClass(r.estado)">{{ r.estado }}</span></td>
+          <td>
+            <div class="cell-total">S/ {{ r.total.toLocaleString('es-ES') }}</div>
+            <div class="cell-debe" *ngIf="r.debe > 0">Debe S/ {{ r.debe.toLocaleString('es-ES') }}</div>
+          </td>
+          <td><span class="cell-origen" [style.color]="origenColor(r.origen)">{{ r.origen }}</span></td>
+          <td>
+            <div class="cell-actions">
+              <button class="icon-btn" title="Ver detalle" (click)="verReserva(r)">
+                <app-icon name="eye" [size]="15" />
+              </button>
+              <button class="icon-btn icon-btn--whatsapp" title="Enviar enlace por WhatsApp" (click)="enviarWhatsapp(r)">
+                <app-icon name="whatsapp" [size]="15" />
+              </button>
+              <button class="icon-btn icon-btn--link" title="Copiar enlace de reserva" (click)="copiarLink(r)">
+                <app-icon name="link" [size]="15" />
+              </button>
+              <button class="icon-btn icon-btn--amber" title="Editar reserva" (click)="abrirEditar(r)">
+                <app-icon name="pencil" [size]="15" />
+              </button>
+              <button class="icon-btn icon-btn--red" title="Eliminar reserva" (click)="abrirEliminar(r)">
+                <app-icon name="x" [size]="15" />
+              </button>
+              <button class="icon-btn" title="Imprimir boleta" (click)="imprimirReserva(r)">
+                <app-icon name="printer" [size]="15" />
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="filtered.length === 0">
+          <td colspan="9" class="empty-row">No se encontraron reservas para "{{ search }}".</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal Ver Reserva -->
+<div class="modal-backdrop" *ngIf="reservaVer()" (click)="cerrarVer()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <div>
+        <h2>Detalles de Reserva</h2>
+        <p>{{ reservaVer()?.codigo }} · Habitación {{ reservaVer()?.habitacion }}</p>
+      </div>
+      <button class="modal-close" (click)="cerrarVer()"><app-icon name="x" [size]="18" /></button>
+    </div>
+
+    <div class="modal-body" *ngIf="reservaVer() as r">
+      <div class="info-grid">
+        <div><span>Huésped</span><b>{{ r.cliente }}</b></div>
+        <div><span>Documento</span><b>{{ r.documento || '—' }}</b></div>
+        <div><span>Teléfono</span><b>{{ r.telefono || '—' }}</b></div>
+        <div><span>Habitación</span><b>{{ r.habitacion }}</b></div>
+        <div><span>Check-in</span><b>{{ formatFecha(r.checkIn) }}</b></div>
+        <div><span>Check-out</span><b>{{ formatFecha(r.checkOut) }}</b></div>
+        <div><span>Huéspedes</span><b>{{ r.huespedes }} persona(s)</b></div>
+        <div><span>Origen</span><b>{{ r.origen }}</b></div>
+        <div><span>Estado</span><span class="pms-badge" [ngClass]="'pms-badge--' + badgeClass(r.estado)">{{ r.estado }}</span></div>
+        <div><span>Monto Total</span><b class="price-val">S/ {{ r.total.toLocaleString('es-ES') }}</b></div>
+      </div>
+    </div>
+
+    <div class="modal-foot">
+      <button class="pms-btn pms-btn--outline" (click)="cerrarVer()">Cerrar</button>
+      <button class="pms-btn pms-btn--whatsapp" (click)="enviarWhatsapp(reservaVer()!)">
+        <app-icon name="whatsapp" [size]="15" /> Enviar WhatsApp
+      </button>
+      <button class="pms-btn pms-btn--outline" (click)="copiarLink(reservaVer()!)">
+        <app-icon name="link" [size]="15" /> Copiar Enlace
+      </button>
+      <button class="pms-btn pms-btn--primary" (click)="cerrarVer(); abrirEditar(reservaVer()!)">
+        <app-icon name="pencil" [size]="15" /> Editar Reserva
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Reserva -->
+<div class="modal-backdrop" *ngIf="reservaEditar()" (click)="cerrarEditar()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <div>
+        <h2>Editar Reserva</h2>
+        <p>{{ reservaEditar()?.codigo }} · Habitación {{ reservaEditar()?.habitacion }}</p>
+      </div>
+      <button class="modal-close" (click)="cerrarEditar()"><app-icon name="x" [size]="18" /></button>
+    </div>
+
+    <form [formGroup]="editForm" (ngSubmit)="guardarEdicion()">
+      <div class="modal-body">
+        <div class="field-row">
+          <label class="field">
+            <span>Huésped *</span>
+            <input type="text" formControlName="cliente" placeholder="Nombre completo" />
+          </label>
+          <label class="field">
+            <span>DNI / Pasaporte *</span>
+            <input type="text" formControlName="documento" placeholder="Número documento" />
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Teléfono</span>
+            <input type="tel" formControlName="telefono" placeholder="+51 987654321" />
+          </label>
+          <label class="field">
+            <span>Estado</span>
+            <select formControlName="estado" class="pms-select">
+              <option value="Confirmada">Confirmada</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="Registrarse">Registrarse</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="field-row">
+          <label class="field">
+            <span>Check-in *</span>
+            <input type="date" formControlName="checkIn" />
+          </label>
+          <label class="field">
+            <span>Check-out *</span>
+            <input type="date" formControlName="checkOut" />
+          </label>
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button type="button" class="pms-btn pms-btn--outline" (click)="cerrarEditar()">Cancelar</button>
+        <button type="submit" class="pms-btn pms-btn--primary" [disabled]="guardandoEdit()">
+          <app-icon name="check" [size]="15" />
+          {{ guardandoEdit() ? 'Guardando…' : 'Guardar Cambios' }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Modal Eliminar Reserva -->
+<div class="modal-backdrop" *ngIf="reservaEliminar()" (click)="cerrarEliminar()">
+  <div class="modal-box modal-box--sm" (click)="$event.stopPropagation()">
+    <div class="modal-head">
+      <div>
+        <h2 style="color: var(--pms-red, #ef4444);">Eliminar Reserva</h2>
+        <p>{{ reservaEliminar()?.codigo }}</p>
+      </div>
+      <button class="modal-close" (click)="cerrarEliminar()"><app-icon name="x" [size]="18" /></button>
+    </div>
+
+    <div class="modal-body" *ngIf="reservaEliminar() as r">
+      <p style="font-size: 14px; color: var(--pms-text-soft, #cbd5e1); line-height: 1.5;">
+        ¿Estás seguro de que deseas eliminar permanentemente la reserva de <b>{{ r.cliente }}</b> en la Habitación <b>{{ r.habitacion }}</b>?
+      </p>
+    </div>
+
+    <div class="modal-foot">
+      <button class="pms-btn pms-btn--outline" (click)="cerrarEliminar()">Cancelar</button>
+      <button class="pms-btn pms-btn--danger" [disabled]="eliminando()" (click)="confirmarEliminar()">
+        <app-icon name="x" [size]="15" />
+        {{ eliminando() ? 'Eliminando…' : 'Sí, Eliminar Reserva' }}
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Selector de Habitación / Departamento -->
+<div class="modal-overlay" *ngIf="mostrarSelectorHabitaciones()" (click)="cerrarSelectorHabitaciones()">
+  <div class="modal-panel selector-modal-panel" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <div>
+        <h2><app-icon name="bed" [size]="20" /> Selecciona Habitación o Departamento</h2>
+        <p class="modal-subtitle">Haz clic en una unidad disponible para completar los datos de la nueva reserva</p>
+      </div>
+      <button type="button" class="modal-close" (click)="cerrarSelectorHabitaciones()">
+        <app-icon name="x" [size]="18" />
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <div *ngIf="cargandoHabitaciones()" class="selector-loading">
+        <app-icon name="sparkles" class="pms-spin" [size]="28" />
+        <span>Consultando disponibilidad en tiempo real…</span>
+      </div>
+
+      <div class="selector-grid" *ngIf="!cargandoHabitaciones()">
+        <div
+          class="selector-room"
+          *ngFor="let a of alojamientosLista()"
+          [class.selector-room--available]="esDisponible(a)"
+          [class.selector-room--blocked]="!esDisponible(a)"
+          (click)="seleccionarHabitacionParaReserva(a)"
+        >
+          <div class="selector-room__top">
+            <span class="selector-room__num">{{ a.etiqueta_unidad }}</span>
+            <span class="selector-room__badge" [style.color]="estadoColor(a)">
+              <span class="dot" [style.background]="estadoColor(a)"></span>
+              {{ estadoLabel(a) }}
+            </span>
+          </div>
+
+          <div class="selector-room__type">{{ a.tipo_alojamiento }}</div>
+          <div class="selector-room__price">S/ {{ a.precio_base }} /noche</div>
+
+          <div class="selector-room__cta" *ngIf="esDisponible(a)">
+            <app-icon name="plus" [size]="13" /> Reservar esta unidad
+          </div>
+          <div class="selector-room__cta selector-room__cta--disabled" *ngIf="!esDisponible(a)">
+            No disponible
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="!cargandoHabitaciones() && alojamientosLista().length === 0" class="empty-state">
+        <p>No se encontraron unidades registradas en esta organización.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Formulario de Reserva Completo -->
+<app-reserva-form
+  *ngIf="habitacionParaReserva() as hab"
+  [habitacion]="hab"
+  [hotelNombre]="data.hotelNombre"
+  (cerrar)="cerrarReservaForm()"
+/>
