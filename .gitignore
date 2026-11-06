@@ -48,3 +48,5 @@ Thumbs.db
 src/environments/environment.prod.ts
 src/environments/environment.production.ts
 src/environments/environment.secret.ts
+
+.vercel
