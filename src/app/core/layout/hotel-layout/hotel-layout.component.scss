@@ -151,6 +151,7 @@
 .shell {
   display: flex;
   min-height: 100vh;
+  min-height: 100dvh;
   background: var(--pms-bg);
 
   &--soporte {
@@ -170,10 +171,11 @@
   color: var(--pms-sidebar-text);
   display: flex;
   flex-direction: column;
-  padding: 20px 14px;
+  padding: max(20px, env(safe-area-inset-top, 0)) max(14px, env(safe-area-inset-left, 0)) max(20px, env(safe-area-inset-bottom, 0));
   position: sticky;
   top: 0;
   height: 100vh;
+  height: 100dvh;
   overflow-y: auto;
   box-shadow: 4px 0 24px rgba(0, 0, 0, 0.25);
 
@@ -475,22 +477,34 @@
     position: fixed;
     left: 0;
     top: 0;
-    z-index: 30;
+    z-index: 999;
     transform: translateX(-100%);
-    transition: transform 0.22s ease;
-    box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+    transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 8px 0 32px rgba(0, 0, 0, 0.5);
+    max-width: 280px;
+    width: 80vw;
 
-    &--open { transform: translateX(0); }
+    &--open {
+      transform: translateX(0);
+    }
 
     &__close {
       display: flex;
+      align-items: center;
+      justify-content: center;
       margin-left: auto;
       border: none;
-      background: none;
-      color: var(--pms-sidebar-text-dim);
-      padding: 4px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--pms-sidebar-text);
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
 
-      &:hover { color: #fff; }
+      &:hover, &:active {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.16);
+      }
     }
   }
 
@@ -498,23 +512,46 @@
     display: block;
     position: fixed;
     inset: 0;
-    background: rgba(11, 17, 30, 0.6);
-    backdrop-filter: blur(4px);
-    -webkit-backdrop-filter: blur(4px);
-    z-index: 25;
+    background: rgba(11, 17, 30, 0.75);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    z-index: 998;
     animation: pms-fade-in 0.2s ease;
   }
 
   .topbar {
-    padding: 0 14px;
+    padding: 0 max(14px, env(safe-area-inset-right, 0)) 0 max(14px, env(safe-area-inset-left, 0));
+    height: 56px;
 
-    &__menu-btn { display: flex; }
+    &__menu-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 40px;
+      min-height: 40px;
+    }
     &__date, &__user { display: none; }
   }
 
-  .content .pms-page { padding: 16px 14px 32px; }
+  .content .pms-page {
+    padding: 16px 14px 36px;
+  }
 }
 
 @media (max-width: 520px) {
-  .topbar__hotel span { display: none; }
+  .topbar {
+    &__hotel {
+      padding: 5px 10px;
+      font-size: 11.5px;
+      span {
+        max-width: 100px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+    }
+    &__right {
+      gap: 10px;
+    }
+  }
 }

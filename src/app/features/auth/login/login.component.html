@@ -18,6 +18,10 @@
 
   <div class="auth-panel">
     <div class="auth-card">
+      <div class="auth-card__mobile-brand">
+        <div class="auth-brand__logo"><app-icon name="building" [size]="18" color="#fff" /></div>
+        <span>HotelPMS</span>
+      </div>
       <ng-container *ngIf="paso() === 'credenciales'; else pasoDosFa">
         <h1>Iniciar sesión</h1>
         <p class="auth-card__sub">Ingresa tus credenciales para acceder a tu cuenta</p>

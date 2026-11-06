@@ -16,8 +16,15 @@
     align-items: center;
     justify-content: space-between;
     padding: 16px 18px;
+    gap: 12px;
+    flex-wrap: wrap;
 
-    .pms-search { width: 320px; }
+    .pms-search { 
+      width: 320px; 
+      @media (max-width: 640px) {
+        width: 100%;
+      }
+    }
   }
 }
 
@@ -115,6 +122,10 @@
   .recurrentes-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+@media (max-width: 540px) {
+  .recurrentes-grid { grid-template-columns: 1fr; }
+}
+
 .btn-reportar {
   border-color: rgba(239, 68, 68, 0.4);
   color: #ef4444;
@@ -148,6 +159,14 @@
 
   .form-group--full {
     grid-column: span 2;
+  }
+
+  @media (max-width: 560px) {
+    grid-template-columns: 1fr;
+
+    .form-group--full {
+      grid-column: span 1;
+    }
   }
 }
 

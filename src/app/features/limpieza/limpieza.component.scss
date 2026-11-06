@@ -232,6 +232,10 @@
   .kanban { grid-template-columns: 1fr; }
 }
 
+@media (max-width: 640px) {
+  .summary-row { grid-template-columns: 1fr; gap: 10px; }
+}
+
 @media (max-width: 500px) {
   .modal-panel { width: 96%; }
   .modal-detail-grid { grid-template-columns: 1fr; }

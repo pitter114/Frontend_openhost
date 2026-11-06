@@ -318,3 +318,8 @@
   .config-grid { grid-template-columns: 1fr; }
   .form-row--3 { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 640px) {
+  .form-row { grid-template-columns: 1fr; gap: 12px; }
+  .config-card { padding: 18px 16px; }
+}

@@ -70,6 +70,30 @@
   border: 1px solid var(--pms-border);
   border-radius: var(--pms-radius-md);
   box-shadow: var(--pms-shadow-card);
+  flex-wrap: wrap;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+    padding: 14px 16px;
+
+    .filter-group {
+      flex-direction: column;
+      align-items: flex-start;
+      width: 100%;
+
+      .date-input {
+        width: 100%;
+        box-sizing: border-box;
+      }
+    }
+
+    .filter-info {
+      margin-left: 0;
+      text-align: center;
+    }
+  }
 }
 
 .filter-group {
@@ -275,4 +299,8 @@
 
 @media (max-width: 900px) {
   .report-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 600px) {
+  .report-grid { grid-template-columns: 1fr; }
 }

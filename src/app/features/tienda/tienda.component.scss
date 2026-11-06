@@ -627,3 +627,27 @@
     grid-template-columns: 1fr;
   }
 }
+
+@media (max-width: 640px) {
+  .pos-top-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .view-tabs {
+    width: 100%;
+    .tab-btn {
+      flex: 1;
+      justify-content: center;
+      font-size: 12px;
+      padding: 8px 6px;
+    }
+  }
+  .pos-products-grid {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)) !important;
+    gap: 10px !important;
+  }
+  .cart-panel {
+    border-top: 2px solid var(--pms-border);
+    margin-top: 16px;
+  }
+}

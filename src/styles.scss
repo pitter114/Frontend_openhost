@@ -106,9 +106,16 @@ body { transition: background-color 0.2s ease, color 0.2s ease; }
 
 * { box-sizing: border-box; }
 
+html {
+  -webkit-tap-highlight-color: transparent;
+  scroll-behavior: smooth;
+}
+
 html, body {
   height: 100%;
+  min-height: 100dvh;
   margin: 0;
+  overscroll-behavior-y: none;
 }
 
 body {
@@ -121,6 +128,16 @@ body {
 
 h1, h2, h3, h4, p { margin: 0; }
 h1, h2, h3, h4 { letter-spacing: -0.02em; }
+
+/* Mobile Touch Performance & Feedback */
+button, a, input, select, textarea, [role="button"], .pms-btn, .range-btn, .room-card, .org-card {
+  touch-action: manipulation;
+}
+
+button, .pms-btn, .pms-badge, .sidebar__link, .range-btn {
+  user-select: none;
+  -webkit-user-select: none;
+}
 
 button {
   font-family: inherit;
@@ -740,9 +757,32 @@ textarea.pms-input {
 /* ==========================================================================
    Responsive helpers shared across all PMS modules & tables
    ========================================================================== */
+/* ==========================================================================
+   Omni-Device Responsive System (Smartphones, Tablets, Laptops & Desktop)
+   ========================================================================== */
+
+/* Prevenir zoom no deseado en iOS Safari */
+@media (max-width: 768px) {
+  input, select, textarea, .pms-input {
+    font-size: 16px !important;
+  }
+}
+
+/* Laptops pequeños y Tablets en horizontal */
+@media (max-width: 1200px) {
+  .kpi-row {
+    grid-template-columns: repeat(3, 1fr) !important;
+  }
+  .two-col {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* Tablets y Dispositivos Medianos */
 @media (max-width: 900px) {
   .pms-page {
-    padding: 18px 16px 36px;
+    padding: 16px 14px 36px;
+    padding-bottom: max(36px, env(safe-area-inset-bottom, 0));
   }
 
   .pms-page-header--flex {
@@ -768,13 +808,24 @@ textarea.pms-input {
   }
 
   .pms-table {
-    min-width: 680px;
+    min-width: 640px;
+  }
+
+  .config-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .donut-wrap {
+    flex-direction: column !important;
+    gap: 16px;
   }
 }
 
+/* Smartphones Estándar (Portrait) */
 @media (max-width: 640px) {
   .pms-page {
     padding: 14px 12px 28px;
+    padding-bottom: max(28px, env(safe-area-inset-bottom, 0));
   }
 
   .pms-page-header {
@@ -788,15 +839,18 @@ textarea.pms-input {
     align-items: stretch !important;
     width: 100%;
 
-    button, .pms-search {
+    button, .pms-search, .pms-btn {
       width: 100% !important;
       min-width: 100% !important;
+      justify-content: center;
     }
   }
 
-  .field-row {
+  .form-row,
+  .field-row,
+  .cal-detail-grid {
     grid-template-columns: 1fr !important;
-    gap: 12px;
+    gap: 12px !important;
   }
 
   .table-card__head {
@@ -811,10 +865,54 @@ textarea.pms-input {
     width: 100% !important;
   }
 
-  .modal-box, .modal-card {
+  .kpi-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .stat-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .filtros {
+    gap: 6px !important;
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+
+    button {
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+  }
+
+  .modal-box, 
+  .modal-card,
+  .rf-modal,
+  .cal-modal {
+    width: 95vw !important;
     max-width: 95vw !important;
-    padding: 16px 18px !important;
-    margin: 8px;
+    max-height: calc(100dvh - 32px) !important;
+    padding: 16px 14px !important;
+    margin: 8px auto !important;
+  }
+}
+
+/* Smartphones Compactos (< 400px) */
+@media (max-width: 400px) {
+  .kpi-row {
+    grid-template-columns: 1fr !important;
+  }
+  .stat-row {
+    grid-template-columns: 1fr !important;
+  }
+  .room-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .topbar h1 {
+    font-size: 15px;
   }
 }
 

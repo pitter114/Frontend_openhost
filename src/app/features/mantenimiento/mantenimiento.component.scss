@@ -10,6 +10,10 @@
 .summary-row {
   grid-template-columns: repeat(3, 1fr);
   margin-bottom: 18px;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
 }
 
 .summary-card {
@@ -85,8 +89,9 @@
   box-shadow: 0 24px 64px -12px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.12);
   width: 95%;
   max-width: 520px;
+  max-height: calc(100dvh - 32px);
+  overflow-y: auto;
   animation: modal-slide-in 0.26s cubic-bezier(0.16, 1, 0.3, 1);
-  overflow: hidden;
 }
 
 .modal-header {
