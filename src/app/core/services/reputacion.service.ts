@@ -20,13 +20,22 @@ export interface IncidenciaHuesped {
 }
 
 export interface AlertaReputacionRespuesta {
+  encontrado?: boolean;
   tiene_alerta: boolean;
+  datos_huesped?: {
+    nombre: string;
+    apellido: string;
+    nombre_completo: string;
+    telefono: string;
+    numero_documento: string;
+  } | null;
   alerta?: {
     id: number;
     numero_documento: string;
     nombre_completo: string;
     tipo_incidencia: string;
     severidad: string;
+    calificacion?: number;
     monto_deuda: number;
     descripcion: string;
     hotel_origen: string;

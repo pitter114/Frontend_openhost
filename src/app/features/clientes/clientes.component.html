@@ -108,6 +108,28 @@
         </div>
 
         <div class="form-grid">
+          <div class="form-group form-group--full">
+            <label>Calificación del Huésped (1 a 5 estrellas)</label>
+            <div class="star-rating-selector">
+              <div class="stars-row">
+                <button
+                  type="button"
+                  *ngFor="let s of [1, 2, 3, 4, 5]"
+                  class="star-btn"
+                  [class.star-btn--active]="s <= incidenciaForm.calificacion"
+                  (click)="setCalificacion(s)"
+                  [title]="s + ' estrellas'"
+                >
+                  ★
+                </button>
+              </div>
+              <span class="rating-label">
+                <strong>{{ incidenciaForm.calificacion }} de 5 estrellas</strong> —
+                {{ incidenciaForm.calificacion <= 2 ? '⚠️ Huésped de alto riesgo (Lista Negra)' : 'Huésped advertido' }}
+              </span>
+            </div>
+          </div>
+
           <div class="form-group">
             <label>Tipo de Falta</label>
             <select class="pms-input" [(ngModel)]="incidenciaForm.tipo_incidencia">

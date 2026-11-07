@@ -154,4 +154,68 @@
       </p>
     </form>
   </div>
+
+  <!-- Ventana Emergente: Alerta Roja de Lista Negra -->
+  <div class="alerta-popup-backdrop" *ngIf="mostrarModalAlerta() && alertaReputacion()" (click)="cerrarAlertaYProceder()">
+    <div class="alerta-popup-card" (click)="$event.stopPropagation()">
+      <div class="alerta-popup-head">
+        <div class="alerta-icon-badge">
+          <app-icon name="alert" [size]="28" color="#ef4444" />
+        </div>
+        <div>
+          <h3>⚠️ ¡Huésped en Lista Negra Compartida!</h3>
+          <p class="alerta-popup-sub">Advertencia de seguridad para la red hotelera</p>
+        </div>
+      </div>
+
+      <div class="alerta-popup-body">
+        <div class="alerta-calificacion" *ngIf="alertaReputacion()?.calificacion">
+          <span class="stars">
+            <span *ngFor="let s of [1,2,3,4,5]" [class.star-on]="s <= alertaReputacion().calificacion">★</span>
+          </span>
+          <span class="calif-texto">Calificación: {{ alertaReputacion().calificacion }} / 5 estrellas</span>
+        </div>
+
+        <div class="alerta-motivo-box">
+          <h4>¿Por qué fue reportado?</h4>
+          <p class="alerta-descripcion">"{{ alertaReputacion().descripcion }}"</p>
+        </div>
+
+        <div class="alerta-detalles-grid">
+          <div class="detalle-item">
+            <span class="label">Tipo de falta:</span>
+            <span class="val">{{ alertaReputacion().tipo_incidencia }}</span>
+          </div>
+          <div class="detalle-item">
+            <span class="label">Severidad:</span>
+            <span class="val badge-sev badge-sev--{{ alertaReputacion().severidad }}">{{ alertaReputacion().severidad | uppercase }}</span>
+          </div>
+          <div class="detalle-item" *ngIf="alertaReputacion().hotel_origen">
+            <span class="label">Reportado por:</span>
+            <span class="val">{{ alertaReputacion().hotel_origen }}</span>
+          </div>
+          <div class="detalle-item" *ngIf="alertaReputacion().monto_deuda > 0">
+            <span class="label">Deuda registrada:</span>
+            <span class="val deuda">S/ {{ alertaReputacion().monto_deuda }}</span>
+          </div>
+        </div>
+
+        <div class="alerta-recomendacion">
+          <app-icon name="shield" [size]="16" color="#f59e0b" />
+          <span>{{ alertaReputacion().mensaje_sugerido }}</span>
+        </div>
+      </div>
+
+      <div class="alerta-popup-actions">
+        <button type="button" class="btn-rechazar" (click)="rechazarHuesped()">
+          <app-icon name="x" [size]="16" />
+          Rechazar Admisión
+        </button>
+        <button type="button" class="btn-proceder" (click)="cerrarAlertaYProceder()">
+          <app-icon name="check" [size]="16" />
+          Continuar con Garantía
+        </button>
+      </div>
+    </div>
+  </div>
 </div>

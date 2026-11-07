@@ -46,6 +46,7 @@ export class ClientesComponent implements OnInit {
   incidenciaForm = {
     tipo_incidencia: 'impago' as 'impago' | 'danos_materiales' | 'conducta_inapropiada' | 'fraude' | 'otro',
     severidad: 'alta' as 'baja' | 'media' | 'alta' | 'critica',
+    calificacion: 1,
     monto_deuda: 0,
     descripcion: '',
   };
@@ -152,10 +153,15 @@ export class ClientesComponent implements OnInit {
     this.incidenciaForm = {
       tipo_incidencia: 'impago',
       severidad: 'alta',
+      calificacion: 1,
       monto_deuda: 0,
       descripcion: '',
     };
     this.mostrarModalIncidencia.set(true);
+  }
+
+  setCalificacion(estrellas: number): void {
+    this.incidenciaForm.calificacion = estrellas;
   }
 
   cerrarModalIncidencia(): void {
@@ -180,6 +186,7 @@ export class ClientesComponent implements OnInit {
         nombre_completo: c.nombre,
         tipo_incidencia: this.incidenciaForm.tipo_incidencia,
         severidad: this.incidenciaForm.severidad,
+        calificacion: this.incidenciaForm.calificacion,
         monto_deuda: Number(this.incidenciaForm.monto_deuda) || 0,
         descripcion: this.incidenciaForm.descripcion.trim(),
         reportado_por_nombre: `Recepción ${orgNombre}`,

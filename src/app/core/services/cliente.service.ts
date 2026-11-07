@@ -41,6 +41,7 @@ export class ClienteService {
     nombre_completo: string;
     tipo_incidencia: string;
     severidad: string;
+    calificacion?: number;
     monto_deuda: number;
     descripcion: string;
     reportado_por_nombre?: string;

@@ -35,6 +35,7 @@ export class ReservaFormComponent {
   guardadoExitoso = signal(false);
   errorGuardar = signal<string | null>(null);
   alertaReputacion = signal<any>(null);
+  mostrarModalAlerta = signal(false);
 
   private hoy = new Date().toISOString().slice(0, 10);
 
@@ -87,17 +88,53 @@ export class ReservaFormComponent {
     if (dni && dni.length >= 6) {
       this.reputacionService.verificarReputacion(orgId, dni).subscribe({
         next: (res) => {
+          // 1. Autocompletar datos del huésped si ya se hospedó en otro hotel de la red
+          if (res.encontrado && res.datos_huesped) {
+            const nombreActual = this.form.get('nombreCompleto')?.value?.trim();
+            if (!nombreActual && res.datos_huesped.nombre_completo) {
+              this.form.patchValue({ nombreCompleto: res.datos_huesped.nombre_completo });
+              this.toast.info('Huésped identificado en la red de hoteles. Datos autocompletados.');
+            }
+            const celActual = this.form.get('celular')?.value?.trim();
+            if (!celActual && res.datos_huesped.telefono) {
+              this.form.patchValue({ celular: res.datos_huesped.telefono });
+            }
+          }
+
+          // 2. Si tiene alerta en lista negra, desplegar la ventana emergente preventiva
           if (res.tiene_alerta && res.alerta) {
             this.alertaReputacion.set(res.alerta);
+            this.mostrarModalAlerta.set(true);
           } else {
             this.alertaReputacion.set(null);
+            this.mostrarModalAlerta.set(false);
           }
         },
-        error: () => this.alertaReputacion.set(null),
+        error: () => {
+          this.alertaReputacion.set(null);
+          this.mostrarModalAlerta.set(false);
+        },
       });
     } else {
       this.alertaReputacion.set(null);
+      this.mostrarModalAlerta.set(false);
     }
+  }
+
+  cerrarAlertaYProceder(): void {
+    this.mostrarModalAlerta.set(false);
+    this.toast.info('Atención: Procediendo con reserva de huésped reportado. Se recomienda solicitar garantía.');
+  }
+
+  rechazarHuesped(): void {
+    this.mostrarModalAlerta.set(false);
+    this.alertaReputacion.set(null);
+    this.form.patchValue({
+      dni: '',
+      nombreCompleto: '',
+      celular: '',
+    });
+    this.toast.warning('Ingreso de huésped rechazado por antecedentes en lista negra.');
   }
 
   guardarReserva(): void {
