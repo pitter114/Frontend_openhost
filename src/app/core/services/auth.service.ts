@@ -47,6 +47,22 @@ export class AuthService {
     });
   }
 
+  cambiarContrasena(contrasenaActual: string, nuevaContrasena: string, nuevaContrasenaConfirmation: string): Observable<{ message: string; cuenta: Cuenta }> {
+    return this.http
+      .post<{ message: string; cuenta: Cuenta }>(`${this.base}/cambiar-contrasena`, {
+        contrasena_actual: contrasenaActual,
+        nueva_contrasena: nuevaContrasena,
+        nueva_contrasena_confirmation: nuevaContrasenaConfirmation,
+      })
+      .pipe(
+        tap((res) => {
+          if (res.cuenta) {
+            this.actualizarCuenta(res.cuenta);
+          }
+        })
+      );
+  }
+
   /** Refetches the account (e.g. after enabling/disabling 2FA) and updates local state. */
   me(): Observable<Cuenta> {
     return this.http.get<Cuenta>(`${this.base}/me`).pipe(tap((cuenta) => this.actualizarCuenta(cuenta)));

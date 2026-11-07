@@ -1,0 +1,100 @@
+<div class="pwd-overlay" *ngIf="mostrar()">
+  <div class="pwd-card">
+    <div class="pwd-badge">
+      <app-icon name="shield" [size]="18" />
+      <span>Seguridad obligatoria</span>
+    </div>
+
+    <div class="pwd-header">
+      <div class="pwd-icon">
+        <app-icon name="lock" [size]="28" />
+      </div>
+      <h2>Cambio de Contraseña Obligatorio</h2>
+      <p>
+        Has ingresado con una <strong>contraseña temporal</strong> generada por el administrador (protocolo de seguridad).
+        Por tu protección, <strong>debes definir tu propia contraseña</strong> para desbloquear y continuar usando el sistema.
+      </p>
+    </div>
+
+    <div class="pwd-alert" *ngIf="errorMensaje()">
+      <app-icon name="alert" [size]="18" />
+      <span>{{ errorMensaje() }}</span>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="pwd-form" novalidate>
+      <div class="form-group">
+        <label>Contraseña temporal actual</label>
+        <div class="input-wrap">
+          <input
+            [type]="verActual() ? 'text' : 'password'"
+            formControlName="contrasena_actual"
+            placeholder="Pega aquí la clave provisional..."
+          />
+          <button type="button" class="btn-eye" (click)="verActual.set(!verActual())" tabindex="-1">
+            <app-icon name="eye" [size]="16" />
+          </button>
+        </div>
+        <small class="error-text" *ngIf="form.get('contrasena_actual')?.touched && form.get('contrasena_actual')?.invalid">
+          Debes ingresar la contraseña con la que entraste.
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label>Nueva contraseña personal</label>
+        <div class="input-wrap">
+          <input
+            [type]="verNueva() ? 'text' : 'password'"
+            formControlName="nueva_contrasena"
+            placeholder="Mínimo 8 caracteres..."
+          />
+          <button type="button" class="btn-eye" (click)="verNueva.set(!verNueva())" tabindex="-1">
+            <app-icon name="eye" [size]="16" />
+          </button>
+        </div>
+        <small class="error-text" *ngIf="form.get('nueva_contrasena')?.touched && form.get('nueva_contrasena')?.hasError('minlength')">
+          La contraseña debe tener mínimo 8 caracteres.
+        </small>
+      </div>
+
+      <div class="form-group">
+        <label>Confirmar nueva contraseña</label>
+        <div class="input-wrap">
+          <input
+            [type]="verConfirmacion() ? 'text' : 'password'"
+            formControlName="nueva_contrasena_confirmation"
+            placeholder="Repite la nueva contraseña..."
+          />
+          <button type="button" class="btn-eye" (click)="verConfirmacion.set(!verConfirmacion())" tabindex="-1">
+            <app-icon name="eye" [size]="16" />
+          </button>
+        </div>
+        <small class="error-text" *ngIf="form.get('nueva_contrasena_confirmation')?.touched && !coinciden">
+          Las contraseñas no coinciden.
+        </small>
+      </div>
+
+      <div class="pwd-requirements">
+        <div class="req-item" [class.valid]="(form.get('nueva_contrasena')?.value?.length ?? 0) >= 8">
+          <app-icon name="check" [size]="14" />
+          <span>Mínimo 8 caracteres</span>
+        </div>
+        <div class="req-item" [class.valid]="coinciden && !!form.get('nueva_contrasena_confirmation')?.value">
+          <app-icon name="check" [size]="14" />
+          <span>Ambas contraseñas coinciden</span>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="cargando() || form.invalid || !coinciden">
+        <span *ngIf="!cargando()">Actualizar contraseña y desbloquear</span>
+        <span *ngIf="cargando()">Guardando nueva contraseña...</span>
+      </button>
+
+      <div class="pwd-footer">
+        <button type="button" class="btn-logout" (click)="cerrarSesion()">
+          <app-icon name="logout" [size]="14" />
+          <span>¿Prefieres salir ahora? Cerrar sesión</span>
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

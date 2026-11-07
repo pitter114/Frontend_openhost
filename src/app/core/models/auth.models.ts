@@ -13,6 +13,7 @@ export interface Cuenta {
   correo_verificado: boolean;
   estado_cuenta: string | null;
   primer_login: boolean;
+  contrasena_temporal?: boolean;
   dosfa_metodo: 'correo' | 'totp' | null;
   dosfa_confirmado: boolean;
   persona: Persona | null;
