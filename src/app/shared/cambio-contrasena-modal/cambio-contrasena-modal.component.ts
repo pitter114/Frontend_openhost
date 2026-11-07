@@ -66,10 +66,12 @@ export class CambioContrasenaModalComponent implements OnInit {
     const { contrasena_actual, nueva_contrasena, nueva_contrasena_confirmation } = this.form.getRawValue();
 
     this.auth.cambiarContrasena(contrasena_actual, nueva_contrasena, nueva_contrasena_confirmation).subscribe({
-      next: (res) => {
+      next: () => {
         this.cargando.set(false);
-        this.toast.success('¡Contraseña actualizada con éxito!', 'Tu cuenta ahora está protegida con tu nueva clave.');
+        this.toast.success('¡Contraseña actualizada con éxito!', 'Por seguridad, inicia sesión con tu nueva contraseña.');
         this.form.reset();
+        this.auth.limpiarSesion();
+        this.router.navigate(['/login'], { queryParams: { actualizada: 'true' } });
       },
       error: (err) => {
         this.cargando.set(false);

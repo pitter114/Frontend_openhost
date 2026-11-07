@@ -26,6 +26,10 @@
         <h1>Iniciar sesión</h1>
         <p class="auth-card__sub">Ingresa tus credenciales para acceder a tu cuenta</p>
 
+        <div class="auth-success" *ngIf="mensajeExito()" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #16a34a; padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-weight: 500;">
+          <app-icon name="check" [size]="16" />
+          <span>{{ mensajeExito() }}</span>
+        </div>
         <div class="auth-error" *ngIf="error()">
           <app-icon name="alert" [size]="16" />
           <span>{{ error() }}</span>

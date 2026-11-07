@@ -1,7 +1,7 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { IconComponent } from '../../../shared/icon/icon.component';
 import { AuthService } from '../../../core/services/auth.service';
 
@@ -12,10 +12,11 @@ import { AuthService } from '../../../core/services/auth.service';
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   paso = signal<'credenciales' | '2fa'>('credenciales');
   cargando = signal(false);
   error = signal<string | null>(null);
+  mensajeExito = signal<string | null>(null);
   verPassword = signal(false);
 
   metodo2fa = signal<string>('');
@@ -24,6 +25,14 @@ export class LoginComponent {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+
+  ngOnInit(): void {
+    const actualizada = this.route.snapshot.queryParamMap.get('actualizada');
+    if (actualizada === 'true') {
+      this.mensajeExito.set('¡Tu contraseña ha sido actualizada con éxito! Por seguridad, ingresa con tu nueva contraseña.');
+    }
+  }
 
   form = this.fb.group({
     correo: ['', [Validators.required, Validators.email]],
