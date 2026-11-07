@@ -64,6 +64,11 @@ export class OrganizacionesComponent implements OnInit {
   }
 
   entrar(org: MiOrganizacion): void {
+    if (this.auth.cuenta()?.contrasena_temporal) {
+      this.error.set('Por seguridad, debes cambiar tu contraseña obligatoria antes de ingresar a este hotel.');
+      return;
+    }
+
     this.entrando.set(org.id);
     this.error.set(null);
     this.orgService.entrar(org.organizacion.id).subscribe({

@@ -24,6 +24,11 @@ export const organizacionGuard: CanActivateFn = () => {
     return false;
   }
 
+  if (auth.cuenta()?.contrasena_temporal) {
+    router.navigate(['/organizaciones']);
+    return false;
+  }
+
   if (!org.orgActivaId()) {
     router.navigate(['/organizaciones']);
     return false;
