@@ -60,13 +60,17 @@ export class SuperadminDataService {
     { nombre: 'sdadasd', documento: '14785492', telefono: '99884758', correo: 'sdadasd@huesped.com', hotel: 'FSDFDF', estadias: 1, ultimaReserva: '27/09/2026', nivel: 'Estándar' },
   ];
 
-  readonly alertas: AlertaSistema[] = [
-    { titulo: 'Check-in activo #RES-0008', detalle: 'Hotel Pedro · Hab. sadasa · Huésped: fsd fsd', hotel: 'Hotel Pedro', prioridad: 'Alta', icono: 'hotel' },
-    { titulo: 'Habitaciones listas para venta', detalle: 'FSDFDF · Hab. 0520 y 101 disponibles', hotel: 'FSDFDF', prioridad: 'Media', icono: 'door' },
-    { titulo: 'Edificio TORRE 1 configurado', detalle: 'FSDFDF · 2 pisos registrados', hotel: 'FSDFDF', prioridad: 'Media', icono: 'building' },
-  ];
+  alertas: AlertaSistema[] = [];
 
   cargarDesdeBackend(): void {
+    this.http.get<{ ok: boolean; data: AlertaSistema[] }>(`${this.base}/alertas-operativas`).subscribe({
+      next: (res) => {
+        if (res.data) {
+          this.alertas = res.data;
+        }
+      },
+      error: () => {},
+    });
     this.http.get<{ resumen: any; hoteles: any[] }>(`${this.base}/resumen-global`).subscribe({
       next: (res) => {
         if (res.resumen) {

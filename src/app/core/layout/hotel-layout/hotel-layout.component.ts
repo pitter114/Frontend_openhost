@@ -36,6 +36,12 @@ export class HotelLayoutComponent implements OnInit {
   anunciosActivos = signal<AnuncioSaas[]>([]);
   anuncioCerrado = signal(false);
 
+  // Alertas y Notificaciones Inteligentes del Hotel
+  menuNotificacionesAbierto = signal(false);
+  notificaciones = signal<any[]>([]);
+  resumenNotificaciones = signal<any>(null);
+  cargandoNotificaciones = signal(false);
+
   anuncioVigente = computed(() => {
     if (this.anuncioCerrado()) return null;
     const lista = this.anunciosActivos();
@@ -65,6 +71,42 @@ export class HotelLayoutComponent implements OnInit {
   ngOnInit(): void {
     this.cargarAnuncios();
     this.cargarModulosActivos();
+    this.cargarNotificaciones();
+  }
+
+  cargarNotificaciones(): void {
+    const orgId = this.orgService.orgActivaId();
+    if (!orgId) return;
+    this.cargandoNotificaciones.set(true);
+    this.orgService.obtenerNotificacionesInteligentes(orgId).subscribe({
+      next: (res) => {
+        this.cargandoNotificaciones.set(false);
+        if (res && res.notificaciones) {
+          this.notificaciones.set(res.notificaciones);
+          this.resumenNotificaciones.set(res.resumen);
+        }
+      },
+      error: () => this.cargandoNotificaciones.set(false),
+    });
+  }
+
+  toggleDropdownNotificaciones(): void {
+    const abierto = !this.menuNotificacionesAbierto();
+    this.menuNotificacionesAbierto.set(abierto);
+    if (abierto) {
+      this.cargarNotificaciones();
+    }
+  }
+
+  cerrarDropdownNotificaciones(): void {
+    this.menuNotificacionesAbierto.set(false);
+  }
+
+  navegarAlerta(ruta: string): void {
+    this.menuNotificacionesAbierto.set(false);
+    if (ruta) {
+      this.router.navigate([ruta]);
+    }
   }
 
   cargarModulosActivos(): void {

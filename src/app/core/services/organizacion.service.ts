@@ -187,6 +187,32 @@ export class OrganizacionService {
     this._rolesActivos.set(roles);
   }
 
+  obtenerNotificacionesInteligentes(orgId: number): Observable<{
+    ok: boolean;
+    hotel: string;
+    total_alertas: number;
+    resumen: {
+      limpieza_pendientes: number;
+      mantenimiento_pendientes: number;
+      checkins_hoy: number;
+      checkouts_hoy: number;
+      stock_critico_count: number;
+    };
+    notificaciones: {
+      id: string;
+      categoria: string;
+      tipo: string;
+      titulo: string;
+      detalle: string;
+      icono: string;
+      color: string;
+      ruta: string;
+      accion: string;
+    }[];
+  }> {
+    return this.http.get<any>(`${this.base}/${orgId}/notificaciones-inteligentes`);
+  }
+
   limpiarOrgActiva(): void {
     localStorage.removeItem(ORG_ACTIVA_KEY);
     localStorage.removeItem(ROLES_ACTIVOS_KEY);

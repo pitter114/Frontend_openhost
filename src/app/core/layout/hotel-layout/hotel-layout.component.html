@@ -66,6 +66,75 @@
           <span class="dot dot--green"></span>{{ hotelNombre() }}
         </button>
         <span class="topbar__date">{{ fecha }}</span>
+
+        <!-- Campanita de Alertas Inteligentes del Hotel -->
+        <div class="topbar__bell-wrapper">
+          <button
+            type="button"
+            class="topbar__icon-btn topbar__bell-btn"
+            [class.topbar__bell-btn--active]="menuNotificacionesAbierto()"
+            (click)="toggleDropdownNotificaciones()"
+            title="Alertas y Notificaciones Inteligentes del Hotel"
+          >
+            <app-icon name="alert" [size]="16" />
+            <span class="bell-badge" *ngIf="notificaciones().length > 0">{{ notificaciones().length }}</span>
+          </button>
+
+          <!-- Dropdown Popover de Alertas -->
+          <div class="notif-dropdown" *ngIf="menuNotificacionesAbierto()">
+            <div class="notif-dropdown__head">
+              <div class="notif-head-title">
+                <strong>🔔 Alertas Inteligentes</strong>
+                <span class="notif-count-badge" *ngIf="notificaciones().length > 0">{{ notificaciones().length }} activa{{ notificaciones().length === 1 ? '' : 's' }}</span>
+              </div>
+              <button type="button" class="notif-refresh-btn" (click)="cargarNotificaciones()" [disabled]="cargandoNotificaciones()" title="Actualizar alertas">
+                <app-icon name="sparkles" [size]="13" />
+                <span>{{ cargandoNotificaciones() ? '...' : 'Actualizar' }}</span>
+              </button>
+            </div>
+
+            <!-- Resumen de Contadores -->
+            <div class="notif-summary" *ngIf="resumenNotificaciones()">
+              <div class="summary-pill" *ngIf="resumenNotificaciones().limpieza_pendientes > 0">
+                <span class="dot dot--amber"></span>{{ resumenNotificaciones().limpieza_pendientes }} Sucias
+              </div>
+              <div class="summary-pill" *ngIf="resumenNotificaciones().mantenimiento_pendientes > 0">
+                <span class="dot dot--red"></span>{{ resumenNotificaciones().mantenimiento_pendientes }} Averías
+              </div>
+              <div class="summary-pill" *ngIf="resumenNotificaciones().checkins_hoy > 0">
+                <span class="dot dot--blue"></span>{{ resumenNotificaciones().checkins_hoy }} In hoy
+              </div>
+              <div class="summary-pill" *ngIf="resumenNotificaciones().stock_critico_count > 0">
+                <span class="dot dot--amber"></span>{{ resumenNotificaciones().stock_critico_count }} Stock
+              </div>
+            </div>
+
+            <!-- Lista de Notificaciones -->
+            <div class="notif-list" *ngIf="notificaciones().length > 0">
+              <div
+                *ngFor="let n of notificaciones()"
+                class="notif-item"
+                [ngClass]="'notif-item--' + n.color"
+                (click)="navegarAlerta(n.ruta)"
+              >
+                <div class="notif-item__icon">
+                  <app-icon [name]="n.icono" [size]="15" />
+                </div>
+                <div class="notif-item__body">
+                  <div class="notif-item__title">{{ n.titulo }}</div>
+                  <div class="notif-item__desc">{{ n.detalle }}</div>
+                  <span class="notif-item__action">{{ n.accion }} &rarr;</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="notif-empty" *ngIf="notificaciones().length === 0 && !cargandoNotificaciones()">
+              <app-icon name="shield" [size]="20" color="#10b981" />
+              <span>¡Todo al día! No hay alertas operativas pendientes en el hotel.</span>
+            </div>
+          </div>
+        </div>
+
         <span class="topbar__user" [title]="usuarioNombre()">{{ usuarioNombre() }}</span>
         <a routerLink="/cuenta/seguridad" class="topbar__icon-btn" title="Seguridad de la cuenta">
           <app-icon name="lock" [size]="16" />
