@@ -15,7 +15,11 @@ export class AuthService {
   readonly cuenta = this._cuenta.asReadonly();
   readonly estaAutenticado = computed(() => !!this._cuenta());
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) {
+    if (this.token) {
+      this.me().subscribe({ error: () => {} });
+    }
+  }
 
   get token(): string | null {
     return localStorage.getItem(TOKEN_KEY);

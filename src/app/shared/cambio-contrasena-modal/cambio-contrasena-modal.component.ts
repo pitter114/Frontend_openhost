@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -13,7 +13,7 @@ import { IconComponent } from '../icon/icon.component';
   templateUrl: './cambio-contrasena-modal.component.html',
   styleUrls: ['./cambio-contrasena-modal.component.scss'],
 })
-export class CambioContrasenaModalComponent {
+export class CambioContrasenaModalComponent implements OnInit {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
   private toast = inject(ToastService);
@@ -21,7 +21,7 @@ export class CambioContrasenaModalComponent {
 
   mostrar = computed(() => {
     const c = this.auth.cuenta();
-    return !!c && c.contrasena_temporal === true;
+    return !!c && (c.contrasena_temporal === true || (c.contrasena_temporal as any) === 1 || (c.contrasena_temporal as any) === '1');
   });
 
   cargando = signal(false);
@@ -36,6 +36,12 @@ export class CambioContrasenaModalComponent {
     nueva_contrasena: ['', [Validators.required, Validators.minLength(8)]],
     nueva_contrasena_confirmation: ['', [Validators.required]],
   });
+
+  ngOnInit(): void {
+    if (this.auth.token) {
+      this.auth.me().subscribe({ error: () => {} });
+    }
+  }
 
   get coinciden(): boolean {
     const n = this.form.get('nueva_contrasena')?.value;
