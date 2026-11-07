@@ -53,7 +53,42 @@ export class HotelLayoutComponent implements OnInit {
     return primer;
   });
 
-  // Estado del Plan SaaS y Alertas de Facturación
+  // Estado Dinámico del Plan SaaS, Período de Gracia de 24 horas y Bloqueo
+  estadoSuscripcion = signal<{
+    bloqueado: boolean;
+    en_periodo_gracia: boolean;
+    horas_restantes_gracia: number;
+    estado: string;
+    plan_nombre: string;
+    precio_mensual: number;
+    fecha_fin: string | null;
+  } | null>(null);
+
+  planBloqueado = computed(() => {
+    if (this.modoSoporte()) return false;
+    const est = this.estadoSuscripcion();
+    if (est) return est.bloqueado;
+    return this.planEstado() === 'bloqueada';
+  });
+
+  enPeriodoGracia = computed(() => {
+    const est = this.estadoSuscripcion();
+    if (est) return est.en_periodo_gracia;
+    return false;
+  });
+
+  horasRestantesGracia = computed(() => {
+    return this.estadoSuscripcion()?.horas_restantes_gracia ?? 24;
+  });
+
+  precioPlan = computed(() => {
+    return this.estadoSuscripcion()?.precio_mensual ?? 149;
+  });
+
+  planNombre = computed(() => {
+    return this.estadoSuscripcion()?.plan_nombre ?? 'Plan Estándar';
+  });
+
   planEstado = computed(() => this.orgService.orgActiva()?.plan_actual?.estado ?? 'activa');
   planVencido = computed(() => this.planEstado() === 'vencida');
   planPorVencer = computed(() => {
@@ -72,6 +107,30 @@ export class HotelLayoutComponent implements OnInit {
     this.cargarAnuncios();
     this.cargarModulosActivos();
     this.cargarNotificaciones();
+    this.cargarEstadoSuscripcion();
+  }
+
+  cargarEstadoSuscripcion(): void {
+    const orgId = this.orgService.orgActivaId();
+    if (!orgId) return;
+    this.orgService.consultarEstadoSuscripcion(orgId).subscribe({
+      next: (res) => {
+        if (res && res.data) {
+          this.estadoSuscripcion.set(res.data);
+        }
+      },
+      error: () => {},
+    });
+  }
+
+  contactarSoportePago(): void {
+    const hotel = this.hotelNombre();
+    const plan = this.planNombre();
+    const precio = this.precioPlan();
+    const texto = encodeURIComponent(
+      `Hola OpenHost Administración, me comunico de *${hotel}* respecto al pago de nuestra suscripción SaaS (${plan} - S/ ${precio}). Deseamos regularizar el servicio para mantener el sistema activo.`
+    );
+    window.open(`https://wa.me/51984751487?text=${texto}`, '_blank');
   }
 
   cargarNotificaciones(): void {

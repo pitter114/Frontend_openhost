@@ -213,6 +213,21 @@ export class OrganizacionService {
     return this.http.get<any>(`${this.base}/${orgId}/notificaciones-inteligentes`);
   }
 
+  consultarEstadoSuscripcion(orgId: number): Observable<{
+    ok: boolean;
+    data: {
+      bloqueado: boolean;
+      en_periodo_gracia: boolean;
+      horas_restantes_gracia: number;
+      estado: string;
+      plan_nombre: string;
+      precio_mensual: number;
+      fecha_fin: string | null;
+    };
+  }> {
+    return this.http.get<any>(`${this.base}/${orgId}/estado-suscripcion`);
+  }
+
   limpiarOrgActiva(): void {
     localStorage.removeItem(ORG_ACTIVA_KEY);
     localStorage.removeItem(ROLES_ACTIVOS_KEY);

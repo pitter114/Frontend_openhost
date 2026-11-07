@@ -163,31 +163,84 @@
       </button>
     </div>
 
-    <!-- Banner de Suscripción Vencida / Período de Gracia -->
-    <div class="billing-lockout-bar" *ngIf="planVencido()">
-      <div class="billing-lockout-bar__content">
-        <app-icon name="alert" [size]="16" color="#ef4444" />
+    <!-- Banner de Período de Gracia Activo (24 Horas de Tolerancia) -->
+    <div class="billing-grace-bar" *ngIf="enPeriodoGracia()">
+      <div class="billing-grace-bar__content">
+        <app-icon name="alert" [size]="17" color="#f59e0b" />
         <span>
-          <strong>Suscripción en Mora:</strong> El plan SaaS de este hotel ha vencido. Comunícate con Administración para regularizar tu liquidación mensual.
+          <strong>⏳ Período de Gracia Activo (24 Horas):</strong> Tu plan <strong>{{ planNombre() }}</strong> ha vencido. Te quedan <strong>{{ horasRestantesGracia() }} hora(s)</strong> de tolerancia para regularizar tu liquidación de S/ {{ precioPlan() }} antes del bloqueo automático del sistema.
         </span>
       </div>
-      <span class="badge-vencido">Cuenta Suspendida</span>
+      <button type="button" class="btn-grace-pay" (click)="contactarSoportePago()">
+        <app-icon name="message-square" [size]="14" />
+        <span>Contactar y Regularizar</span>
+      </button>
     </div>
 
     <!-- Banner Preventivo (Por vencer en 3 días o menos) -->
-    <div class="billing-warning-bar" *ngIf="!planVencido() && planPorVencer()">
+    <div class="billing-warning-bar" *ngIf="!planBloqueado() && !enPeriodoGracia() && planPorVencer()">
       <div class="billing-warning-bar__content">
         <app-icon name="card" [size]="15" color="#f59e0b" />
         <span>
           <strong>Recordatorio de Pago:</strong> Tu suscripción SaaS vence en <strong>{{ diasParaVencer() }} día(s)</strong>. Recuerda cancelar tu liquidación mensual para evitar interrupciones.
         </span>
       </div>
+      <button type="button" class="btn-grace-pay" (click)="contactarSoportePago()">
+        <span>Pagar Ahora</span>
+      </button>
     </div>
 
     <main class="content">
       <router-outlet></router-outlet>
     </main>
   </div>
+
+  <!-- Pantalla Completa Infranqueable de Bloqueo por Mora (Más de 24 horas sin pago) -->
+  <aside class="lockout-fullscreen-overlay" *ngIf="planBloqueado()">
+    <div class="lockout-modal-card">
+      <div class="lockout-icon-pulse">
+        <app-icon name="lock" [size]="48" color="#ef4444" />
+      </div>
+
+      <h2>🔒 Acceso Suspendido por Falta de Pago</h2>
+      <p class="lockout-lead">
+        El período de gracia de <strong>24 horas</strong> ha expirado sin registrarse el pago de la mensualidad.
+      </p>
+
+      <div class="lockout-details-box">
+        <div class="lockout-row">
+          <span>Hotel:</span>
+          <strong>{{ hotelNombre() }}</strong>
+        </div>
+        <div class="lockout-row">
+          <span>Plan Contratado:</span>
+          <strong>{{ planNombre() }}</strong>
+        </div>
+        <div class="lockout-row">
+          <span>Monto Pendiente:</span>
+          <strong class="text-danger">S/ {{ precioPlan() }} Soles</strong>
+        </div>
+        <div class="lockout-row">
+          <span>Estado del Sistema:</span>
+          <span class="badge-lock">Bloqueado por Mora</span>
+        </div>
+      </div>
+
+      <p class="lockout-hint">
+        Para reactivar el acceso de tu personal a las habitaciones, calendario y recepción, ponte en contacto con Administración de OpenHost o envía tu comprobante de pago.
+      </p>
+
+      <div class="lockout-actions">
+        <button type="button" class="btn-reactivar" (click)="contactarSoportePago()">
+          <app-icon name="message-square" [size]="18" />
+          <span>Contactar a Administración por WhatsApp</span>
+        </button>
+        <button type="button" class="btn-logout" (click)="cerrarSesion()">
+          Cerrar Sesión / Cambiar de Hotel
+        </button>
+      </div>
+    </div>
+  </aside>
 
   <!-- Toast Notification Hub -->
   <app-toast-container />
