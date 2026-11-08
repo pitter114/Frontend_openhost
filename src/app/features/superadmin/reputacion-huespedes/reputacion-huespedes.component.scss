@@ -429,7 +429,7 @@
 }
 
 /* Soporte Modo Blanco / Claro para Reputación de Huéspedes */
-html:not(.dark) {
+:host-context(.light), :host-context(html:not(.dark)) {
   .section-header h2 { color: #0f172a !important; }
   .section-header p { color: #475569 !important; }
 

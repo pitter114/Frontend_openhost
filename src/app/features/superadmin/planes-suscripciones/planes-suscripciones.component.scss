@@ -307,7 +307,7 @@
 }
 
 /* LIGHT THEME COMPREHENSIVE OVERRIDES */
-html:not(.dark) {
+:host-context(.light), :host-context(html:not(.dark)) {
   .saas-metric-card {
     background: #ffffff !important;
     border-color: #e2e8f0 !important;

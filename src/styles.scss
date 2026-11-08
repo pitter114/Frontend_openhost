@@ -1255,63 +1255,137 @@ html:not(.dark) {
   }
 }
 
-
 /* ==========================================================================
    GLOBAL LIGHT THEME REINFORCEMENT & HIGH CONTRAST
-   Ensures headings, subheadings, cards, inputs, and badges are clearly legible
+   Exhaustive overrides for all superadmin & admin pages in Light Mode
    ========================================================================== */
-html:not(.dark) {
+html.light,
+html:not(.dark),
+body.light {
   --pms-card-bg: #ffffff;
   --pms-card-border: #e2e8f0;
 
-  /* Universal headings and labels in light mode */
+  /* Universal Cards */
+  .gateway-card,
+  .gateway-card.featured,
+  .plan-card,
+  .plan-card--popular,
+  .incident-card,
+  .hotel-infra-card,
+  .saas-metric-card,
+  .metric-card,
+  .config-card,
+  .articulo-card,
+  .product-card,
+  .pos-cart-panel,
+  .liquidaciones-section,
+  .kpi-card,
+  .summary-card,
+  .user-card,
+  .table-card,
+  .toolbar-card,
+  .security-detector-card,
+  .sec-card {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    color: #0f172a;
+    box-shadow: 0 2px 10px rgba(15, 23, 42, 0.05) !important;
+  }
+
+  .gateway-card.featured .gateway-header {
+    background: linear-gradient(135deg, rgba(2, 132, 199, 0.06), #ffffff) !important;
+    border-bottom-color: #e2e8f0 !important;
+  }
+
+  .plan-card--popular {
+    background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%) !important;
+    border: 2px solid #3b82f6 !important;
+  }
+
+  /* Form Controls, Inputs & Selects */
+  .pms-select,
+  select,
+  .pms-input,
+  input:not([type="checkbox"]):not([type="radio"]),
+  .search-box,
+  .search-input-wrap,
+  .filters-bar {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #0f172a !important;
+
+    &::placeholder {
+      color: #94a3b8 !important;
+    }
+  }
+
+  select option {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+
+  /* Headings, Titles & User Names */
+  .user-name,
+  .brand-text h3,
+  .plan-card__name,
+  .plan-card__price .amount,
+  .guest-info h4,
+  .hotel-identity h3,
   .section-header h2,
   .section-header h3,
   .pms-page-header h1,
   .pms-page-header h2,
-  header h1,
-  header h2,
-  header h3,
+  .pms-page-header h3,
   .detector-title h2,
-  .card-top h3,
   .edificios-detail-section h4 {
     color: #0f172a !important;
+    font-weight: 700;
   }
 
+  .user-email,
   .section-header p,
   .section-sub,
-  .header-titles p {
+  .header-titles p,
+  .brand-text p,
+  .plan-card__desc,
+  .incident-narrative .narrative-box p {
     color: #475569 !important;
   }
 
-  .section-header .header-badge {
-    background: rgba(2, 132, 199, 0.1) !important;
-    color: #0284c7 !important;
-    border: 1px solid rgba(2, 132, 199, 0.25) !important;
-  }
-
-  /* Universal metric & summary cards */
-  .metrics-grid .metric-card,
-  .saas-metrics-grid .saas-metric-card,
-  .summary-row .summary-card {
-    background: #ffffff !important;
-    border-color: #e2e8f0 !important;
-    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
-  }
-
+  /* Values and Metrics */
   .metric-info .value,
   .saas-metric-card__val,
-  .summary-card__value {
+  .summary-card__value,
+  .kpi-card__value {
     color: #0f172a !important;
   }
 
   .metric-info .label,
   .saas-metric-card__title,
-  .summary-card__label {
+  .summary-card__label,
+  .kpi-card__label {
     color: #64748b !important;
   }
 
-  /* Outline buttons */
+  /* Buttons & Filter Pills */
+  .mode-selector .mode-pill,
+  .tabs-filter .tab-btn,
+  .chip,
+  .cat-chip,
+  .view-tabs .tab-btn:not(.tab-btn--active) {
+    background: #f8fafc !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+
+    &.active,
+    &.selected {
+      background: #eff6ff !important;
+      border-color: #3b82f6 !important;
+      color: #1d4ed8 !important;
+      font-weight: 700 !important;
+    }
+  }
+
   .btn-outline,
   .btn.btn-outline,
   .header-actions .btn-outline {
@@ -1326,9 +1400,68 @@ html:not(.dark) {
     }
   }
 
-  /* Select dropdowns */
-  select option {
-    background: #ffffff !important;
+  /* Incident, Details & Progress Sub-boxes */
+  .incident-narrative .narrative-box,
+  .incident-details-grid,
+  .limit-bar-box,
+  .plan-card__limits,
+  .webhook-box,
+  .feature-box,
+  .cart-item {
+    background: #f8fafc !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #334155 !important;
+  }
+
+  .detail-item .detail-label {
+    color: #64748b !important;
+  }
+
+  .detail-item .detail-value {
     color: #0f172a !important;
+  }
+
+  /* Tables in Light Mode */
+  .pms-table th,
+  table th {
+    background: #f8fafc !important;
+    color: #475569 !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+
+  .pms-table td,
+  table td {
+    color: #1e293b !important;
+    border-bottom: 1px solid #e2e8f0 !important;
+  }
+
+  /* Badges in Light Mode */
+  .hotel-pill,
+  .alert-hotel-pill {
+    background: #eff6ff !important;
+    color: #1d4ed8 !important;
+    border: 1px solid #bfdbfe !important;
+  }
+
+  .plan-badge {
+    background: rgba(2, 132, 199, 0.08) !important;
+    color: #0284c7 !important;
+    border: 1px solid rgba(2, 132, 199, 0.25) !important;
+  }
+
+  .section-header .header-badge {
+    background: rgba(2, 132, 199, 0.1) !important;
+    color: #0284c7 !important;
+    border: 1px solid rgba(2, 132, 199, 0.25) !important;
+  }
+
+  /* Switch Sliders */
+  .switch-toggle .slider {
+    background-color: #cbd5e1 !important;
+  }
+
+  /* Timeline */
+  .timeline-container::before {
+    background: #cbd5e1 !important;
   }
 }

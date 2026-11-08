@@ -335,7 +335,7 @@
 }
 
 /* Soporte Modo Blanco / Claro para Alertas */
-html:not(.dark) {
+:host-context(.light), :host-context(html:not(.dark)) {
   .alert-row {
     background: #ffffff !important;
     border-color: #e2e8f0 !important;

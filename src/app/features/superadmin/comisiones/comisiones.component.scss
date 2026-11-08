@@ -157,7 +157,7 @@
 }
 
 /* LIGHT THEME COMPREHENSIVE OVERRIDES */
-html:not(.dark) {
+:host-context(.light), :host-context(html:not(.dark)) {
   .kpi-card {
     background: #ffffff !important;
     border: 1px solid #e2e8f0 !important;

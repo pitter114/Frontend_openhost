@@ -946,7 +946,7 @@
 }
 
 /* Soporte Modo Blanco / Claro para Seguridad & Cuentas */
-html:not(.dark) {
+:host-context(.light), :host-context(html:not(.dark)) {
   .kpi-card {
     background: #ffffff !important;
     border-color: #e2e8f0 !important;

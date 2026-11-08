@@ -577,7 +577,7 @@
   font-size: 13.5px;
 }
 /* Soporte Modo Blanco / Claro para Panel Admin */
-html:not(.dark) {
+:host-context(.light), :host-context(html:not(.dark)) {
   .schedule-pill {
     background: #f8fafc !important;
     border-color: #e2e8f0 !important;

@@ -353,7 +353,7 @@
 }
 
 /* LIGHT THEME COMPREHENSIVE OVERRIDES */
-html:not(.dark) {
+:host-context(.light), :host-context(html:not(.dark)) {
   .section-header {
     .header-badge {
       background: rgba(2, 132, 199, 0.1) !important;

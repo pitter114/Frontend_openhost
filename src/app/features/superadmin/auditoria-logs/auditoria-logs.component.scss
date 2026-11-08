@@ -404,7 +404,7 @@
 }
 
 /* LIGHT THEME COMPREHENSIVE OVERRIDES */
-html:not(.dark) {
+:host-context(.light), :host-context(html:not(.dark)) {
   .security-detector-card {
     background: linear-gradient(180deg, rgba(239, 68, 68, 0.06) 0%, #ffffff 100%) !important;
     border-color: rgba(239, 68, 68, 0.25) !important;

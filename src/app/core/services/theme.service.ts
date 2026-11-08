@@ -23,6 +23,7 @@ export class ThemeService {
 
   private aplicar(oscuro: boolean): void {
     document.documentElement.classList.toggle('dark', oscuro);
+    document.documentElement.classList.toggle('light', !oscuro);
   }
 
   private leerPreferencia(): boolean {

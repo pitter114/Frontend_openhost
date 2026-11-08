@@ -653,7 +653,7 @@
 }
 
 /* LIGHT THEME COMPREHENSIVE OVERRIDES */
-html:not(.dark) {
+:host-context(.light), :host-context(html:not(.dark)) {
   .view-tabs {
     background: #f1f5f9 !important;
     border-color: #e2e8f0 !important;
