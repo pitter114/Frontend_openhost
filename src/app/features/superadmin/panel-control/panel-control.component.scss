@@ -44,20 +44,23 @@
 }
 
 
-@media (max-width: 640px) {
+@media (max-width: 768px) {
   .kpi-row {
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 10px;
+    gap: 10px !important;
+
+    .kpi-card:last-child:nth-child(odd) {
+      grid-column: span 2;
+    }
   }
   .kpi-card {
-    padding: 14px 12px;
-    &__value { font-size: 18px; }
-    &__label { font-size: 11.5px; }
-  }
-}
-
-@media (max-width: 420px) {
-  .kpi-row {
-    grid-template-columns: 1fr !important;
+    padding: 12px 14px !important;
+    &__icon {
+      width: 30px !important;
+      height: 30px !important;
+      margin-bottom: 8px !important;
+    }
+    &__value { font-size: 19px !important; }
+    &__label { font-size: 11.5px !important; }
   }
 }

@@ -318,3 +318,87 @@
   color: var(--pms-text-muted);
   font-size: 13.5px;
 }
+
+
+/* Optimizaciones Responsivas Móviles para Timeline y Metadatos */
+@media (max-width: 640px) {
+  .pms-page-header--flex {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  .timeline-container {
+    padding-left: 0 !important;
+    &::before {
+      left: 54px !important;
+    }
+  }
+
+  .timeline-item {
+    gap: 10px !important;
+
+    &__left {
+      width: 48px !important;
+      .timeline-time { font-size: 12px !important; font-weight: 700 !important; }
+      .timeline-date { font-size: 10px !important; }
+    }
+
+    &__card {
+      padding: 12px 14px !important;
+
+      .card-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+      }
+
+      .card-desc {
+        font-size: 12.5px !important;
+        word-break: break-word !important;
+        line-height: 1.4 !important;
+      }
+
+      .card-footer {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 6px !important;
+        padding-top: 8px !important;
+        border-top: 1px solid rgba(255, 255, 255, 0.06) !important;
+
+        .user-meta {
+          word-break: break-all !important;
+          font-size: 11.5px !important;
+        }
+
+        .ip-meta {
+          font-size: 11px !important;
+          color: #93c5fd !important;
+          background: rgba(59, 130, 246, 0.1) !important;
+          padding: 2px 6px !important;
+          border-radius: 4px !important;
+        }
+      }
+    }
+  }
+
+  .filters-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+
+    .search-box {
+      width: 100% !important;
+      min-width: 0 !important;
+    }
+
+    .pills-group {
+      overflow-x: auto !important;
+      white-space: nowrap !important;
+      flex-wrap: nowrap !important;
+      padding-bottom: 6px !important;
+      -webkit-overflow-scrolling: touch !important;
+      button { flex-shrink: 0 !important; }
+    }
+  }
+}

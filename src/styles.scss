@@ -1073,10 +1073,17 @@ textarea.pms-input {
 /* Smartphones Compactos (< 400px) */
 @media (max-width: 400px) {
   .kpi-row {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
+  }
+  .kpi-card {
+    padding: 11px 12px !important;
+    &__value { font-size: 18px !important; }
+    &__label { font-size: 11px !important; }
   }
   .stat-row {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 8px !important;
   }
   .room-grid {
     grid-template-columns: 1fr !important;

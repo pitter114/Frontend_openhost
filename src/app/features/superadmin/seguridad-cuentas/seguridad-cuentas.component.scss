@@ -874,3 +874,73 @@
     select { width: 100% !important; }
   }
 }
+
+/* Optimizaciones Responsivas Móviles para Seguridad & Cuentas */
+.tabs-nav {
+  overflow-x: auto !important;
+  white-space: nowrap !important;
+  flex-wrap: nowrap !important;
+  padding-bottom: 4px !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-width: none !important;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.tab-btn {
+  flex-shrink: 0 !important;
+  white-space: nowrap !important;
+}
+
+@media (max-width: 768px) {
+  .pms-page-header--flex {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+
+  .kpi-row {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .kpi-card {
+    padding: 12px 14px !important;
+    &__icon {
+      width: 30px !important;
+      height: 30px !important;
+      margin-bottom: 8px !important;
+    }
+    &__value { font-size: 20px !important; }
+    &__label { font-size: 11.5px !important; }
+  }
+
+  .toolbar-card {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 10px !important;
+    padding: 12px 14px !important;
+
+    .search-box {
+      min-width: 0 !important;
+      width: 100% !important;
+    }
+
+    .filters-group {
+      width: 100% !important;
+      display: grid !important;
+      grid-template-columns: 1fr 1fr !important;
+      gap: 8px !important;
+
+      .pms-select {
+        width: 100% !important;
+        min-width: 0 !important;
+      }
+    }
+  }
+}
+
+@media (max-width: 440px) {
+  .toolbar-card .filters-group {
+    grid-template-columns: 1fr !important;
+  }
+}
