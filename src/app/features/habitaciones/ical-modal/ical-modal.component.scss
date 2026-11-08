@@ -12,8 +12,8 @@
 }
 
 .ical-modal-card {
-  background: #111827;
-  border: 1px solid #1e293b;
+  background: var(--pms-card);
+  border: 1px solid var(--pms-border);
   border-radius: 16px;
   width: 100%;
   max-width: 720px;
@@ -27,7 +27,7 @@
 
 .modal-header {
   padding: 1.5rem;
-  border-bottom: 1px solid #1e293b;
+  border-bottom: 1px solid var(--pms-border);
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
@@ -50,13 +50,13 @@
   h3 {
     margin: 0 0 0.25rem 0;
     font-size: 1.35rem;
-    color: #f8fafc;
+    color: var(--pms-text);
   }
 
   p {
     margin: 0;
     font-size: 0.85rem;
-    color: #94a3b8;
+    color: var(--pms-text-muted);
     line-height: 1.45;
   }
 
@@ -70,8 +70,8 @@
     transition: all 0.2s;
 
     &:hover {
-      background: #1e293b;
-      color: #f1f5f9;
+      background: var(--pms-bg);
+      color: var(--pms-text);
     }
   }
 }
@@ -92,8 +92,8 @@
 }
 
 .feed-card {
-  background: #0f172a;
-  border: 1px solid #1e293b;
+  background: var(--pms-card);
+  border: 1px solid var(--pms-border);
   border-radius: 12px;
   padding: 1.25rem;
   display: flex;
@@ -115,7 +115,7 @@
       align-items: center;
       gap: 0.5rem;
       font-size: 1rem;
-      color: #f8fafc;
+      color: var(--pms-text);
 
       &.booking strong { color: #38bdf8; }
       &.airbnb strong { color: #f87171; }
@@ -135,7 +135,7 @@
 
     .badge-pending {
       background: rgba(100, 116, 139, 0.2);
-      color: #94a3b8;
+      color: var(--pms-text-muted);
       font-size: 0.75rem;
       padding: 0.2rem 0.6rem;
       border-radius: 9999px;
@@ -153,13 +153,13 @@
       gap: 0.5rem;
       font-size: 0.85rem;
       font-weight: 600;
-      color: #cbd5e1;
+      color: var(--pms-text-soft);
 
       .step-num {
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background: #1e293b;
+        background: var(--pms-bg);
         color: #38bdf8;
         display: flex;
         align-items: center;
@@ -170,16 +170,16 @@
     }
 
     .pms-input {
-      background: #111827;
+      background: var(--pms-card);
       border: 1px solid #334155;
-      color: #f8fafc;
+      color: var(--pms-text);
       padding: 0.55rem 0.8rem;
       border-radius: 8px;
       font-size: 0.85rem;
 
       &.readonly-input {
         background: #090d16;
-        color: #94a3b8;
+        color: var(--pms-text-muted);
         font-family: monospace;
       }
 
@@ -218,7 +218,7 @@
       font-size: 0.8rem;
 
       .meta-label { color: #64748b; }
-      .meta-value { color: #cbd5e1; font-weight: 500; }
+      .meta-value { color: var(--pms-text-soft); font-weight: 500; }
       .error-badge { color: #ef4444; font-size: 0.75rem; }
     }
   }
@@ -247,10 +247,10 @@
     p {
       margin: 0.3rem 0;
       font-size: 0.8rem;
-      color: #94a3b8;
+      color: var(--pms-text-muted);
       line-height: 1.45;
 
-      strong { color: #e2e8f0; }
+      strong { color: var(--pms-text); }
     }
   }
 }
@@ -282,15 +282,15 @@
 
   &.btn-primary {
     background: #0ea5e9;
-    color: #ffffff;
+    color: var(--pms-text);
     &:hover:not(:disabled) { background: #0284c7; }
   }
 
   &.btn-outline {
     background: transparent;
     border: 1px solid #334155;
-    color: #cbd5e1;
-    &:hover:not(:disabled) { background: #1e293b; color: #f8fafc; }
+    color: var(--pms-text-soft);
+    &:hover:not(:disabled) { background: var(--pms-bg); color: var(--pms-text); }
   }
 
   &:disabled {

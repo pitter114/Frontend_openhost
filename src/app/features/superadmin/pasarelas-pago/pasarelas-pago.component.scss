@@ -37,12 +37,12 @@
   h2 {
     font-size: 1.65rem;
     font-weight: 700;
-    color: #f8fafc;
+    color: var(--pms-text);
     margin: 0 0 0.35rem 0;
   }
 
   p {
-    color: #94a3b8;
+    color: var(--pms-text-muted);
     margin: 0;
     font-size: 0.95rem;
   }
@@ -60,8 +60,8 @@
   align-items: center;
   gap: 1.25rem;
   padding: 1.25rem;
-  background: #111827;
-  border: 1px solid #1e293b;
+  background: var(--pms-card);
+  border: 1px solid var(--pms-border);
   border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 
@@ -86,14 +86,14 @@
 
     .label {
       font-size: 0.8rem;
-      color: #94a3b8;
+      color: var(--pms-text-muted);
       font-weight: 500;
     }
 
     .value {
       font-size: 1.4rem;
       font-weight: 700;
-      color: #f1f5f9;
+      color: var(--pms-text);
       margin: 0.2rem 0;
 
       &.text-success { color: #22c55e; }
@@ -109,8 +109,8 @@
 
 /* Featured Gateway Card (Mercado Pago) */
 .gateway-card.featured {
-  background: #111827;
-  border: 1px solid #1e293b;
+  background: var(--pms-card);
+  border: 1px solid var(--pms-border);
   border-radius: 14px;
   overflow: hidden;
   box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
@@ -121,7 +121,7 @@
     align-items: center;
     padding: 1.5rem;
     background: linear-gradient(135deg, rgba(14, 165, 233, 0.1), rgba(15, 23, 42, 0.8));
-    border-bottom: 1px solid #1e293b;
+    border-bottom: 1px solid var(--pms-border);
     flex-wrap: wrap;
     gap: 1rem;
 
@@ -135,7 +135,7 @@
         align-items: center;
         gap: 0.4rem;
         background: #009ee3;
-        color: #ffffff;
+        color: var(--pms-text);
         font-weight: 800;
         padding: 0.5rem 0.9rem;
         border-radius: 8px;
@@ -149,13 +149,13 @@
         h3 {
           margin: 0 0 0.2rem 0;
           font-size: 1.25rem;
-          color: #f8fafc;
+          color: var(--pms-text);
         }
 
         p {
           margin: 0;
           font-size: 0.85rem;
-          color: #94a3b8;
+          color: var(--pms-text-muted);
           max-width: 650px;
         }
       }
@@ -170,7 +170,7 @@
       font-size: 0.85rem;
       font-weight: 600;
       background: rgba(100, 116, 139, 0.15);
-      color: #94a3b8;
+      color: var(--pms-text-muted);
       border: 1px solid rgba(100, 116, 139, 0.25);
 
       .status-dot {
@@ -214,13 +214,13 @@
       label {
         font-size: 0.85rem;
         font-weight: 600;
-        color: #cbd5e1;
+        color: var(--pms-text-soft);
       }
 
       .pms-input {
-        background: #0f172a;
+        background: var(--pms-card);
         border: 1px solid #334155;
-        color: #f8fafc;
+        color: var(--pms-text);
         padding: 0.65rem 0.85rem;
         border-radius: 8px;
         font-size: 0.9rem;
@@ -234,7 +234,7 @@
 
         &.readonly-input {
           background: #090d16;
-          color: #94a3b8;
+          color: var(--pms-text-muted);
           cursor: text;
         }
       }
@@ -258,8 +258,8 @@
         border: 1px solid #334155;
         border-radius: 8px;
         cursor: pointer;
-        background: #0f172a;
-        color: #94a3b8;
+        background: var(--pms-card);
+        color: var(--pms-text-muted);
         font-size: 0.85rem;
         font-weight: 500;
         transition: all 0.2s;
@@ -286,7 +286,7 @@
 
       .toggle-label {
         font-size: 0.9rem;
-        color: #cbd5e1;
+        color: var(--pms-text-soft);
       }
     }
 
@@ -299,9 +299,9 @@
       }
 
       .btn-input-action {
-        background: #1e293b;
+        background: var(--pms-bg);
         border: 1px solid #334155;
-        color: #cbd5e1;
+        color: var(--pms-text-soft);
         padding: 0 0.85rem;
         border-radius: 8px;
         cursor: pointer;
@@ -335,7 +335,7 @@
 
         .label-text {
           font-size: 0.85rem;
-          color: #cbd5e1;
+          color: var(--pms-text-soft);
         }
       }
     }
@@ -361,7 +361,7 @@
 
       .test-text {
         p { margin: 0.2rem 0; font-size: 0.85rem; }
-        small { color: #94a3b8; }
+        small { color: var(--pms-text-muted); }
       }
     }
 
@@ -385,8 +385,8 @@
 }
 
 .secondary-card {
-  background: #111827;
-  border: 1px solid #1e293b;
+  background: var(--pms-card);
+  border: 1px solid var(--pms-border);
   border-radius: 12px;
   padding: 1.25rem;
   display: flex;
@@ -406,14 +406,14 @@
       .brand-icon {
         font-size: 1.5rem;
         padding: 0.4rem;
-        background: #1e293b;
+        background: var(--pms-bg);
         border-radius: 8px;
       }
 
       h4 {
         margin: 0;
         font-size: 1rem;
-        color: #f1f5f9;
+        color: var(--pms-text);
       }
 
       .sub {
@@ -425,7 +425,7 @@
 
   .secondary-desc {
     font-size: 0.85rem;
-    color: #94a3b8;
+    color: var(--pms-text-muted);
     line-height: 1.45;
     margin: 0;
   }
@@ -450,7 +450,7 @@
   padding: 0.25rem 0.65rem;
   border-radius: 9999px;
 
-  &.badge-neutral { background: rgba(100, 116, 139, 0.2); color: #94a3b8; }
+  &.badge-neutral { background: rgba(100, 116, 139, 0.2); color: var(--pms-text-muted); }
   &.badge-success { background: rgba(34, 197, 94, 0.15); color: #4ade80; }
 }
 
@@ -513,7 +513,7 @@
 
   &.btn-primary {
     background: #0ea5e9;
-    color: #ffffff;
+    color: var(--pms-text);
     box-shadow: 0 4px 12px rgba(14, 165, 233, 0.3);
 
     &:hover:not(:disabled) {
@@ -522,9 +522,9 @@
   }
 
   &.btn-secondary {
-    background: #1e293b;
+    background: var(--pms-bg);
     border: 1px solid #334155;
-    color: #f1f5f9;
+    color: var(--pms-text);
 
     &:hover:not(:disabled) {
       background: #334155;
@@ -534,11 +534,11 @@
   &.btn-outline {
     background: transparent;
     border: 1px solid #334155;
-    color: #94a3b8;
+    color: var(--pms-text-muted);
 
     &:hover {
-      background: #1e293b;
-      color: #f1f5f9;
+      background: var(--pms-bg);
+      color: var(--pms-text);
     }
   }
 

@@ -43,8 +43,8 @@
 
 .config-card {
   padding: 24px;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: var(--pms-card);
+  border: 1px solid var(--pms-border);
   border-radius: 16px;
 
   &.full-width {
@@ -60,7 +60,7 @@
     h3 {
       font-size: 16px;
       font-weight: 700;
-      color: #f8fafc;
+      color: var(--pms-text);
       margin: 0 0 4px;
     }
   }
@@ -114,15 +114,15 @@
   label {
     font-size: 12.5px;
     font-weight: 600;
-    color: #e2e8f0;
+    color: var(--pms-text);
   }
 }
 
 .pms-input,
 .pms-select {
-  background: #182234;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #f8fafc;
+  background: var(--pms-bg);
+  border: 1px solid var(--pms-border);
+  color: var(--pms-text);
   padding: 10px 14px;
   border-radius: 10px;
   font-size: 13.5px;
@@ -134,7 +134,7 @@
   }
 
   &--readonly {
-    background: rgba(255, 255, 255, 0.03);
+    background: var(--pms-card);
     color: var(--pms-text-muted);
     cursor: not-allowed;
   }
@@ -148,8 +148,8 @@
 
 .feature-box {
   padding: 18px;
-  background: rgba(255, 255, 255, 0.025);
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: var(--pms-bg);
+  border: 1px solid var(--pms-border);
   border-radius: 12px;
 
   &__header {
@@ -160,7 +160,7 @@
 
     strong {
       font-size: 13.5px;
-      color: #f8fafc;
+      color: var(--pms-text);
       display: block;
       margin-bottom: 4px;
     }

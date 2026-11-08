@@ -1325,6 +1325,11 @@ body.light {
   }
 
   /* Headings, Titles & User Names */
+  .config-card h3,
+  .config-card__header h3,
+  .feature-box strong,
+  .feature-box__header strong,
+  .form-group label,
   .user-name,
   .brand-text h3,
   .plan-card__name,
@@ -1342,6 +1347,11 @@ body.light {
     font-weight: 700;
   }
 
+  .config-card__sub,
+  .feature-box p,
+  .feature-box__header p,
+  .field-hint,
+  .manual-checkout-desc,
   .user-email,
   .section-header p,
   .section-sub,
