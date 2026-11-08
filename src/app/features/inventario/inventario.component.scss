@@ -388,3 +388,72 @@
 @media (max-width: 500px) {
   .articulo-grid { grid-template-columns: 1fr; }
 }
+
+/* LIGHT THEME COMPREHENSIVE OVERRIDES */
+html:not(.dark) {
+  .stat-card {
+    border-color: #e2e8f0 !important;
+
+    &__label { color: #64748b !important; }
+
+    &--blue {
+      background: #f0f7ff !important;
+      border-color: rgba(59, 130, 246, 0.3) !important;
+      .stat-card__value { color: #2563eb !important; }
+    }
+    &--amber {
+      background: #fffbeb !important;
+      border-color: rgba(245, 158, 11, 0.3) !important;
+      .stat-card__value { color: #d97706 !important; }
+    }
+    &--red {
+      background: #fef2f2 !important;
+      border-color: rgba(239, 68, 68, 0.3) !important;
+      .stat-card__value { color: #dc2626 !important; }
+    }
+  }
+
+  .filters-bar {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+
+    .pms-search input {
+      color: #0f172a !important;
+      &::placeholder { color: #94a3b8 !important; }
+    }
+  }
+
+  .chip {
+    background: #f1f5f9 !important;
+    border-color: #cbd5e1 !important;
+    color: #475569 !important;
+
+    &:hover {
+      background: #e2e8f0 !important;
+      color: #0f172a !important;
+    }
+
+    &--active {
+      background: #3b82f6 !important;
+      border-color: #3b82f6 !important;
+      color: #ffffff !important;
+    }
+  }
+
+  .articulo-card {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+
+    &__name { color: #0f172a !important; }
+    &__cat { color: #64748b !important; }
+    &__units {
+      color: #0f172a !important;
+      span { color: #64748b !important; }
+    }
+    &__track { background: #e2e8f0 !important; }
+    &__foot { color: #64748b !important; }
+    &__actions { border-top-color: #e2e8f0 !important; }
+  }
+}

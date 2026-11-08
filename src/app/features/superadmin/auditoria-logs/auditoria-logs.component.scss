@@ -402,3 +402,79 @@
     }
   }
 }
+
+/* LIGHT THEME COMPREHENSIVE OVERRIDES */
+html:not(.dark) {
+  .security-detector-card {
+    background: linear-gradient(180deg, rgba(239, 68, 68, 0.06) 0%, #ffffff 100%) !important;
+    border-color: rgba(239, 68, 68, 0.25) !important;
+
+    .detector-header .detector-title h2 {
+      color: #0f172a !important;
+    }
+
+    .sec-card {
+      background: #ffffff !important;
+      border: 1px solid #e2e8f0 !important;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+
+      &--blocked {
+        background: #fef2f2 !important;
+        border-color: rgba(239, 68, 68, 0.3) !important;
+      }
+
+      &__type {
+        color: #0f172a !important;
+      }
+      &__desc {
+        color: #475569 !important;
+      }
+      &__meta {
+        border-top-color: #e2e8f0 !important;
+        color: #64748b !important;
+
+        code {
+          color: #2563eb !important;
+        }
+      }
+    }
+  }
+
+  .timeline-container::before {
+    background: #cbd5e1 !important;
+  }
+
+  .timeline-item {
+    &__left .timeline-time {
+      color: #0f172a !important;
+    }
+
+    &__card {
+      background: #ffffff !important;
+      border-color: #e2e8f0 !important;
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.05) !important;
+
+      .card-header .hotel-pill {
+        color: #2563eb !important;
+      }
+
+      .card-desc {
+        color: #1e293b !important;
+      }
+
+      .card-footer {
+        color: #64748b !important;
+      }
+    }
+  }
+
+  .search-box {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+
+    input {
+      color: #0f172a !important;
+      &::placeholder { color: #94a3b8 !important; }
+    }
+  }
+}

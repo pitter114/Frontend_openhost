@@ -311,3 +311,36 @@
     .pms-btn { width: 100%; justify-content: center; }
   }
 }
+
+/* LIGHT THEME COMPREHENSIVE OVERRIDES */
+html:not(.dark) {
+  .org-cell__icon {
+    background: #eff6ff !important;
+  }
+  .flags-intro {
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+    border-left-color: #3b82f6 !important;
+    color: #475569 !important;
+  }
+  .flag-item {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+
+    &--active {
+      background: #eff6ff !important;
+      border-color: rgba(59, 130, 246, 0.4) !important;
+    }
+
+    &__header {
+      color: #0f172a !important;
+    }
+    &__info p {
+      color: #64748b !important;
+    }
+  }
+
+  .switch-toggle .slider {
+    background-color: #cbd5e1 !important;
+  }
+}

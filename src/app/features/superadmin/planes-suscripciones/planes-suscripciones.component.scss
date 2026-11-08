@@ -305,3 +305,64 @@
     .form-group--full { grid-column: span 1 !important; }
   }
 }
+
+/* LIGHT THEME COMPREHENSIVE OVERRIDES */
+html:not(.dark) {
+  .saas-metric-card {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06) !important;
+
+    &__title { color: #64748b !important; }
+    &__val { color: #0f172a !important; }
+    &__sub { color: #94a3b8 !important; }
+  }
+
+  .plan-card {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06) !important;
+
+    &--popular {
+      border-color: rgba(37, 99, 235, 0.4) !important;
+      background: linear-gradient(180deg, #f0f7ff 0%, #ffffff 100%) !important;
+      box-shadow: 0 8px 24px rgba(37, 99, 235, 0.12) !important;
+    }
+
+    &__name { color: #0f172a !important; }
+    &__desc { color: #64748b !important; }
+
+    &__price {
+      .currency { color: #2563eb !important; }
+      .amount { color: #0f172a !important; }
+      .period { color: #64748b !important; }
+    }
+
+    &__limits {
+      background: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+
+      .limit-item {
+        color: #334155 !important;
+        strong { color: #2563eb !important; }
+      }
+    }
+
+    &__modules {
+      .module-chip {
+        background: #f1f5f9 !important;
+        color: #64748b !important;
+
+        &--active {
+          background: rgba(34, 197, 94, 0.12) !important;
+          color: #15803d !important;
+        }
+      }
+    }
+
+    &__meta {
+      border-top-color: #e2e8f0 !important;
+      color: #64748b !important;
+    }
+  }
+}

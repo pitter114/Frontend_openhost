@@ -1254,3 +1254,81 @@ html:not(.dark) {
     white-space: nowrap !important;
   }
 }
+
+
+/* ==========================================================================
+   GLOBAL LIGHT THEME REINFORCEMENT & HIGH CONTRAST
+   Ensures headings, subheadings, cards, inputs, and badges are clearly legible
+   ========================================================================== */
+html:not(.dark) {
+  --pms-card-bg: #ffffff;
+  --pms-card-border: #e2e8f0;
+
+  /* Universal headings and labels in light mode */
+  .section-header h2,
+  .section-header h3,
+  .pms-page-header h1,
+  .pms-page-header h2,
+  header h1,
+  header h2,
+  header h3,
+  .detector-title h2,
+  .card-top h3,
+  .edificios-detail-section h4 {
+    color: #0f172a !important;
+  }
+
+  .section-header p,
+  .section-sub,
+  .header-titles p {
+    color: #475569 !important;
+  }
+
+  .section-header .header-badge {
+    background: rgba(2, 132, 199, 0.1) !important;
+    color: #0284c7 !important;
+    border: 1px solid rgba(2, 132, 199, 0.25) !important;
+  }
+
+  /* Universal metric & summary cards */
+  .metrics-grid .metric-card,
+  .saas-metrics-grid .saas-metric-card,
+  .summary-row .summary-card {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .metric-info .value,
+  .saas-metric-card__val,
+  .summary-card__value {
+    color: #0f172a !important;
+  }
+
+  .metric-info .label,
+  .saas-metric-card__title,
+  .summary-card__label {
+    color: #64748b !important;
+  }
+
+  /* Outline buttons */
+  .btn-outline,
+  .btn.btn-outline,
+  .header-actions .btn-outline {
+    background: #ffffff !important;
+    border: 1px solid #cbd5e1 !important;
+    color: #334155 !important;
+
+    &:hover {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+      border-color: #94a3b8 !important;
+    }
+  }
+
+  /* Select dropdowns */
+  select option {
+    background: #ffffff !important;
+    color: #0f172a !important;
+  }
+}

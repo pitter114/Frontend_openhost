@@ -351,3 +351,128 @@
     }
   }
 }
+
+/* LIGHT THEME COMPREHENSIVE OVERRIDES */
+html:not(.dark) {
+  .section-header {
+    .header-badge {
+      background: rgba(2, 132, 199, 0.1) !important;
+      color: #0284c7 !important;
+      border: 1px solid rgba(2, 132, 199, 0.25) !important;
+    }
+    h2 {
+      color: #0f172a !important;
+    }
+    p {
+      color: #475569 !important;
+    }
+  }
+
+  .metric-card {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06) !important;
+
+    .metric-info {
+      .label { color: #64748b !important; }
+      .value { color: #0f172a !important; }
+      .subtext { color: #94a3b8 !important; }
+    }
+  }
+
+  .hotel-infra-card {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 4px 16px rgba(15, 23, 42, 0.06) !important;
+
+    .card-top {
+      border-bottom-color: #e2e8f0 !important;
+
+      .hotel-identity {
+        .hotel-avatar {
+          background: #f1f5f9 !important;
+          color: #0284c7 !important;
+        }
+        h3 {
+          color: #0f172a !important;
+        }
+        .hotel-ruc {
+          color: #64748b !important;
+        }
+      }
+
+      .plan-status {
+        .plan-badge {
+          background: rgba(2, 132, 199, 0.08) !important;
+          color: #0284c7 !important;
+          border-color: rgba(2, 132, 199, 0.25) !important;
+        }
+      }
+    }
+
+    .limits-bars-grid {
+      .limit-bar-box {
+        background: #f8fafc !important;
+        border-color: #e2e8f0 !important;
+
+        .bar-header {
+          .bar-label { color: #1e293b !important; }
+          .bar-count {
+            color: #64748b !important;
+            strong { color: #0f172a !important; }
+          }
+        }
+
+        .progress-track {
+          background: #e2e8f0 !important;
+        }
+        .bar-sub {
+          color: #64748b !important;
+        }
+      }
+    }
+
+    .edificios-detail-section {
+      h4 { color: #1e293b !important; }
+
+      .empty-edificios {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+        color: #64748b !important;
+      }
+
+      .edificios-table {
+        th {
+          color: #64748b !important;
+          border-bottom-color: #e2e8f0 !important;
+        }
+        td {
+          color: #334155 !important;
+          border-bottom-color: #e2e8f0 !important;
+
+          &.ed-name {
+            color: #0f172a !important;
+          }
+          &.text-muted {
+            color: #64748b !important;
+          }
+          .hab-badge {
+            background: rgba(2, 132, 199, 0.1) !important;
+            color: #0284c7 !important;
+          }
+        }
+      }
+    }
+  }
+
+  .btn {
+    border-color: #cbd5e1 !important;
+    color: #334155 !important;
+    background: #ffffff !important;
+
+    &:hover {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+  }
+}

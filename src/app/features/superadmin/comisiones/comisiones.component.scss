@@ -155,3 +155,30 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+/* LIGHT THEME COMPREHENSIVE OVERRIDES */
+html:not(.dark) {
+  .kpi-card {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.06) !important;
+
+    &__value { color: #0f172a !important; }
+    &__label { color: #64748b !important; }
+  }
+
+  .liquidaciones-section {
+    background: #ffffff !important;
+    border: 1px solid #e2e8f0 !important;
+
+    .section-header {
+      h2 { color: #0f172a !important; }
+      .section-sub { color: #64748b !important; }
+    }
+  }
+
+  .hotel-info {
+    strong { color: #0f172a !important; }
+    small { color: #64748b !important; }
+  }
+}
