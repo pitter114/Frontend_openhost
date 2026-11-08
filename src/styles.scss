@@ -1135,3 +1135,122 @@ textarea.pms-input {
     background: #ffffff !important;
   }
 }
+
+/* ==========================================================================
+   Modo Blanco / Claro Garantizado (html:not(.dark))
+   ========================================================================== */
+html:not(.dark) {
+  body {
+    background: var(--pms-bg);
+    color: var(--pms-text);
+  }
+
+  .pms-card,
+  .pms-card-item {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    color: #16202f !important;
+  }
+
+  .pms-btn--outline {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #334155 !important;
+
+    &:hover:not(:disabled) {
+      background: #f1f5f9 !important;
+      border-color: #94a3b8 !important;
+      color: #0f172a !important;
+    }
+  }
+
+  .pms-search {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #16202f !important;
+    input {
+      color: #16202f !important;
+      &::placeholder { color: #94a3b8 !important; }
+    }
+  }
+
+  .pms-input,
+  input.pms-input,
+  select.pms-input,
+  textarea.pms-input {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #0f172a !important;
+    &::placeholder { color: #94a3b8 !important; }
+    &:focus {
+      border-color: #3b82f6 !important;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.18) !important;
+    }
+  }
+
+  .pms-table {
+    th {
+      background: #f8fafc !important;
+      color: #475569 !important;
+      border-bottom: 1px solid #e2e8f0 !important;
+    }
+    td {
+      color: #1e293b !important;
+      border-bottom: 1px solid #f1f5f9 !important;
+    }
+    tbody tr:hover {
+      background: #f8fafc !important;
+    }
+  }
+
+  .pms-pagination {
+    background: #ffffff !important;
+    border-top-color: #e2e8f0 !important;
+    color: #64748b !important;
+    &__current { color: #0f172a !important; }
+    &__btn {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      color: #334155 !important;
+      &:hover:not(:disabled) {
+        background: #f1f5f9 !important;
+        border-color: #94a3b8 !important;
+      }
+    }
+  }
+
+  .meta-row {
+    .meta-label { color: #64748b !important; }
+    .meta-value { color: #0f172a !important; }
+  }
+
+  .filtros button.pms-btn--outline {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #334155 !important;
+    &:hover {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+  }
+}
+
+/* Desplazamiento táctil horizontal sin cortes para todos los grupos de pestañas y filtros */
+.filtros,
+.tabs-filter,
+.tabs-nav,
+.pills-group {
+  display: flex !important;
+  overflow-x: auto !important;
+  white-space: nowrap !important;
+  flex-wrap: nowrap !important;
+  -webkit-overflow-scrolling: touch !important;
+  padding-bottom: 4px !important;
+  scrollbar-width: none !important;
+  &::-webkit-scrollbar { display: none !important; }
+
+  button, a, .tab-btn {
+    flex-shrink: 0 !important;
+    white-space: nowrap !important;
+  }
+}

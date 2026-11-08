@@ -944,3 +944,53 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Soporte Modo Blanco / Claro para Seguridad & Cuentas */
+html:not(.dark) {
+  .kpi-card {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    &__value { color: #0f172a !important; }
+    &__label { color: #64748b !important; }
+  }
+
+  .tab-btn {
+    color: #64748b !important;
+    &:hover { color: #0f172a !important; }
+    &--active { color: #2563eb !important; border-bottom-color: #2563eb !important; }
+    .tab-count {
+      color: #0f172a !important;
+      background: #f1f5f9 !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+  }
+
+  .toolbar-card {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    .search-box {
+      background: #ffffff !important;
+      border-color: #cbd5e1 !important;
+      input { color: #0f172a !important; }
+    }
+    .pms-select {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
+  }
+
+  .table-card {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    .user-name { color: #0f172a !important; }
+    .user-email { color: #64748b !important; }
+    .hotel-pill {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+      border-color: #cbd5e1 !important;
+    }
+    th { color: #475569 !important; background: #f8fafc !important; }
+    td { color: #1e293b !important; }
+  }
+}

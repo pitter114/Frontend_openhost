@@ -333,3 +333,71 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+/* Soporte Modo Blanco / Claro para Alertas */
+html:not(.dark) {
+  .alert-row {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+
+    &--red {
+      border-left: 4px solid #ef4444 !important;
+      background: #fff5f5 !important;
+      border-color: #fee2e2 !important;
+    }
+
+    &--amber {
+      border-left: 4px solid #f59e0b !important;
+      background: #fffdf0 !important;
+      border-color: #fef3c7 !important;
+    }
+
+    &__icon {
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+      color: #334155 !important;
+    }
+
+    &__title {
+      color: #0f172a !important;
+    }
+
+    &__detail {
+      color: #475569 !important;
+    }
+
+    &__hotel {
+      color: #0f172a !important;
+      background: #f1f5f9 !important;
+      border-color: #cbd5e1 !important;
+    }
+  }
+
+  .broadcast-card {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    &__title { color: #0f172a !important; }
+    &__msg { color: #475569 !important; }
+  }
+
+  .summary-card {
+    &--red {
+      background: #fef2f2 !important;
+      border-color: #fecaca !important;
+      .summary-card__value { color: #dc2626 !important; }
+      .summary-card__label { color: #991b1b !important; }
+    }
+    &--amber {
+      background: #fffbeb !important;
+      border-color: #fde68a !important;
+      .summary-card__value { color: #d97706 !important; }
+      .summary-card__label { color: #92400e !important; }
+    }
+    &--blue {
+      background: #eff6ff !important;
+      border-color: #bfdbfe !important;
+      .summary-card__value { color: #2563eb !important; }
+      .summary-card__label { color: #1e40af !important; }
+    }
+  }
+}

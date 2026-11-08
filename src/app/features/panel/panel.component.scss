@@ -576,3 +576,52 @@
   color: var(--pms-text-muted);
   font-size: 13.5px;
 }
+/* Soporte Modo Blanco / Claro para Panel Admin */
+html:not(.dark) {
+  .schedule-pill {
+    background: #f8fafc !important;
+    border-color: #e2e8f0 !important;
+    &__label { color: #64748b !important; }
+    &__time { color: #0f172a !important; }
+    &__note { color: #475569 !important; }
+  }
+
+  .btn-action-edit {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    color: #1e293b !important;
+    &:hover { background: #f1f5f9 !important; }
+  }
+
+  .auto-checkout-bar {
+    background: #eef2ff !important;
+    border-color: #c7d2fe !important;
+    &__status { color: #1e293b !important; }
+    &__desc { color: #475569 !important; }
+  }
+
+  .alerts-empty__title {
+    color: #0f172a !important;
+  }
+
+  .modal-card {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    h3 { color: #0f172a !important; }
+    .modal-sub { color: #64748b !important; }
+    .modal-header { border-bottom-color: #e2e8f0 !important; }
+    .modal-footer {
+      background: #f8fafc !important;
+      border-top-color: #e2e8f0 !important;
+    }
+    .feature-box {
+      background: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+      strong { color: #0f172a !important; }
+      p { color: #64748b !important; }
+    }
+    .form-group label {
+      color: #1e293b !important;
+    }
+  }
+}

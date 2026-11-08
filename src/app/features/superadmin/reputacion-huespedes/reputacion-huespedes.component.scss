@@ -427,3 +427,74 @@
     .btn { width: 100% !important; justify-content: center !important; }
   }
 }
+
+/* Soporte Modo Blanco / Claro para Reputación de Huéspedes */
+html:not(.dark) {
+  .section-header h2 { color: #0f172a !important; }
+  .section-header p { color: #475569 !important; }
+
+  .metric-card {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    .value { color: #0f172a !important; }
+    .label { color: #64748b !important; }
+    .subtext { color: #475569 !important; }
+  }
+
+  .search-input-wrap {
+    background: #ffffff !important;
+    border-color: #cbd5e1 !important;
+    input {
+      color: #0f172a !important;
+      &::placeholder { color: #94a3b8 !important; }
+    }
+  }
+
+  .tabs-filter {
+    background: #f1f5f9 !important;
+    border-color: #e2e8f0 !important;
+    .tab-btn {
+      color: #475569 !important;
+      &.active {
+        background: #ffffff !important;
+        color: #0f172a !important;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08) !important;
+      }
+    }
+  }
+
+  .incident-card {
+    background: #ffffff !important;
+    border-color: #e2e8f0 !important;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+
+    .guest-info {
+      h4 { color: #0f172a !important; }
+      .guest-avatar {
+        background: #f1f5f9 !important;
+      }
+      .doc-badge {
+        background: #eff6ff !important;
+        color: #0284c7 !important;
+        border-color: #bfdbfe !important;
+      }
+      .hotel-reporter {
+        color: #64748b !important;
+        strong { color: #0f172a !important; }
+      }
+    }
+
+    .incident-body {
+      background: #f8fafc !important;
+      border-color: #e2e8f0 !important;
+
+      .detail-label { color: #64748b !important; }
+      .detail-value { color: #0f172a !important; }
+      .incident-narrative {
+        border-top-color: #e2e8f0 !important;
+        .narrative-label { color: #0f172a !important; }
+        p { color: #334155 !important; }
+      }
+    }
+  }
+}
