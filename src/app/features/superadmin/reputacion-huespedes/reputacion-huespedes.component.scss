@@ -399,3 +399,31 @@
   h3 { color: #f1f5f9; margin: 0; }
   p { margin: 0; }
 }
+
+
+@media (max-width: 640px) {
+  :host {
+    padding: 0.5rem;
+  }
+  .metrics-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .filter-bar {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    .tabs-filter {
+      overflow-x: auto !important;
+      white-space: nowrap !important;
+      button { flex-shrink: 0; }
+    }
+  }
+  .incident-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+  .incident-actions {
+    flex-direction: column !important;
+    .btn { width: 100% !important; justify-content: center !important; }
+  }
+}

@@ -6,40 +6,124 @@
 
   <div class="pms-search search-wide">
     <app-icon name="search" [size]="15" />
-    <input type="text" placeholder="Buscar por nombre, apellidos, DNI, teléfono, correo electrónico..." [(ngModel)]="search" />
+    <input
+      type="text"
+      placeholder="Buscar por nombre, apellidos, DNI, teléfono, correo electrónico..."
+      [(ngModel)]="search"
+      (ngModelChange)="onSearchChange()"
+    />
   </div>
 
   <div class="pms-card">
-    <table class="pms-table">
-      <thead>
-        <tr>
-          <th>Cliente</th>
-          <th>DNI</th>
-          <th>Teléfono</th>
-          <th>Correo electrónico</th>
-          <th>Hoteles</th>
-          <th>Estadías</th>
-          <th>Última Reserva</th>
-          <th>Nivel</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let c of filtered">
-          <td>
-            <div class="cliente-cell">
-              <span class="avatar">{{ initials(c.nombre) }}</span>
-              {{ c.nombre }}
+    <!-- Vista Tabla Escritorio (> 768px) -->
+    <div class="pms-table-desktop">
+      <table class="pms-table">
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>DNI</th>
+            <th>Teléfono</th>
+            <th>Correo electrónico</th>
+            <th>Hoteles</th>
+            <th>Estadías</th>
+            <th>Última Reserva</th>
+            <th>Nivel</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of clientesPaginados">
+            <td>
+              <div class="cliente-cell">
+                <span class="avatar">{{ initials(c.nombre) }}</span>
+                {{ c.nombre }}
+              </div>
+            </td>
+            <td>{{ c.documento }}</td>
+            <td>{{ c.telefono }}</td>
+            <td>{{ c.correo }}</td>
+            <td>{{ c.hotel || 'Hotel Afiliado' }}</td>
+            <td><b>{{ c.estadias }}</b></td>
+            <td>{{ c.ultimaReserva }}</td>
+            <td><span class="pms-badge" [ngClass]="'pms-badge--' + nivelClass(c.nivel)">{{ c.nivel === 'VIP' ? '★ VIP' : c.nivel }}</span></td>
+          </tr>
+          <tr *ngIf="filtered.length === 0">
+            <td colspan="8" style="text-align: center; padding: 24px 0; color: var(--pms-text-muted);">
+              No se encontraron huéspedes con el término de búsqueda.
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Vista Tarjetas Móviles (<= 768px) -->
+    <div class="pms-cards-mobile">
+      <div class="pms-card-item" *ngFor="let c of clientesPaginados">
+        <div class="pms-card-item__header">
+          <div class="cliente-cell">
+            <span class="avatar">{{ initials(c.nombre) }}</span>
+            <div>
+              <strong style="font-size: 14.5px; color: var(--pms-text);">{{ c.nombre }}</strong>
+              <div style="font-size: 12px; color: var(--pms-text-muted); margin-top: 2px;">DNI: {{ c.documento }}</div>
             </div>
-          </td>
-          <td>{{ c.documento }}</td>
-          <td>{{ c.telefono }}</td>
-          <td>{{ c.correo }}</td>
-          <td>{{ c.hotel || 'Hotel Afiliado' }}</td>
-          <td><b>{{ c.estadias }}</b></td>
-          <td>{{ c.ultimaReserva }}</td>
-          <td><span class="pms-badge" [ngClass]="'pms-badge--' + nivelClass(c.nivel)">{{ c.nivel === 'VIP' ? '★ VIP' : c.nivel }}</span></td>
-        </tr>
-      </tbody>
-    </table>
+          </div>
+          <span class="pms-badge" [ngClass]="'pms-badge--' + nivelClass(c.nivel)">
+            {{ c.nivel === 'VIP' ? '★ VIP' : c.nivel }}
+          </span>
+        </div>
+
+        <div class="pms-card-item__grid">
+          <div class="meta-row">
+            <span class="meta-label">Teléfono:</span>
+            <span class="meta-value">{{ c.telefono }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Correo:</span>
+            <span class="meta-value" style="font-size: 12px;">{{ c.correo }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Hotel Frecuente:</span>
+            <span class="meta-value">{{ c.hotel || 'Hotel Afiliado' }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Total Estadías:</span>
+            <span class="meta-value"><b>{{ c.estadias }}</b> visitas</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Última Reserva:</span>
+            <span class="meta-value">{{ c.ultimaReserva }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="filtered.length === 0" style="text-align: center; padding: 24px 0; color: var(--pms-text-muted);">
+        No se encontraron huéspedes con el término de búsqueda.
+      </div>
+    </div>
+
+    <!-- Paginación -->
+    <div class="pms-pagination" *ngIf="totalPaginas > 1">
+      <div class="pms-pagination__info">
+        Mostrando {{ (paginaActual - 1) * itemsPorPagina + 1 }} a {{ min(paginaActual * itemsPorPagina, filtered.length) }} de {{ filtered.length }} huéspedes
+      </div>
+      <div class="pms-pagination__controls">
+        <button
+          type="button"
+          class="pms-pagination__btn"
+          [disabled]="paginaActual === 1"
+          (click)="cambiarPagina(paginaActual - 1)"
+        >
+          &larr; Anterior
+        </button>
+        <span class="pms-pagination__current">Pág. {{ paginaActual }} de {{ totalPaginas }}</span>
+        <button
+          type="button"
+          class="pms-pagination__btn"
+          [disabled]="paginaActual === totalPaginas"
+          (click)="cambiarPagina(paginaActual + 1)"
+        >
+          Siguiente &rarr;
+        </button>
+      </div>
+    </div>
   </div>
 </div>

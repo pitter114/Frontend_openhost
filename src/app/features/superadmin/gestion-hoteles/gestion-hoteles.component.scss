@@ -284,3 +284,30 @@
     grid-column: span 2;
   }
 }
+
+@media (max-width: 640px) {
+  .pms-page-header--flex {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filtros {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+    button { flex-shrink: 0; }
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+    .form-group--full { grid-column: span 1; }
+  }
+
+  .modal-footer--space-between {
+    flex-direction: column;
+    gap: 12px;
+    .modal-actions-right { width: 100%; flex-direction: column; }
+    .pms-btn { width: 100%; justify-content: center; }
+  }
+}

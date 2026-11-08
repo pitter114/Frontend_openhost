@@ -66,6 +66,31 @@ export class GestionHotelesComponent implements OnInit {
     return f === 'todas' ? orgs : orgs.filter((o) => o.estado === f);
   });
 
+  // Paginación
+  paginaActual = signal(1);
+  itemsPorPagina = 8;
+
+  totalPaginas = computed(() => {
+    const total = Math.ceil(this.filtradas().length / this.itemsPorPagina);
+    return Math.max(1, total);
+  });
+
+  hotelesPaginados = computed(() => {
+    const actual = this.paginaActual();
+    const start = (actual - 1) * this.itemsPorPagina;
+    return this.filtradas().slice(start, start + this.itemsPorPagina);
+  });
+
+  cambiarPagina(nuevaPagina: number): void {
+    if (nuevaPagina >= 1 && nuevaPagina <= this.totalPaginas()) {
+      this.paginaActual.set(nuevaPagina);
+    }
+  }
+
+  min(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
   pendientesCount = computed(() => this.organizaciones().filter((o) => o.estado === 'pendiente_aprobacion').length);
 
   ngOnInit(): void {
@@ -307,6 +332,7 @@ export class GestionHotelesComponent implements OnInit {
 
   setFiltro(f: Filtro): void {
     this.filtro.set(f);
+    this.paginaActual.set(1);
   }
 
   private reemplazar(actualizada: Organizacion): void {

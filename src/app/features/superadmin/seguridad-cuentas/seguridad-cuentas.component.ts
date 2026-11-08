@@ -116,6 +116,38 @@ export class SeguridadCuentasComponent implements OnInit {
     return list;
   });
 
+  // Paginación Cuentas
+  paginaActualCuentas = signal(1);
+  itemsPorPaginaCuentas = 8;
+  totalPaginasCuentas = computed(() => Math.max(1, Math.ceil(this.cuentasFiltradas().length / this.itemsPorPaginaCuentas)));
+  cuentasPaginadas = computed(() => {
+    const start = (this.paginaActualCuentas() - 1) * this.itemsPorPaginaCuentas;
+    return this.cuentasFiltradas().slice(start, start + this.itemsPorPaginaCuentas);
+  });
+  cambiarPaginaCuentas(nuevaPagina: number): void {
+    if (nuevaPagina >= 1 && nuevaPagina <= this.totalPaginasCuentas()) {
+      this.paginaActualCuentas.set(nuevaPagina);
+    }
+  }
+
+  // Paginación Logs Forenses
+  paginaActualLogs = signal(1);
+  itemsPorPaginaLogs = 6;
+  totalPaginasLogs = computed(() => Math.max(1, Math.ceil(this.logs().length / this.itemsPorPaginaLogs)));
+  logsPaginados = computed(() => {
+    const start = (this.paginaActualLogs() - 1) * this.itemsPorPaginaLogs;
+    return this.logs().slice(start, start + this.itemsPorPaginaLogs);
+  });
+  cambiarPaginaLogs(nuevaPagina: number): void {
+    if (nuevaPagina >= 1 && nuevaPagina <= this.totalPaginasLogs()) {
+      this.paginaActualLogs.set(nuevaPagina);
+    }
+  }
+
+  min(a: number, b: number): number {
+    return Math.min(a, b);
+  }
+
   // Métricas rápidas de seguridad
   totalCuentas = computed(() => this.cuentas().length);
   cuentasCon2fa = computed(() => this.cuentas().filter((c) => c.dosfa_activo).length);

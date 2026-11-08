@@ -12,9 +12,35 @@ import { IconComponent } from '../../../shared/icon/icon.component';
   styleUrls: ['./clientes-globales.component.scss'],
 })
 export class ClientesGlobalesComponent implements OnInit {
+  paginaActual = 1;
+  itemsPorPagina = 8;
+
   constructor(public data: SuperadminDataService) {}
 
   search = '';
+
+  get totalPaginas(): number {
+    return Math.max(1, Math.ceil(this.filtered.length / this.itemsPorPagina));
+  }
+
+  get clientesPaginados(): any[] {
+    const start = (this.paginaActual - 1) * this.itemsPorPagina;
+    return this.filtered.slice(start, start + this.itemsPorPagina);
+  }
+
+  cambiarPagina(nuevaPagina: number): void {
+    if (nuevaPagina >= 1 && nuevaPagina <= this.totalPaginas) {
+      this.paginaActual = nuevaPagina;
+    }
+  }
+
+  onSearchChange(): void {
+    this.paginaActual = 1;
+  }
+
+  min(a: number, b: number): number {
+    return Math.min(a, b);
+  }
 
   ngOnInit(): void {
     this.data.cargarDesdeBackend();

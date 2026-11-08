@@ -42,10 +42,38 @@ export class ComisionesComponent implements OnInit {
     });
   }
 
+  // Paginación
+  paginaActual = signal(1);
+  itemsPorPagina = 8;
+
   get liquidacionesFiltradas(): LiquidacionSaas[] {
     const f = this.filtroEstado();
     const lista = this.liquidaciones();
     return f === 'todas' ? lista : lista.filter((l) => l.estado === f);
+  }
+
+  get totalPaginas(): number {
+    return Math.max(1, Math.ceil(this.liquidacionesFiltradas.length / this.itemsPorPagina));
+  }
+
+  get liquidacionesPaginadas(): LiquidacionSaas[] {
+    const start = (this.paginaActual() - 1) * this.itemsPorPagina;
+    return this.liquidacionesFiltradas.slice(start, start + this.itemsPorPagina);
+  }
+
+  cambiarPagina(nuevaPagina: number): void {
+    if (nuevaPagina >= 1 && nuevaPagina <= this.totalPaginas) {
+      this.paginaActual.set(nuevaPagina);
+    }
+  }
+
+  cambiarFiltro(nuevoFiltro: 'todas' | 'Pendiente' | 'Pagada'): void {
+    this.filtroEstado.set(nuevoFiltro);
+    this.paginaActual.set(1);
+  }
+
+  min(a: number, b: number): number {
+    return Math.min(a, b);
   }
 
   generarLiquidacionesMes(): void {

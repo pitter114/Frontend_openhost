@@ -333,3 +333,21 @@
     color: #f1f5f9;
   }
 }
+
+
+@media (max-width: 640px) {
+  :host {
+    padding: 0.5rem;
+  }
+  .metrics-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .hotel-card {
+    padding: 1rem !important;
+    .hotel-header {
+      flex-direction: column !important;
+      align-items: flex-start !important;
+      gap: 0.75rem !important;
+    }
+  }
+}

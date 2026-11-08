@@ -23,3 +23,11 @@
 .comision-cell { color: var(--pms-orange-dark); font-weight: 700; }
 .neto-cell { color: var(--pms-green); font-weight: 700; }
 .canal-cell { color: var(--pms-purple); font-weight: 600; font-style: italic; }
+
+
+@media (max-width: 640px) {
+  .summary-row {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+}

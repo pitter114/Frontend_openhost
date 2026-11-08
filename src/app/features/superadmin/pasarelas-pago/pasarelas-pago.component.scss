@@ -547,3 +547,28 @@
     cursor: not-allowed;
   }
 }
+
+
+@media (max-width: 640px) {
+  :host {
+    padding: 0.5rem;
+  }
+  .metrics-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .form-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+  .gateway-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 1rem !important;
+  }
+  .gateway-actions {
+    flex-direction: column !important;
+    .btn { width: 100% !important; justify-content: center !important; }
+  }
+  .keys-box {
+    grid-template-columns: 1fr !important;
+  }
+}

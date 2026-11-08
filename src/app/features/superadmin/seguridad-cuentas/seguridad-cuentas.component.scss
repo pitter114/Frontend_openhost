@@ -859,3 +859,18 @@
   .kpi-row { grid-template-columns: repeat(2, 1fr); }
   .hotels-ip-grid { grid-template-columns: 1fr; }
 }
+
+
+@media (max-width: 768px) {
+  .actions-group {
+    flex-wrap: wrap !important;
+  }
+  .filter-controls {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+  .filter-selects {
+    flex-direction: column !important;
+    select { width: 100% !important; }
+  }
+}

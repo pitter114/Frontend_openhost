@@ -122,7 +122,8 @@
     </div>
 
     <div class="pms-card table-card">
-      <div class="table-responsive">
+      <!-- Vista Tabla Escritorio (> 768px) -->
+      <div class="pms-table-desktop">
         <table class="pms-table">
           <thead>
             <tr>
@@ -136,7 +137,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let c of cuentasFiltradas()">
+            <tr *ngFor="let c of cuentasPaginadas()">
               <td>
                 <div class="user-cell">
                   <div class="user-avatar" [class.user-avatar--suspended]="c.estado === 'suspendido'">
@@ -191,7 +192,6 @@
 
               <td>
                 <div class="actions-group">
-                  <!-- Botón 🚨 Robo Celular -->
                   <button
                     type="button"
                     class="btn-sec-action btn-sec-action--danger"
@@ -201,7 +201,6 @@
                     🚨 Robo Celular
                   </button>
 
-                  <!-- Botón 🔑 Reset Clave -->
                   <button
                     type="button"
                     class="btn-sec-action btn-sec-action--primary"
@@ -211,7 +210,6 @@
                     🔑 Clave
                   </button>
 
-                  <!-- Botón ⚡ Expulsar Sesiones -->
                   <button
                     type="button"
                     class="btn-sec-action btn-sec-action--warn"
@@ -222,7 +220,6 @@
                     ⚡ Expulsar
                   </button>
 
-                  <!-- Botón 🔒 Bloquear / Desbloquear -->
                   <button
                     type="button"
                     class="btn-sec-action"
@@ -243,6 +240,127 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Vista Tarjetas Móviles (<= 768px) -->
+      <div class="pms-cards-mobile">
+        <div class="pms-card-item" *ngFor="let c of cuentasPaginadas()">
+          <div class="pms-card-item__header">
+            <div class="user-cell">
+              <div class="user-avatar" [class.user-avatar--suspended]="c.estado === 'suspendido'">
+                {{ c.nombre.charAt(0).toUpperCase() }}
+              </div>
+              <div>
+                <strong class="user-name">{{ c.nombre }}</strong>
+                <div class="user-email">{{ c.correo }}</div>
+              </div>
+            </div>
+            <span
+              class="status-tag"
+              [class.status-tag--active]="c.estado === 'activo'"
+              [class.status-tag--blocked]="c.estado === 'suspendido'"
+            >
+              {{ c.estado === 'activo' ? 'Activo' : 'Suspendido' }}
+            </span>
+          </div>
+
+          <div class="pms-card-item__grid">
+            <div class="meta-row">
+              <span class="meta-label">Hotel Asignado:</span>
+              <span class="meta-value hotel-pill">{{ c.hotel }}</span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Rol:</span>
+              <span class="meta-value">
+                <span class="role-badge" [class.role-badge--op]="c.es_operativo">{{ c.rol }}</span>
+              </span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Seguridad 2FA:</span>
+              <span class="meta-value">
+                <span class="badge-2fa" [class.badge-2fa--active]="c.dosfa_activo">
+                  {{ c.dosfa_activo ? '✓ 2FA Activo' : 'Sin 2FA' }}
+                </span>
+                <span class="temp-badge" *ngIf="c.contrasena_temporal">🔑 Clave Temp</span>
+              </span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">Sesiones Activas:</span>
+              <span class="meta-value">
+                <span class="sessions-badge" [class.sessions-badge--active]="c.sesiones_activas > 0">
+                  <span class="dot"></span> {{ c.sesiones_activas }} disp.
+                </span>
+              </span>
+            </div>
+          </div>
+
+          <div class="pms-card-item__actions">
+            <button
+              type="button"
+              class="btn-sec-action btn-sec-action--danger"
+              (click)="abrirModalRobo(c)"
+              style="flex: 1 1 130px;"
+            >
+              🚨 Robo Celular
+            </button>
+            <button
+              type="button"
+              class="btn-sec-action btn-sec-action--primary"
+              (click)="abrirModalReset(c)"
+              style="flex: 1 1 90px;"
+            >
+              🔑 Clave
+            </button>
+            <button
+              type="button"
+              class="btn-sec-action btn-sec-action--warn"
+              (click)="cerrarSesiones(c)"
+              [disabled]="c.sesiones_activas === 0"
+              style="flex: 1 1 90px;"
+            >
+              ⚡ Expulsar
+            </button>
+            <button
+              type="button"
+              class="btn-sec-action"
+              [class.btn-sec-action--unblock]="c.estado === 'suspendido'"
+              (click)="toggleBloqueo(c)"
+              style="flex: 1 1 110px;"
+            >
+              {{ c.estado === 'activo' ? '🔒 Bloquear' : '🔓 Reactivar' }}
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="cuentasFiltradas().length === 0" class="table-empty" style="padding: 24px 0; text-align: center;">
+          No se encontraron cuentas con los filtros seleccionados.
+        </div>
+      </div>
+
+      <!-- Paginación Cuentas -->
+      <div class="pms-pagination" *ngIf="totalPaginasCuentas() > 1">
+        <div class="pms-pagination__info">
+          Mostrando {{ (paginaActualCuentas() - 1) * itemsPorPaginaCuentas + 1 }} a {{ min(paginaActualCuentas() * itemsPorPaginaCuentas, cuentasFiltradas().length) }} de {{ cuentasFiltradas().length }} cuentas
+        </div>
+        <div class="pms-pagination__controls">
+          <button
+            type="button"
+            class="pms-pagination__btn"
+            [disabled]="paginaActualCuentas() === 1"
+            (click)="cambiarPaginaCuentas(paginaActualCuentas() - 1)"
+          >
+            &larr; Anterior
+          </button>
+          <span class="pms-pagination__current">Pág. {{ paginaActualCuentas() }} de {{ totalPaginasCuentas() }}</span>
+          <button
+            type="button"
+            class="pms-pagination__btn"
+            [disabled]="paginaActualCuentas() === totalPaginasCuentas()"
+            (click)="cambiarPaginaCuentas(paginaActualCuentas() + 1)"
+          >
+            Siguiente &rarr;
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -333,7 +451,8 @@
         <p class="chart-card__sub">Registro inmutable de reseteos de claves, emergencias de robo y bloqueos</p>
       </div>
 
-      <div class="table-responsive">
+      <!-- Vista Tabla Escritorio (> 768px) -->
+      <div class="pms-table-desktop">
         <table class="pms-table">
           <thead>
             <tr>
@@ -346,7 +465,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let l of logs()">
+            <tr *ngFor="let l of logsPaginados()">
               <td class="cell-mono">{{ l.fecha }}</td>
               <td>
                 <span class="event-tag" [ngClass]="'event-tag--' + l.tipo_evento">
@@ -369,6 +488,73 @@
             </tr>
           </tbody>
         </table>
+      </div>
+
+      <!-- Vista Tarjetas Móviles (<= 768px) -->
+      <div class="pms-cards-mobile">
+        <div class="pms-card-item" *ngFor="let l of logsPaginados()">
+          <div class="pms-card-item__header">
+            <div>
+              <span class="event-tag" [ngClass]="'event-tag--' + l.tipo_evento">
+                {{ l.tipo_evento }}
+              </span>
+              <div class="cell-mono" style="font-size: 11.5px; margin-top: 4px; color: var(--pms-text-muted);">
+                📅 {{ l.fecha }}
+              </div>
+            </div>
+            <span class="hotel-pill" style="font-size: 11.5px;">{{ l.hotel }}</span>
+          </div>
+
+          <div class="pms-card-item__grid">
+            <div class="meta-row">
+              <span class="meta-label">Usuario Afectado:</span>
+              <span class="meta-value">
+                <strong>{{ l.usuario }}</strong>
+                <small class="d-block text-muted">{{ l.correo }}</small>
+              </span>
+            </div>
+            <div class="meta-row">
+              <span class="meta-label">IP Origen:</span>
+              <span class="meta-value cell-mono">{{ l.ip_origen }}</span>
+            </div>
+            <div class="meta-row" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+              <span class="meta-label">Detalle:</span>
+              <span class="meta-value" style="text-align: left; font-size: 12.5px; font-weight: normal; color: var(--pms-text-soft);">
+                {{ l.descripcion }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div *ngIf="logs().length === 0" class="table-empty" style="padding: 24px 0; text-align: center;">
+          No hay eventos de seguridad registrados hasta el momento.
+        </div>
+      </div>
+
+      <!-- Paginación Logs -->
+      <div class="pms-pagination" *ngIf="totalPaginasLogs() > 1">
+        <div class="pms-pagination__info">
+          Mostrando {{ (paginaActualLogs() - 1) * itemsPorPaginaLogs + 1 }} a {{ min(paginaActualLogs() * itemsPorPaginaLogs, logs().length) }} de {{ logs().length }} eventos
+        </div>
+        <div class="pms-pagination__controls">
+          <button
+            type="button"
+            class="pms-pagination__btn"
+            [disabled]="paginaActualLogs() === 1"
+            (click)="cambiarPaginaLogs(paginaActualLogs() - 1)"
+          >
+            &larr; Anterior
+          </button>
+          <span class="pms-pagination__current">Pág. {{ paginaActualLogs() }} de {{ totalPaginasLogs() }}</span>
+          <button
+            type="button"
+            class="pms-pagination__btn"
+            [disabled]="paginaActualLogs() === totalPaginasLogs()"
+            (click)="cambiarPaginaLogs(paginaActualLogs() + 1)"
+          >
+            Siguiente &rarr;
+          </button>
+        </div>
       </div>
     </div>
   </div>

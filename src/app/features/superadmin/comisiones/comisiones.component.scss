@@ -131,3 +131,27 @@
   .kpi-row { grid-template-columns: repeat(2, 1fr); }
   .two-col { grid-template-columns: 1fr; }
 }
+
+
+@media (max-width: 640px) {
+  .metricas-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 10px !important;
+  }
+  .filtros-row {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    .pms-search { width: 100% !important; }
+    .filtros-tabs {
+      overflow-x: auto !important;
+      white-space: nowrap !important;
+      button { flex-shrink: 0; }
+    }
+  }
+}
+
+@media (max-width: 420px) {
+  .metricas-grid {
+    grid-template-columns: 1fr !important;
+  }
+}

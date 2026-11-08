@@ -10,7 +10,29 @@ import { SuperadminDataService } from '../../../core/services/superadmin-data.se
   styleUrls: ['./reservas-plataforma.component.scss'],
 })
 export class ReservasPlataformaComponent implements OnInit {
+  paginaActual = 1;
+  itemsPorPagina = 8;
+
   constructor(public data: SuperadminDataService) {}
+
+  get totalPaginas(): number {
+    return Math.max(1, Math.ceil(this.data.reservasPlataforma.length / this.itemsPorPagina));
+  }
+
+  get reservasPaginadas(): any[] {
+    const start = (this.paginaActual - 1) * this.itemsPorPagina;
+    return this.data.reservasPlataforma.slice(start, start + this.itemsPorPagina);
+  }
+
+  cambiarPagina(nuevaPagina: number): void {
+    if (nuevaPagina >= 1 && nuevaPagina <= this.totalPaginas) {
+      this.paginaActual = nuevaPagina;
+    }
+  }
+
+  min(a: number, b: number): number {
+    return Math.min(a, b);
+  }
 
   ngOnInit(): void {
     this.data.cargarDesdeBackend();

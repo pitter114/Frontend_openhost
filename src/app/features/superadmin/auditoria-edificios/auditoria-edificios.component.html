@@ -145,7 +145,8 @@
               <span>Este hotel no tiene bloques o torres creados aún (opera con alojamiento general).</span>
             </div>
           } @else {
-            <div class="edificios-table-wrapper">
+            <!-- Vista Tabla Escritorio (> 768px) -->
+            <div class="edificios-table-wrapper pms-table-desktop">
               <table class="edificios-table">
                 <thead>
                   <tr>
@@ -173,6 +174,35 @@
                   }
                 </tbody>
               </table>
+            </div>
+
+            <!-- Vista Tarjetas Móviles (<= 768px) -->
+            <div class="pms-cards-mobile" style="margin-top: 10px;">
+              @for (ed of hotel.infraestructura.edificios; track ed.edificio_id) {
+                <div class="pms-card-item">
+                  <div class="pms-card-item__header">
+                    <div class="ed-name" style="display:flex; align-items:center; gap:8px;">
+                      <app-icon name="building" [size]="16"></app-icon>
+                      <strong style="color: var(--pms-text);">{{ ed.nombre }}</strong>
+                    </div>
+                    <span class="hab-badge">{{ ed.habitaciones_asignadas }} habs asignadas</span>
+                  </div>
+                  <div class="pms-card-item__grid">
+                    <div class="meta-row">
+                      <span class="meta-label">Nº Pisos:</span>
+                      <span class="meta-value">{{ ed.num_pisos }} pisos</span>
+                    </div>
+                    <div class="meta-row">
+                      <span class="meta-label">Dirección:</span>
+                      <span class="meta-value">{{ ed.direccion || 'Sede principal' }}</span>
+                    </div>
+                    <div class="meta-row">
+                      <span class="meta-label">Fecha de Alta:</span>
+                      <span class="meta-value">{{ ed.creado_en }}</span>
+                    </div>
+                  </div>
+                </div>
+              }
             </div>
           }
         </div>

@@ -283,3 +283,25 @@
     }
   }
 }
+
+
+@media (max-width: 640px) {
+  .pms-page-header--flex {
+    flex-direction: column !important;
+    align-items: stretch !important;
+    .pms-btn { width: 100% !important; justify-content: center !important; }
+  }
+
+  .saas-metrics-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .planes-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr !important;
+    .form-group--full { grid-column: span 1 !important; }
+  }
+}
