@@ -50,6 +50,7 @@
       <h3>Historial de Movimientos de Caja</h3>
       <span>{{ data.movimientosCaja.length }} movimientos registrados</span>
     </div>
+    <div class="pms-table-desktop">
     <table class="pms-table">
       <thead>
         <tr>
@@ -79,6 +80,45 @@
         </tr>
       </tbody>
     </table>
+    </div>
+
+    <!-- Vista Tarjetas Moviles (<= 768px) -->
+    <div class="pms-cards-mobile">
+      <div class="pms-card-item" *ngFor="let m of data.movimientosCaja">
+        <div class="pms-card-item__header">
+          <span class="tipo-cell" [class.tipo-cell--in]="m.tipo === 'Ingreso'" [class.tipo-cell--out]="m.tipo === 'Salida'">
+            <app-icon [name]="m.tipo === 'Ingreso' ? 'plus' : 'x'" [size]="12" />
+            {{ m.tipo }}
+          </span>
+          <span [class.monto-in]="m.monto > 0" [class.monto-out]="m.monto < 0" style="font-size: 15px; font-weight: 800;">
+            {{ m.monto > 0 ? '+ S/ ' : '- S/ ' }}{{ Math.abs(m.monto).toLocaleString('es-ES') }}
+          </span>
+        </div>
+
+        <div class="pms-card-item__grid">
+          <div class="meta-row">
+            <span class="meta-label">Concepto:</span>
+            <span class="meta-value"><strong>{{ m.concepto }}</strong></span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Método de Pago:</span>
+            <span class="meta-value"><span class="pms-badge pms-badge--gray">{{ m.metodo }}</span></span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Hora:</span>
+            <span class="meta-value">{{ m.hora }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Registrado Por:</span>
+            <span class="meta-value">{{ m.usuario }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="data.movimientosCaja.length === 0" style="padding: 24px; text-align: center; color: var(--pms-text-muted);">
+        No hay movimientos de caja registrados hoy.
+      </div>
+    </div>
   </div>
 
   <!-- Modal Registrar Movimiento -->

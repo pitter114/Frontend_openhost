@@ -119,6 +119,7 @@
       <span class="count-pill">{{ filtrados().length }} empleados</span>
     </div>
 
+    <div class="pms-table-desktop">
     <table class="pms-table" *ngIf="!cargando() && filtrados().length > 0">
       <thead>
         <tr>
@@ -144,6 +145,34 @@
         </tr>
       </tbody>
     </table>
+    </div>
+
+    <!-- Vista Tarjetas Moviles (<= 768px) -->
+    <div class="pms-cards-mobile" *ngIf="!cargando() && filtrados().length > 0">
+      <div class="pms-card-item" *ngFor="let emp of filtrados()">
+        <div class="pms-card-item__header">
+          <div>
+            <strong style="font-size: 15px; color: var(--pms-text);">{{ emp.nombre }} {{ emp.apellido }}</strong>
+            <div style="font-size: 12px; color: var(--pms-text-muted); word-break: break-all;">{{ emp.correo }}</div>
+          </div>
+          <span class="pms-badge pms-badge--green" *ngIf="emp.estado === 'activo'">Activo</span>
+          <span class="pms-badge pms-badge--amber" *ngIf="emp.estado !== 'activo'">{{ emp.estado }}</span>
+        </div>
+
+        <div class="pms-card-item__grid">
+          <div class="meta-row">
+            <span class="meta-label">Roles asignados:</span>
+            <span class="meta-value">
+              <span class="pms-badge pms-badge--gray" *ngFor="let r of emp.roles" style="margin-left: 4px;">{{ r }}</span>
+            </span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Fecha de Ingreso:</span>
+            <span class="meta-value">{{ emp.fecha_ingreso | date: 'd MMM y' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div *ngIf="!cargando() && filtrados().length === 0" class="tabla-estado">
       No hay empleados que coincidan con la búsqueda.

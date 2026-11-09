@@ -23,64 +23,122 @@
   </div>
 
   <div class="pms-card">
-    <table class="pms-table">
-      <thead>
-        <tr>
-          <th>Código</th>
-          <th>Cliente</th>
-          <th>Hab.</th>
-          <th>Registrarse</th>
-          <th>Verificar</th>
-          <th>Estado</th>
-          <th>Total</th>
-          <th>Origen</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let r of filtered">
-          <td class="cell-code">{{ r.codigo }}</td>
-          <td>
-            <div class="cell-cliente">{{ r.cliente }}</div>
-            <div class="cell-doc">{{ r.documento }}</div>
-          </td>
-          <td>{{ r.habitacion }}</td>
-          <td>{{ formatFecha(r.checkIn) }}</td>
-          <td>{{ formatFecha(r.checkOut) }}</td>
-          <td><span class="pms-badge" [ngClass]="'pms-badge--' + badgeClass(r.estado)">{{ r.estado }}</span></td>
-          <td>
-            <div class="cell-total">S/ {{ r.total.toLocaleString('es-ES') }}</div>
-            <div class="cell-debe" *ngIf="r.debe > 0">Debe S/ {{ r.debe.toLocaleString('es-ES') }}</div>
-          </td>
-          <td><span class="cell-origen" [style.color]="origenColor(r.origen)">{{ r.origen }}</span></td>
-          <td>
-            <div class="cell-actions">
-              <button class="icon-btn" title="Ver detalle" (click)="verReserva(r)">
-                <app-icon name="eye" [size]="15" />
-              </button>
-              <button class="icon-btn icon-btn--whatsapp" title="Enviar enlace por WhatsApp" (click)="enviarWhatsapp(r)">
-                <app-icon name="whatsapp" [size]="15" />
-              </button>
-              <button class="icon-btn icon-btn--link" title="Copiar enlace de reserva" (click)="copiarLink(r)">
-                <app-icon name="link" [size]="15" />
-              </button>
-              <button class="icon-btn icon-btn--amber" title="Editar reserva" (click)="abrirEditar(r)">
-                <app-icon name="pencil" [size]="15" />
-              </button>
-              <button class="icon-btn icon-btn--red" title="Eliminar reserva" (click)="abrirEliminar(r)">
-                <app-icon name="x" [size]="15" />
-              </button>
-              <button class="icon-btn" title="Imprimir boleta" (click)="imprimirReserva(r)">
-                <app-icon name="printer" [size]="15" />
-              </button>
-            </div>
-          </td>
-        </tr>
-        <tr *ngIf="filtered.length === 0">
-          <td colspan="9" class="empty-row">No se encontraron reservas para "{{ search }}".</td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="pms-table-desktop">
+      <table class="pms-table">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Cliente</th>
+            <th>Hab.</th>
+            <th>Registrarse</th>
+            <th>Verificar</th>
+            <th>Estado</th>
+            <th>Total</th>
+            <th>Origen</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let r of filtered">
+            <td class="cell-code">{{ r.codigo }}</td>
+            <td>
+              <div class="cell-cliente">{{ r.cliente }}</div>
+              <div class="cell-doc">{{ r.documento }}</div>
+            </td>
+            <td>{{ r.habitacion }}</td>
+            <td>{{ formatFecha(r.checkIn) }}</td>
+            <td>{{ formatFecha(r.checkOut) }}</td>
+            <td><span class="pms-badge" [ngClass]="'pms-badge--' + badgeClass(r.estado)">{{ r.estado }}</span></td>
+            <td>
+              <div class="cell-total">S/ {{ r.total.toLocaleString('es-ES') }}</div>
+              <div class="cell-debe" *ngIf="r.debe > 0">Debe S/ {{ r.debe.toLocaleString('es-ES') }}</div>
+            </td>
+            <td><span class="cell-origen" [style.color]="origenColor(r.origen)">{{ r.origen }}</span></td>
+            <td>
+              <div class="cell-actions">
+                <button class="icon-btn" title="Ver detalle" (click)="verReserva(r)">
+                  <app-icon name="eye" [size]="15" />
+                </button>
+                <button class="icon-btn icon-btn--whatsapp" title="Enviar enlace por WhatsApp" (click)="enviarWhatsapp(r)">
+                  <app-icon name="whatsapp" [size]="15" />
+                </button>
+                <button class="icon-btn icon-btn--link" title="Copiar enlace de reserva" (click)="copiarLink(r)">
+                  <app-icon name="link" [size]="15" />
+                </button>
+                <button class="icon-btn icon-btn--amber" title="Editar reserva" (click)="abrirEditar(r)">
+                  <app-icon name="pencil" [size]="15" />
+                </button>
+                <button class="icon-btn icon-btn--red" title="Eliminar reserva" (click)="abrirEliminar(r)">
+                  <app-icon name="x" [size]="15" />
+                </button>
+                <button class="icon-btn" title="Imprimir boleta" (click)="imprimirReserva(r)">
+                  <app-icon name="printer" [size]="15" />
+                </button>
+              </div>
+            </td>
+          </tr>
+          <tr *ngIf="filtered.length === 0">
+            <td colspan="9" class="empty-row">No se encontraron reservas para "{{ search }}".</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Vista Tarjetas Móviles (<= 768px) -->
+    <div class="pms-cards-mobile">
+      <div class="pms-card-item" *ngFor="let r of filtered">
+        <div class="pms-card-item__header">
+          <div>
+            <strong class="cell-code" style="font-size: 15px;">{{ r.codigo }}</strong>
+            <div style="font-weight: 700; font-size: 14.5px; margin-top: 3px; color: var(--pms-text);">{{ r.cliente }}</div>
+            <div style="font-size: 12px; color: var(--pms-text-muted);">{{ r.documento || 'Sin documento' }}</div>
+          </div>
+          <span class="pms-badge" [ngClass]="'pms-badge--' + badgeClass(r.estado)">{{ r.estado }}</span>
+        </div>
+
+        <div class="pms-card-item__grid">
+          <div class="meta-row">
+            <span class="meta-label">Habitación:</span>
+            <span class="meta-value"><strong>{{ r.habitacion }}</strong></span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Check-In / Out:</span>
+            <span class="meta-value">{{ formatFecha(r.checkIn) }} — {{ formatFecha(r.checkOut) }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Monto Total:</span>
+            <span class="meta-value" style="color: var(--pms-green, #16a34a); font-weight: 700; font-size: 14px;">S/ {{ r.total.toLocaleString('es-ES') }}</span>
+          </div>
+          <div class="meta-row" *ngIf="r.debe > 0">
+            <span class="meta-label">Saldo Pendiente:</span>
+            <span class="meta-value" style="color: var(--pms-red, #dc2626); font-weight: 700;">Debe S/ {{ r.debe.toLocaleString('es-ES') }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Origen:</span>
+            <span class="meta-value"><span class="cell-origen" [style.color]="origenColor(r.origen)">{{ r.origen }}</span></span>
+          </div>
+        </div>
+
+        <div class="pms-card-item__actions">
+          <button class="pms-btn pms-btn--outline" (click)="verReserva(r)">
+            <app-icon name="eye" [size]="14" /> Detalle
+          </button>
+          <button class="pms-btn pms-btn--whatsapp" (click)="enviarWhatsapp(r)">
+            <app-icon name="whatsapp" [size]="14" /> WhatsApp
+          </button>
+          <button class="pms-btn pms-btn--outline" (click)="abrirEditar(r)">
+            <app-icon name="pencil" [size]="14" /> Editar
+          </button>
+          <button class="pms-btn pms-btn--danger" (click)="abrirEliminar(r)">
+            <app-icon name="x" [size]="14" /> Eliminar
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="filtered.length === 0" style="padding: 24px; text-align: center; color: var(--pms-text-muted);">
+        No se encontraron reservas para "{{ search }}".
+      </div>
+    </div>
   </div>
 </div>
 

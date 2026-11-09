@@ -25,44 +25,94 @@
   </div>
 
   <div class="pms-card">
-    <table class="pms-table">
-      <thead>
-        <tr>
-          <th>Habitación / Alojamiento</th>
-          <th>Problema / Incidencia</th>
-          <th>Prioridad</th>
-          <th>Responsable</th>
-          <th>Estado</th>
-          <th>Fecha Reporte</th>
-          <th>Resuelto</th>
-          <th>Acción</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let i of incidencias()">
-          <td><b>{{ i.habitacion }}</b></td>
-          <td class="problema-cell"><app-icon name="wrench" [size]="13" />{{ i.problema }}</td>
-          <td><span class="pms-badge" [ngClass]="'pms-badge--' + prioridadClass(i.prioridad)">{{ i.prioridad }}</span></td>
-          <td>{{ i.responsable }}</td>
-          <td><span class="pms-badge" [ngClass]="'pms-badge--' + estadoClass(i.estado)">{{ i.estado }}</span></td>
-          <td>{{ i.fecha }}</td>
-          <td>
-            <span *ngIf="i.resuelto" class="resuelto-ok"><app-icon name="dot" [size]="10" />{{ i.resuelto }}</span>
-            <span *ngIf="!i.resuelto" class="resuelto-pending">Pendiente</span>
-          </td>
-          <td>
-            <button
-              *ngIf="actionLabel(i)"
-              class="pms-btn"
-              [ngClass]="i.estado === 'Abierto' ? 'action-btn--red' : 'action-btn--blue'"
-              (click)="ejecutarAccion(i)"
-            >
-              {{ actionLabel(i) }}
-            </button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+    <div class="pms-table-desktop">
+      <table class="pms-table">
+        <thead>
+          <tr>
+            <th>Habitación / Alojamiento</th>
+            <th>Problema / Incidencia</th>
+            <th>Prioridad</th>
+            <th>Responsable</th>
+            <th>Estado</th>
+            <th>Fecha Reporte</th>
+            <th>Resuelto</th>
+            <th>Acción</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let i of incidencias()">
+            <td><b>{{ i.habitacion }}</b></td>
+            <td class="problema-cell"><app-icon name="wrench" [size]="13" />{{ i.problema }}</td>
+            <td><span class="pms-badge" [ngClass]="'pms-badge--' + prioridadClass(i.prioridad)">{{ i.prioridad }}</span></td>
+            <td>{{ i.responsable }}</td>
+            <td><span class="pms-badge" [ngClass]="'pms-badge--' + estadoClass(i.estado)">{{ i.estado }}</span></td>
+            <td>{{ i.fecha }}</td>
+            <td>
+              <span *ngIf="i.resuelto" class="resuelto-ok"><app-icon name="dot" [size]="10" />{{ i.resuelto }}</span>
+              <span *ngIf="!i.resuelto" class="resuelto-pending">Pendiente</span>
+            </td>
+            <td>
+              <button
+                *ngIf="actionLabel(i)"
+                class="pms-btn"
+                [ngClass]="i.estado === 'Abierto' ? 'action-btn--red' : 'action-btn--blue'"
+                (click)="ejecutarAccion(i)"
+              >
+                {{ actionLabel(i) }}
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Cards View (<= 768px) -->
+    <div class="pms-cards-mobile" *ngIf="incidencias().length > 0">
+      <div class="pms-card-item" *ngFor="let i of incidencias()">
+        <div class="card-header-row">
+          <div>
+            <div class="main-title"><b>{{ i.habitacion }}</b></div>
+            <span class="sub-label">{{ i.fecha }}</span>
+          </div>
+          <div style="display: flex; gap: 6px; align-items: center; flex-wrap: wrap; justify-content: flex-end;">
+            <span class="pms-badge" [ngClass]="'pms-badge--' + prioridadClass(i.prioridad)">{{ i.prioridad }}</span>
+            <span class="pms-badge" [ngClass]="'pms-badge--' + estadoClass(i.estado)">{{ i.estado }}</span>
+          </div>
+        </div>
+
+        <div class="card-body-meta">
+          <div class="meta-row" style="margin-top: 4px;">
+            <span class="meta-label">Problema:</span>
+            <span class="meta-val" style="display: inline-flex; align-items: center; gap: 4px; text-align: right;">
+              <app-icon name="wrench" [size]="12" />{{ i.problema }}
+            </span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Responsable:</span>
+            <span class="meta-val">{{ i.responsable || 'Sin asignar' }}</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Resolución:</span>
+            <span class="meta-val">
+              <span *ngIf="i.resuelto" class="resuelto-ok"><app-icon name="dot" [size]="10" />{{ i.resuelto }}</span>
+              <span *ngIf="!i.resuelto" class="resuelto-pending">Pendiente</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="card-actions-row" *ngIf="actionLabel(i)" style="margin-top: 10px;">
+          <button
+            class="pms-btn"
+            style="width: 100%; justify-content: center;"
+            [ngClass]="i.estado === 'Abierto' ? 'action-btn--red' : 'action-btn--blue'"
+            (click)="ejecutarAccion(i)"
+          >
+            {{ actionLabel(i) }}
+          </button>
+        </div>
+      </div>
+    </div>
+
     <div class="empty-list" *ngIf="incidencias().length === 0 && !cargando()">
       Sin incidencias registradas en este momento.
     </div>

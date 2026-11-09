@@ -252,48 +252,98 @@
   <!-- VISTA 2: HISTORIAL DE VENTAS Y CARGOS      -->
   <!-- ========================================== -->
   <div class="pms-card" *ngIf="vistaActiva() === 'ventas'">
-    <table class="pms-table" *ngIf="ventas().length > 0">
-      <thead>
-        <tr>
-          <th>Ticket</th>
-          <th>Huésped / Cliente</th>
-          <th>Habitación</th>
-          <th>Método de Pago</th>
-          <th>Productos Vendidos</th>
-          <th>Total</th>
-          <th>Estado</th>
-          <th>Fecha / Hora</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let v of ventas()">
-          <td><span class="ticket-code">{{ v.codigo_ticket }}</span></td>
-          <td><strong>{{ v.huesped_nombre }}</strong></td>
-          <td>
-            <span class="badge-room" *ngIf="v.habitacion_etiqueta">Hab. {{ v.habitacion_etiqueta }}</span>
-            <span class="text-muted" *ngIf="!v.habitacion_etiqueta">—</span>
-          </td>
-          <td>{{ v.metodo_pago }}</td>
-          <td>
-            <div class="items-summary" *ngIf="v.items?.length > 0">
-              <span *ngFor="let it of v.items">{{ it.cantidad }}x {{ it.nombre_producto }}</span>
+    <div class="pms-table-desktop" *ngIf="ventas().length > 0">
+      <table class="pms-table">
+        <thead>
+          <tr>
+            <th>Ticket</th>
+            <th>Huésped / Cliente</th>
+            <th>Habitación</th>
+            <th>Método de Pago</th>
+            <th>Productos Vendidos</th>
+            <th>Total</th>
+            <th>Estado</th>
+            <th>Fecha / Hora</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let v of ventas()">
+            <td><span class="ticket-code">{{ v.codigo_ticket }}</span></td>
+            <td><strong>{{ v.huesped_nombre }}</strong></td>
+            <td>
+              <span class="badge-room" *ngIf="v.habitacion_etiqueta">Hab. {{ v.habitacion_etiqueta }}</span>
+              <span class="text-muted" *ngIf="!v.habitacion_etiqueta">—</span>
+            </td>
+            <td>{{ v.metodo_pago }}</td>
+            <td>
+              <div class="items-summary" *ngIf="v.items?.length > 0">
+                <span *ngFor="let it of v.items">{{ it.cantidad }}x {{ it.nombre_producto }}</span>
+              </div>
+              <span *ngIf="!v.items || v.items.length === 0" class="text-muted">Consumo de tienda</span>
+            </td>
+            <td><strong class="total-amount">S/ {{ v.total | number:'1.2-2' }}</strong></td>
+            <td>
+              <span
+                class="pms-badge"
+                [class.pms-badge--green]="v.estado === 'Pagado'"
+                [class.pms-badge--amber]="v.estado === 'Pendiente Check-out'"
+              >
+                {{ v.estado }}
+              </span>
+            </td>
+            <td>{{ v.fecha_venta }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Mobile Cards View (<= 768px) -->
+    <div class="pms-cards-mobile" *ngIf="ventas().length > 0">
+      <div class="pms-card-item" *ngFor="let v of ventas()">
+        <div class="card-header-row">
+          <div>
+            <span class="ticket-code">{{ v.codigo_ticket }}</span>
+            <div class="main-title" style="margin-top: 4px;"><b>{{ v.huesped_nombre }}</b></div>
+            <span class="sub-label">{{ v.fecha_venta }}</span>
+          </div>
+          <div style="text-align: right;">
+            <strong class="total-amount" style="font-size: 1.1rem; color: #10b981;">S/ {{ v.total | number:'1.2-2' }}</strong>
+            <div style="margin-top: 4px;">
+              <span
+                class="pms-badge"
+                [class.pms-badge--green]="v.estado === 'Pagado'"
+                [class.pms-badge--amber]="v.estado === 'Pendiente Check-out'"
+              >
+                {{ v.estado }}
+              </span>
             </div>
-            <span *ngIf="!v.items || v.items.length === 0" class="text-muted">Consumo de tienda</span>
-          </td>
-          <td><strong class="total-amount">S/ {{ v.total | number:'1.2-2' }}</strong></td>
-          <td>
-            <span
-              class="pms-badge"
-              [class.pms-badge--green]="v.estado === 'Pagado'"
-              [class.pms-badge--amber]="v.estado === 'Pendiente Check-out'"
-            >
-              {{ v.estado }}
+          </div>
+        </div>
+
+        <div class="card-body-meta">
+          <div class="meta-row">
+            <span class="meta-label">Habitación:</span>
+            <span class="meta-val">
+              <span class="badge-room" *ngIf="v.habitacion_etiqueta">Hab. {{ v.habitacion_etiqueta }}</span>
+              <span class="text-muted" *ngIf="!v.habitacion_etiqueta">—</span>
             </span>
-          </td>
-          <td>{{ v.fecha_venta }}</td>
-        </tr>
-      </tbody>
-    </table>
+          </div>
+          <div class="meta-row">
+            <span class="meta-label">Método:</span>
+            <span class="meta-val">{{ v.metodo_pago }}</span>
+          </div>
+          <div class="meta-row" style="align-items: flex-start;">
+            <span class="meta-label">Productos:</span>
+            <span class="meta-val" style="text-align: right;">
+              <div class="items-summary" *ngIf="v.items?.length > 0">
+                <span *ngFor="let it of v.items">{{ it.cantidad }}x {{ it.nombre_producto }}</span>
+              </div>
+              <span *ngIf="!v.items || v.items.length === 0" class="text-muted">Consumo de tienda</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <div *ngIf="ventas().length === 0" class="no-prods">
       Aún no se han registrado ventas en la tienda de este hotel.
