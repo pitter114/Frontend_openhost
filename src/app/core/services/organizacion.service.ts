@@ -228,6 +228,25 @@ export class OrganizacionService {
     return this.http.get<any>(`${this.base}/${orgId}/estado-suscripcion`);
   }
 
+  // --- SaaS: Pago y Activación Automática con Mercado Pago ---
+  planesPublicos(): Observable<{ data: PlanSaas[] }> {
+    return this.http.get<{ data: PlanSaas[] }>(`${environment.apiUrl}/catalogos/planes`);
+  }
+
+  checkoutSuscripcion(orgId: number, planId: number, duracionMeses = 1): Observable<{ ok: boolean; data: any }> {
+    return this.http.post<{ ok: boolean; data: any }>(`${this.base}/${orgId}/checkout-suscripcion`, {
+      plan_id: planId,
+      duracion_meses: duracionMeses,
+    });
+  }
+
+  confirmarSuscripcion(orgId: number, planId: number, status = 'approved'): Observable<{ ok: boolean; mensaje: string; organizacion: any }> {
+    return this.http.post<{ ok: boolean; mensaje: string; organizacion: any }>(`${this.base}/${orgId}/confirmar-suscripcion`, {
+      plan_id: planId,
+      status: status,
+    });
+  }
+
   limpiarOrgActiva(): void {
     localStorage.removeItem(ORG_ACTIVA_KEY);
     localStorage.removeItem(ROLES_ACTIVOS_KEY);

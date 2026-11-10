@@ -9,8 +9,9 @@
     </button>
   </header>
 
-  <main class="org-main">
-    <div class="auth-error" *ngIf="error()" style="display: flex; justify-content: space-between; align-items: center;">
+  <main class="org-main" [class.org-main--wide]="vista() === 'planes'">
+    <!-- Alertas -->
+    <div class="auth-error" *ngIf="error()" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
       <div style="display: flex; align-items: center; gap: 8px;">
         <app-icon name="alert" [size]="16" />
         <span>{{ error() }}</span>
@@ -20,43 +21,74 @@
       </button>
     </div>
 
-    <ng-container *ngIf="vista() === 'lista'; else vistaCrear">
+    <div class="auth-success" *ngIf="mensajeExito()" style="display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-radius: 8px; background: #ecfdf5; border: 1px solid #a7f3d0; color: #065f46; margin-bottom: 20px;">
+      <app-icon name="check" [size]="18" />
+      <span style="font-weight: 600;">{{ mensajeExito() }}</span>
+    </div>
+
+    <!-- ========================================== -->
+    <!-- VISTA 1: LISTADO DE ORGANIZACIONES         -->
+    <!-- ========================================== -->
+    <ng-container *ngIf="vista() === 'lista'">
       <div class="org-main__heading">
         <h1>Selecciona una organización</h1>
-        <p>Elige el alojamiento con el que quieres trabajar</p>
+        <p>Elige el alojamiento con el que quieres trabajar o activa tus propiedades pendientes</p>
       </div>
 
       <div *ngIf="cargando()" class="org-loading">Cargando organizaciones…</div>
 
       <div class="org-grid" *ngIf="!cargando()">
-        <button
-          type="button"
-          class="pms-card org-card"
+        <div
+          class="pms-card org-card-wrap"
           *ngFor="let item of organizaciones()"
-          [disabled]="item.organizacion.estado !== 'activa' || entrando() !== null"
-          (click)="entrar(item)"
+          [class.org-card-wrap--pending]="item.organizacion.estado === 'pendiente_aprobacion'"
         >
-          <div class="org-card__icon"><app-icon name="building" [size]="20" color="var(--pms-blue)" /></div>
-          <div class="org-card__body">
-            <div class="org-card__name">{{ item.organizacion.nombre_comercial }}</div>
-            <div class="org-card__meta">{{ item.organizacion.tipo_organizacion }} · {{ item.roles.join(', ') || 'Miembro' }}</div>
-          </div>
-          <span
-            class="pms-badge"
-            [class.pms-badge--green]="item.organizacion.estado === 'activa'"
-            [class.pms-badge--amber]="item.organizacion.estado === 'pendiente_aprobacion'"
-            [class.pms-badge--red]="item.organizacion.estado === 'rechazada' || item.organizacion.estado === 'suspendida'"
+          <div
+            class="org-card-clickable"
+            (click)="entrar(item)"
+            [class.org-card-clickable--disabled]="item.organizacion.estado !== 'activa'"
           >
-            {{ item.organizacion.estado === 'activa' ? 'Activa'
-              : item.organizacion.estado === 'pendiente_aprobacion' ? 'Pendiente de aprobación'
-              : item.organizacion.estado === 'rechazada' ? 'Rechazada' : 'Suspendida' }}
-          </span>
-          <app-icon
-            *ngIf="entrando() === item.id"
-            name="dot"
-            [size]="16"
-          />
-        </button>
+            <div class="org-card__icon"><app-icon name="building" [size]="20" color="var(--pms-blue)" /></div>
+            <div class="org-card__body">
+              <div class="org-card__name">{{ item.organizacion.nombre_comercial }}</div>
+              <div class="org-card__meta">{{ item.organizacion.tipo_organizacion }} · {{ item.roles.join(', ') || 'Propietario' }}</div>
+            </div>
+            <span
+              class="pms-badge"
+              [class.pms-badge--green]="item.organizacion.estado === 'activa'"
+              [class.pms-badge--amber]="item.organizacion.estado === 'pendiente_aprobacion'"
+              [class.pms-badge--red]="item.organizacion.estado === 'rechazada' || item.organizacion.estado === 'suspendida'"
+            >
+              {{ item.organizacion.estado === 'activa' ? 'Activa'
+                : item.organizacion.estado === 'pendiente_aprobacion' ? 'Pendiente de Pago / Activación'
+                : item.organizacion.estado === 'rechazada' ? 'Rechazada' : 'Suspendida' }}
+            </span>
+            <app-icon *ngIf="entrando() === item.id" name="dot" [size]="16" />
+          </div>
+
+          <!-- Acciones cuando está pendiente de activación -->
+          <div class="org-pending-actions" *ngIf="item.organizacion.estado === 'pendiente_aprobacion'">
+            <div class="pending-tip">
+              <span>💳 Para ingresar a gestionar tu hotel, completa tu suscripción:</span>
+            </div>
+            <div class="pending-btns">
+              <button
+                type="button"
+                class="pms-btn pms-btn--primary pms-btn--sm"
+                (click)="abrirPlanes(item, $event)"
+              >
+                <app-icon name="card" [size]="14" /> Pagar con Tarjeta (Mercado Pago)
+              </button>
+              <button
+                type="button"
+                class="pms-btn pms-btn--outline pms-btn--sm btn-whatsapp"
+                (click)="contactarWhatsApp(item)"
+              >
+                📲 WhatsApp / Yape
+              </button>
+            </div>
+          </div>
+        </div>
 
         <button type="button" class="pms-card org-card org-card--new" (click)="vista.set('crear')">
           <app-icon name="plus" [size]="20" />
@@ -65,13 +97,16 @@
       </div>
     </ng-container>
 
-    <ng-template #vistaCrear>
+    <!-- ========================================== -->
+    <!-- VISTA 2: FORMULARIO REGISTRAR HOTEL        -->
+    <!-- ========================================== -->
+    <ng-container *ngIf="vista() === 'crear'">
       <div class="org-main__heading">
         <button type="button" class="auth-back" *ngIf="organizaciones().length > 0" (click)="vista.set('lista')">
           <app-icon name="arrowLeft" [size]="16" /> Volver
         </button>
         <h1>Registra tu organización</h1>
-        <p>Ingresa los datos de tu hotel, casa u hostal para comenzar a usar HotelPMS</p>
+        <p>Ingresa los datos de tu hotel, casa o departamento para comenzar</p>
       </div>
 
       <form [formGroup]="form" (ngSubmit)="submitCrear()" class="org-form pms-card" novalidate>
@@ -83,7 +118,7 @@
             </select>
           </label>
           <label class="field">
-            <span>Nombre comercial</span>
+            <span>Nombre comercial *</span>
             <input type="text" formControlName="nombre_comercial" placeholder="Ej. Hotel El Dorado" />
             <small class="field__error" *ngIf="form.get('nombre_comercial')?.touched && form.get('nombre_comercial')?.invalid">
               Obligatorio
@@ -104,14 +139,14 @@
 
         <div class="field-row">
           <label class="field">
-            <span>Correo de contacto</span>
+            <span>Correo de contacto *</span>
             <input type="email" formControlName="correo_contacto" placeholder="contacto@hotel.com" />
             <small class="field__error" *ngIf="form.get('correo_contacto')?.touched && form.get('correo_contacto')?.invalid">
               Ingresa un correo válido
             </small>
           </label>
           <label class="field">
-            <span>Teléfono de contacto</span>
+            <span>Teléfono de contacto *</span>
             <input type="tel" formControlName="telefono_contacto" placeholder="987654321" />
             <small class="field__error" *ngIf="form.get('telefono_contacto')?.touched && form.get('telefono_contacto')?.invalid">
               Obligatorio
@@ -120,10 +155,122 @@
         </div>
 
         <button type="submit" class="pms-btn pms-btn--primary org-submit" [disabled]="creando()">
-          <span *ngIf="!creando()">Registrar organización</span>
+          <span *ngIf="!creando()">Registrar y Continuar al Plan →</span>
           <span *ngIf="creando()">Registrando…</span>
         </button>
       </form>
-    </ng-template>
+    </ng-container>
+
+    <!-- ========================================== -->
+    <!-- VISTA 3: ELECCIÓN DE PLAN & MERCADO PAGO  -->
+    <!-- ========================================== -->
+    <ng-container *ngIf="vista() === 'planes'">
+      <div class="org-main__heading">
+        <button type="button" class="auth-back" (click)="vista.set('lista')">
+          <app-icon name="arrowLeft" [size]="16" /> Volver a mis organizaciones
+        </button>
+        <h1>Elige tu Plan para {{ orgParaPagar()?.organizacion?.nombre_comercial }}</h1>
+        <p>Selecciona tu suscripción mensual para activar el acceso y empezar a operar tu hotel de inmediato</p>
+      </div>
+
+      <!-- Grid de Planes Disponibles -->
+      <div class="planes-selection-grid">
+        <div
+          class="plan-selection-card"
+          *ngFor="let p of planes()"
+          [class.plan-selection-card--selected]="planSeleccionadoId() === p.plan_id"
+          (click)="seleccionarPlan(p.plan_id)"
+        >
+          <div class="plan-tag" *ngIf="p.nombre.toLowerCase().includes('pro')">
+            ⭐ MÁS POPULAR
+          </div>
+
+          <div class="plan-selection-head">
+            <h3 class="plan-name">{{ p.nombre }}</h3>
+            <p class="plan-desc">{{ p.descripcion }}</p>
+            <div class="plan-price">
+              <span class="currency">S/</span>
+              <span class="amount">{{ p.precio | number:'1.0-0' }}</span>
+              <span class="period">/ mes</span>
+            </div>
+          </div>
+
+          <div class="plan-specs">
+            <div class="spec-line">
+              <app-icon name="door" [size]="14" />
+              <span><strong>{{ p.max_habitaciones >= 999 ? 'Ilimitadas' : (p.max_habitaciones + ' habitaciones') }}</strong></span>
+            </div>
+            <div class="spec-line">
+              <app-icon name="building" [size]="14" />
+              <span><strong>{{ p.max_edificios >= 99 ? 'Ilimitados' : (p.max_edificios + ' edificio(s)') }}</strong></span>
+            </div>
+          </div>
+
+          <div class="plan-features-list">
+            <div class="feat-item" [class.feat-item--off]="!p.permite_limpieza">
+              <span class="dot"></span> Housekeeping / Limpieza
+            </div>
+            <div class="feat-item" [class.feat-item--off]="!p.permite_mantenimiento">
+              <span class="dot"></span> Mantenimiento técnico
+            </div>
+            <div class="feat-item" [class.feat-item--off]="!p.permite_inventario">
+              <span class="dot"></span> Control de Inventario
+            </div>
+          </div>
+
+          <div class="select-indicator">
+            <input
+              type="radio"
+              [name]="'plan_radio'"
+              [checked]="planSeleccionadoId() === p.plan_id"
+              (change)="seleccionarPlan(p.plan_id)"
+            />
+            <span *ngIf="planSeleccionadoId() === p.plan_id">Plan Seleccionado</span>
+            <span *ngIf="planSeleccionadoId() !== p.plan_id">Seleccionar Plan</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Checkout Actions Box -->
+      <div class="checkout-actions-box pms-card">
+        <div class="checkout-info">
+          <div class="checkout-title">
+            <app-icon name="shield" [size]="20" color="#10b981" />
+            <div>
+              <h4>Pago Seguro con Mercado Pago</h4>
+              <p>Activación instantánea 24/7. Acepta todas las tarjetas y medios de pago:</p>
+            </div>
+          </div>
+          <div class="payment-badges">
+            <span class="pay-badge">💳 Visa Débito / Crédito</span>
+            <span class="pay-badge">💳 Mastercard</span>
+            <span class="pay-badge">💳 American Express</span>
+            <span class="pay-badge pay-badge--yape">📱 Yape / PagoEfectivo</span>
+          </div>
+        </div>
+
+        <div class="checkout-buttons">
+          <button
+            type="button"
+            class="pms-btn pms-btn--primary btn-mp-checkout"
+            [disabled]="procesandoPago()"
+            (click)="pagarConMercadoPago()"
+          >
+            <app-icon name="card" [size]="18" *ngIf="!procesandoPago()" />
+            <app-icon name="sparkles" class="pms-spin" [size]="18" *ngIf="procesandoPago()" />
+            <span *ngIf="!procesandoPago()">Pagar con Mercado Pago & Activar Hotel</span>
+            <span *ngIf="procesandoPago()">Conectando con Mercado Pago…</span>
+          </button>
+
+          <button
+            type="button"
+            class="pms-btn pms-btn--outline btn-whatsapp-full"
+            (click)="contactarWhatsApp()"
+          >
+            📲 O pagar por Transferencia Bancaria / WhatsApp
+          </button>
+        </div>
+      </div>
+    </ng-container>
   </main>
 </div>
